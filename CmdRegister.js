@@ -15,10 +15,10 @@ fs.readdirSync(dir).forEach(file => {
 });
 
 /* Command Loader */
-const rest = new REST({ version: '9' }).setToken('OTYxNzI3MTc0ODgzMjgyOTQ0.Yk9MOg.sAUoPK3nnBf27UFLY1Lhel61e5Q');
+const rest = new REST({ version: '9' }).setToken('OTYzNDIwODYyNDgzMTQ0NzM1.YlV1mQ.06-w0uXaPMtmjKIDgs2gFgoCjMQ');
 (async ()=>{
   rest.put(
-    Routes.applicationGuildCommands('961727174883282944', '936757132689276948'),
+    Routes.applicationGuildCommands('963420862483144735', '906899666656956436'),
     { body: CommandList },
   ); 
 })();

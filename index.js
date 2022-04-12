@@ -25,7 +25,7 @@ client.on('ready', () => {
   client.user.setPresence({
     status: "idle",
     activities: [{
-      name: "everyone below me",
+      name: "all furries that are here",
       type: "WATCHING",
     }]
   })
