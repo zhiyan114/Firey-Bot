@@ -40,7 +40,7 @@ const KickFunc = async (interaction) => {
         embed.addField('Invite Link', inviteLink.url);
     }
     await targetMember.send({embeds:[embed]});
-    //await targetMember.kick(reason);
+    await targetMember.kick(reason);
     await interaction.reply({content: 'User has been successfully kicked!', ephemeral: true});
 }
 

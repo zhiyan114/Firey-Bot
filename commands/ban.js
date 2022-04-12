@@ -35,7 +35,7 @@ const BanFunc = async (interaction) => {
         .setFooter({text: `Banned by ${interaction.user.username}#${interaction.user.discriminator}`})
         .setTimestamp();
     await targetMember.send({embeds:[embed]});
-    //await targetMember.ban({days: deleteMessages ? 7 : 0, reason: reason});
+    await targetMember.ban({days: deleteMessages ? 7 : 0, reason: reason});
     await interaction.reply({content: 'User has been successfully banned!', ephemeral: true});
 }
 
