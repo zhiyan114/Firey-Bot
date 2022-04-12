@@ -3,7 +3,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 /* Command Builder */
 const EvalCmd = new SlashCommandBuilder()
     .setName('eval')
-    .setDescription(`Evaluates a code snippet for debugging purposes; Requires the highest privilege (ROOT) to run.`)
+    .setDescription(`Evaluates a code snippet for debugging purposes; Requires the highest privilege to run.`)
     .addStringOption(option=>
         option.setName("code")
             .setDescription("The code to evaluate.")
@@ -12,7 +12,7 @@ const EvalCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const EvalFunc = async (interaction) => {
-    if (!interaction.member.roles.cache.has('940387144751538197')) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
+    if (!['233955058604179457','445786517579759618'].includes(interaction.user.id)) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
     const code = interaction.options.data.find(option => option.type == "STRING").value;
     await interaction.deferReply({ ephemeral: true })
     // Setup pre-defined variables
@@ -24,7 +24,7 @@ const EvalFunc = async (interaction) => {
         const result = eval(code);
         await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
     } catch(err) {
-        await interaction.followUp({content: `Execution Error: ${err}`, ephemeral: true});
+        await interaction.followUp({content: `Execution Error: \`${err}\``, ephemeral: true});
     }
 }
 
