@@ -44,7 +44,7 @@ client.on('guildMemberAdd',async member => {
     .setTitle("Welcome to the server!")
     .setDescription(`Welcome to the Derg server, ${member.user.username}! Please read the rules and reply \`I agree with the rules\` to get access to the server.`)
     .setColor("#0000FF")
-  await ember.send({embeds: [embed]});
+  await member.send({embeds: [embed]});
   // Send message to channel 907121158376288307
   const channel = await client.channels.fetch("907121158376288307");
   const embed2 = new MessageEmbed()
@@ -68,7 +68,7 @@ client.on('messageCreate',async(message)=>{
       .setTitle("Rules Verification")
       .setFooter({text: "Administration Team"})
       .setTimestamp();
-    if(message.content.toLowerCase() === "I agree with the rules") {
+    if(message.content === "I agree with the rules") {
       embed.setColor("#00FF00")
       embed.setDescription("Thank you for reading and agreeing with the rules. You should now have full access to the server.");
       await member.roles.add(guild.roles.cache.find(opt=> opt.id == '907768073442983966'), "User Read the rules");

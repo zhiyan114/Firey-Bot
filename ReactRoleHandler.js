@@ -8,7 +8,7 @@ module.exports = async (client) => {
     const guild = await client.guilds.cache.find(opt=>opt.id == "906899666656956436")
     const message = await guild.channels.cache.find(opt=>opt.id == "908719210040008755").messages.fetch("908723313281482762");
     const deleteFilter = (reaction, user) => filterEmotes.includes(reaction.emoji.id);
-    const collector = message.createReactionCollector({filter: deleteFilter});
+    const collector = message.createReactionCollector({filter: deleteFilter, dispose: true});
     collector.on('collect', async (react, user) => {
         const member = guild.members.cache.find(opt=>opt.id == user.id);
         const role = guild.roles.cache.find(opt=>opt.id == AllRolesGrant[react.emoji.id]);
