@@ -44,7 +44,14 @@ client.on('guildMemberAdd',async member => {
     .setTitle("Welcome to the server!")
     .setDescription(`Welcome to the Derg server, ${member.user.username}! Please read the rules and reply \`I agree with the rules\` to get access to the server.`)
     .setColor("#0000FF")
-  member.send({embeds: [embed]});
+  await ember.send({embeds: [embed]});
+  // Send message to channel 907121158376288307
+  const channel = await client.channels.fetch("907121158376288307");
+  const embed2 = new MessageEmbed()
+    .setTitle("New Member")
+    .setDescription(`**${member.user.username}#${member.user.discriminator}** has joined the server!`)
+    .setColor("#00FFFF")
+  await channel.send({embeds: [embed2]});
 });
 client.on('messageCreate',async(message)=>{
   // Check if the message is from this client
