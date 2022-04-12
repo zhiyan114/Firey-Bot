@@ -19,7 +19,7 @@ fs.readdirSync(dir).forEach(file => {
 /* Client Loader */
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_BANS, Intents.FLAGS.GUILD_MEMBERS], partials: ["CHANNEL"] });
 
-client.on('ready', () => {
+client.on('ready', async () => {
   //client.user.setActivity('everyone below me', { type: 'WATCHING' });
   //client.user.setStatus('idle');
   client.user.setPresence({
@@ -29,6 +29,7 @@ client.on('ready', () => {
       type: "WATCHING",
     }]
   })
+  await require('./ReactRoleHandler.js')(client);
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
