@@ -4,7 +4,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 /* Command Builder */
 const KickCmd = new SlashCommandBuilder()
     .setName('kick')
-    .setDescription(`Evaluates a code snippet for debugging purposes; Requires the highest privilege to run.`)
+    .setDescription(`Kicks a target user.`)
     .addUserOption(option =>
         option.setName('user')
             .setDescription('The user to kick.')
