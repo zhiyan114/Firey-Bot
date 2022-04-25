@@ -1,5 +1,5 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-
+import { SlashCommandBuilder } from '@discordjs/builders';
+import {  CommandInteraction } from 'discord.js';
 /* Command Builder */
 const EvalCmd = new SlashCommandBuilder()
     .setName('eval')
@@ -11,9 +11,9 @@ const EvalCmd = new SlashCommandBuilder()
     );
 
 /* Function Builder */
-const EvalFunc = async (interaction) => {
+const EvalFunc = async (interaction : CommandInteraction) => {
     if (!['233955058604179457','445786517579759618'].includes(interaction.user.id)) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
-    const code = interaction.options.data.find(option => option.type == "STRING").value;
+    const code = interaction.options.getString('code',true);
     await interaction.deferReply({ ephemeral: true })
     // Setup pre-defined variables
     const channel = interaction.channel;

@@ -1,6 +1,6 @@
-const { MessageEmbed } = require('discord.js');
-const { SlashCommandBuilder } = require('@discordjs/builders');
-
+import { SlashCommandBuilder } from '@discordjs/builders';
+import { MessageEmbed, CommandInteraction, GuildMember, TextChannel } from 'discord.js';
+import RoleManager from '../utils/roleManager';
 /* Command Builder */
 const KickCmd = new SlashCommandBuilder()
     .setName('kick')
@@ -22,9 +22,10 @@ const KickCmd = new SlashCommandBuilder()
     )
 
 /* Function Builder */
-const KickFunc = async (interaction) => {
-    if (!interaction.member.roles.cache.has('908090260087513098')) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
-    const targetMember = interaction.options.getMember('user',true);
+const KickFunc = async (interaction : CommandInteraction) => {
+    if (!(new RoleManager(interaction.member as GuildMember)).check('908090260087513098')) return await interaction.reply({content: 'Access Denied!', ephemeral: true}); // Permission Check
+    /* Get the supplied information */
+    const targetMember = interaction.options.getMember('user',true) as GuildMember;
     const reason = interaction.options.getString('reason',true);
     const invite = interaction.options.getBoolean('invite',true);
     const embed = new MessageEmbed()
@@ -36,7 +37,7 @@ const KickFunc = async (interaction) => {
         .setTimestamp();
     if(invite) {
         embed.setDescription(`${embed.description} A re-invite link has been attached to this message (expires in 1 week).`);
-        const inviteLink = await interaction.guild.channels.cache.find(channel => channel.id == "907311644076564511").createInvite({maxAge: 604800, maxUses: 1, reason: "Moderator attached invitation link for this kick action"});
+        const inviteLink = await (interaction.guild.channels.cache.find(channel => channel.id == "907311644076564511") as TextChannel).createInvite({maxAge: 604800, maxUses: 1, reason: "Moderator attached invitation link for this kick action"});
         embed.addField('Invite Link', inviteLink.url);
     }
     await targetMember.send({embeds:[embed]});

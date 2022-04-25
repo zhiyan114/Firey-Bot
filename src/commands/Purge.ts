@@ -1,7 +1,7 @@
-const { MessageEmbed } = require('discord.js');
-const { SlashCommandBuilder } = require('@discordjs/builders');
-
 /* Command Builder */
+import { SlashCommandBuilder } from '@discordjs/builders';
+import { CommandInteraction, BaseGuildTextChannel, GuildMember } from 'discord.js';
+import RoleManager from '../utils/roleManager';
 const PurgeCmd = new SlashCommandBuilder()
     .setName('purge')
     .setDescription(`Purge messages from a channel`)
@@ -12,13 +12,13 @@ const PurgeCmd = new SlashCommandBuilder()
     );
 
 /* Function Builder */
-const PurgeFunc = async (interaction) => {
-    if (!interaction.member.roles.cache.has('908090260087513098')) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
+const PurgeFunc = async (interaction : CommandInteraction) => {
+    if (!(new RoleManager(interaction.member as GuildMember)).check('908090260087513098')) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
     const amount = interaction.options.getNumber('amount',true);
     if(amount <= 0 || amount > 100) return await interaction.reply({content: 'Invalid amount!', ephemeral: true});
     //const messages = await interaction.channel.messages.fetch({limit: amount});
     await interaction.deferReply({ ephemeral: true })
-    await interaction.channel.bulkDelete(amount+1);
+    await (interaction.channel as BaseGuildTextChannel).bulkDelete(amount+1);
     await interaction.followUp({content: `Successfully purged ${amount} messages!`, ephemeral: true});
 }
 
