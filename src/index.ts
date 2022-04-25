@@ -7,6 +7,7 @@ import * as config from '../config.json';
 /* Internal Services */
 import CmdRegister from './services/CmdRegister';
 import ReactRole from './services/ReactRoleHandler';
+import VerifyHandler from './services/VerificationHandler';
 
 // Internal Interface
 interface ICommandList {
@@ -45,6 +46,8 @@ client.on('interactionCreate', async interaction => {
   if (interaction.isCommand()) {
     if (!commandList[interaction.commandName]) return;
     await commandList[interaction.commandName].function(interaction);
+  } else if(interaction.isButton()) {
+    if(interaction.customId === "RuleConfirm") return await VerifyHandler(interaction);
   }
 });
 

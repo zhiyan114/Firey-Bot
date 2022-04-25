@@ -1,6 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { MessageEmbed, CommandInteraction, GuildMember, TextChannel } from 'discord.js';
-import RoleManager from '../utils/roleManager';
+import {  CommandInteraction } from 'discord.js';
 /* Command Builder */
 const EvalCmd = new SlashCommandBuilder()
     .setName('eval')
