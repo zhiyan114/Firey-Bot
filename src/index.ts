@@ -4,7 +4,9 @@ import { Client, Intents, MessageEmbed, MessageReaction, TextChannel, User } fro
 import { SlashCommandBuilder } from '@discordjs/builders';
 import * as definition from './interface';
 import * as config from '../config.json';
+/* Internal Services */
 import CmdRegister from './services/CmdRegister';
+import ReactRole from './services/ReactRoleHandler';
 
 // Internal Interface
 interface ICommandList {
@@ -35,7 +37,7 @@ client.on('ready', async () => {
       type: "WATCHING",
     }]
   })
-  //await require('./src/services/ReactRoleHandler.ts')(client);
+  await ReactRole(client);
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
