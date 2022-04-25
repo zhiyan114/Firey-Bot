@@ -21,7 +21,7 @@ const commandList : ICommandList = {};
 const cmdDir = path.join(__dirname, 'commands');
 fs.readdirSync(cmdDir).forEach(file => {
   if (file.endsWith('.js')) {
-      const cmdModule : definition.ICommand = require(path.join(cmdDir, file));
+      const cmdModule : definition.ICommand = require(path.join(cmdDir, file)).default;
       if(!cmdModule.disabled) commandList[cmdModule.command.name] = cmdModule;
   }
 });
