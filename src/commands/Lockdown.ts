@@ -7,7 +7,7 @@ const LockdownCmd = new SlashCommandBuilder()
     .setName('lockdown')
     .setDescription(`Lockdown the chat channels for unprivileged users. *Emergency Use Only*`)
     .addBooleanOption(option=>
-        option.setName("Enabled")
+        option.setName("enabled")
             .setDescription("To enable or disable the lockdown mode.")
             .setRequired(true)
     );
