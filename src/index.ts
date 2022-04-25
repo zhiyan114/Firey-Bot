@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Client, Intents, MessageEmbed, MessageReaction, TextChannel, User } from 'discord.js';
+import { Client, Intents } from 'discord.js';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import * as definition from './interface';
 import * as config from '../config.json';
@@ -8,6 +8,7 @@ import * as config from '../config.json';
 import CmdRegister from './services/CmdRegister';
 import ReactRole from './services/ReactRoleHandler';
 import VerifyHandler from './services/VerificationHandler';
+import UserJoinHandler from './services/UserJoinHandler';
 
 // Internal Interface
 interface ICommandList {
@@ -24,7 +25,6 @@ fs.readdirSync(cmdDir).forEach(file => {
       if(!cmdModule.disabled) commandList[cmdModule.command.name] = cmdModule;
   }
 });
-
 CmdRegister(Object.values(commandList)); // Register all the slash commands
 
 /* Client Loader */
@@ -40,6 +40,10 @@ client.on('ready', async () => {
   })
   await ReactRole(client);
   console.log(`Logged in as ${client.user.tag}!`);
+});
+
+client.on('guildMemberAdd',async member => {
+  await UserJoinHandler(member, client);
 });
 
 client.on('interactionCreate', async interaction => {
