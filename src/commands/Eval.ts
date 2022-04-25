@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import {  CommandInteraction } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 /* Command Builder */
 const EvalCmd = new SlashCommandBuilder()
     .setName('eval')
@@ -28,7 +28,7 @@ const EvalFunc = async (interaction : CommandInteraction) => {
     }
 }
 
-module.exports = {
+export default {
     command: EvalCmd,
     function: EvalFunc,
     disabled: false,
