@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { MessageEmbed, CommandInteraction, GuildMember, TextChannel } from 'discord.js';
-import RoleManager from '../utils/roleManager';
+import { userRoleManager } from '../utils/roleManager';
+import { adminRoleID }  from '../../config.json';
 /* Command Builder */
 const KickCmd = new SlashCommandBuilder()
     .setName('kick')
@@ -23,7 +24,7 @@ const KickCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const KickFunc = async (interaction : CommandInteraction) => {
-    if (!(new RoleManager(interaction.member as GuildMember)).check('908090260087513098')) return await interaction.reply({content: 'Access Denied!', ephemeral: true}); // Permission Check
+    if (!(new userRoleManager(interaction.member as GuildMember)).check(adminRoleID)) return await interaction.reply({content: 'Access Denied!', ephemeral: true}); // Permission Check
     /* Get the supplied information */
     const targetMember = interaction.options.getMember('user',true) as GuildMember;
     const reason = interaction.options.getString('reason',true);
@@ -45,7 +46,7 @@ const KickFunc = async (interaction : CommandInteraction) => {
     await interaction.reply({content: 'User has been successfully kicked!', ephemeral: true});
 }
 
-module.exports = {
+export default {
     command: KickCmd,
     function: KickFunc,
     disabled: false,

@@ -1,7 +1,8 @@
 /* Command Builder */
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, BaseGuildTextChannel, GuildMember } from 'discord.js';
-import RoleManager from '../utils/roleManager';
+import { userRoleManager } from '../utils/roleManager';
+import { adminRoleID }  from '../../config.json';
 const PurgeCmd = new SlashCommandBuilder()
     .setName('purge')
     .setDescription(`Purge messages from a channel`)
@@ -13,7 +14,7 @@ const PurgeCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const PurgeFunc = async (interaction : CommandInteraction) => {
-    if (!(new RoleManager(interaction.member as GuildMember)).check('908090260087513098')) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
+    if (!(new userRoleManager(interaction.member as GuildMember)).check(adminRoleID)) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
     const amount = interaction.options.getNumber('amount',true);
     if(amount <= 0 || amount > 100) return await interaction.reply({content: 'Invalid amount!', ephemeral: true});
     //const messages = await interaction.channel.messages.fetch({limit: amount});
@@ -22,7 +23,7 @@ const PurgeFunc = async (interaction : CommandInteraction) => {
     await interaction.followUp({content: `Successfully purged ${amount} messages!`, ephemeral: true});
 }
 
-module.exports = {
+export default {
     command: PurgeCmd,
     function: PurgeFunc,
     disabled: false,

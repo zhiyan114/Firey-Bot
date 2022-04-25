@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, MessageEmbed, GuildMember } from 'discord.js';
-import RoleManager from '../utils/roleManager';
+import { userRoleManager } from '../utils/roleManager';
+import { adminRoleID }  from '../../config.json';
 
 /* Command Builder */
 const BanCmd = new SlashCommandBuilder()
@@ -24,7 +25,7 @@ const BanCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const BanFunc = async (interaction : CommandInteraction) => {
-    if (!(new RoleManager(interaction.member as GuildMember)).check('908090260087513098')) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
+    if (!(new userRoleManager(interaction.member as GuildMember)).check(adminRoleID)) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
     const targetMember = interaction.options.getMember('user',true) as GuildMember;
     const reason = interaction.options.getString('reason',true);
     const deleteMessages = interaction.options.getBoolean('delete',true);
@@ -40,7 +41,7 @@ const BanFunc = async (interaction : CommandInteraction) => {
     await interaction.reply({content: 'User has been successfully banned!', ephemeral: true});
 }
 
-module.exports = {
+export default {
     command: BanCmd,
     function: BanFunc,
     disabled: false,
