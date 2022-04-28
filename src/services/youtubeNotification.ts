@@ -31,11 +31,11 @@ Example Reference
 
 
 
-const ChannelID = "";
-export default async (client : Client) => {
+const ChannelID = "UCKsRmVfwU-IkVWhfiSVp1ig";
+export default (client : Client) => {
     const NotificationChannel = client.channels.cache.find(channel => channel.id === "912150616908890142") as TextChannel;
     const notifier = new YouTubeNotifier({
-        hubCallbackUrl: 'https://firey-bot.zhiyan114.repl.co:46271/youtube/callback',
+        hubCallback: 'http://service.zhiyan114.com:46271/youtube/callback',
         port: 46271,
         secret: 'NotifierSecret_aos9z8vh2na68z8df7aa982jahfg6738',
         path: '/youtube/callback'
@@ -47,7 +47,7 @@ export default async (client : Client) => {
         NotificationChannel.send({ content: `<@968319680093773844> New Video is out!! Check it out here: ${data.video.link}` });
     })
     // @ts-ignore
-    notifier.on('subscribed', data =>{
+    notifier.on('subscribe', data =>{
         console.log("Youtube Notification Service started...");
     })
     // @ts-ignore

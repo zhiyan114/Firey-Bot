@@ -39,7 +39,7 @@ client.on('ready', async () => {
     }]
   })
   await ReactRole(client);
-  await YouTubeNotifier(client);
+  YouTubeNotifier(client);
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
