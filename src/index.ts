@@ -9,12 +9,12 @@ import CmdRegister from './services/CmdRegister';
 import ReactRole from './services/ReactRoleHandler';
 import VerifyHandler from './services/VerificationHandler';
 import UserJoinHandler from './services/UserJoinHandler';
+import YouTubeNotifier from './services/youtubeNotification';
 
 // Internal Interface
 interface ICommandList {
     [key: string]: definition.ICommand;
 }
-
 
 const commandList : ICommandList = {};
 /* Load all the internal commands */
@@ -32,13 +32,14 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 
 client.on('ready', async () => {
   client.user.setPresence({
-    status: "idle",
+    status: "dnd",
     activities: [{
-      name: "all furries UwU",
+      name: "all dergs UwU",
       type: "WATCHING",
     }]
   })
   await ReactRole(client);
+  await YouTubeNotifier(client);
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
