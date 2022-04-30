@@ -1,3 +1,5 @@
+/* Message Maker: const MessageEmbed=require("discord.js").MessageEmbed;const embed=new MessageEmbed();embed.setColor("#00FFFF");embed.setDescription("If you would like to know when the derg is streaming. Please press on <a:FireyTailwag:907314933648199700> to be in the know when he goes live.\nTo be pinged for any videos recently uploaded to his youtube press on <:FireyPeek:941368077856161885>"); client.channels.cache.find(channel => channel.id === "908719210040008755").send({embeds:[embed]}); */
+/* Message Reactor: const msg = (client.channels.cache.find(opt=>opt.id === "908719210040008755")).messages.cache.find(opt=>opt.id === "970021524763471893"); msg.react("<a:FireyTailwag:907314933648199700>"); msg.react("<:FireyPeek:941368077856161885>"); */
 import { Client, TextChannel, MessageReaction, User } from 'discord.js';
 
 // Internal Interface
@@ -13,7 +15,7 @@ const AllRolesGrant : IReactRoleList = {
 const filterEmotes = Object.entries(AllRolesGrant).map(([k,_]) => k);
 export default async (client : Client) => {
     const guild = await client.guilds.cache.find(opt=>opt.id == "906899666656956436")
-    const message = await (guild.channels.cache.find(opt=>opt.id == "908719210040008755") as TextChannel).messages.fetch("908723313281482762");
+    const message = await (guild.channels.cache.find(opt=>opt.id == "908719210040008755") as TextChannel).messages.fetch("970021524763471893");
     const deleteFilter = (reaction : MessageReaction, user : User) => filterEmotes.includes(reaction.emoji.id);
     const collector = message.createReactionCollector({filter: deleteFilter, dispose: true});
     collector.on('collect', async (react : MessageReaction, user : User) => {

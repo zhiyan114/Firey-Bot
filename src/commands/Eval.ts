@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
+import { Client, CommandInteraction } from 'discord.js';
 /* Command Builder */
 const EvalCmd = new SlashCommandBuilder()
     .setName('eval')
@@ -11,7 +11,7 @@ const EvalCmd = new SlashCommandBuilder()
     );
 
 /* Function Builder */
-const EvalFunc = async (interaction : CommandInteraction) => {
+const EvalFunc = async (interaction : CommandInteraction, client : Client) => {
     if (!['233955058604179457','445786517579759618'].includes(interaction.user.id)) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
     const code = interaction.options.getString('code',true);
     await interaction.deferReply({ ephemeral: true })
