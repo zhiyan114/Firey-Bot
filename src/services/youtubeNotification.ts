@@ -49,6 +49,7 @@ export default (client : Client) => {
     // @ts-ignore
     notifier.on('subscribe', data =>{
         console.log("Youtube Notification Service started...");
+        setTimeout(()=> notifier.subscribe(ChannelID), (data.lease_seconds * 1000) - 5000); // Resubscribe 5 seconds before the lease expires
     })
     // @ts-ignore
     notifier.on('unsubscribe', data => {

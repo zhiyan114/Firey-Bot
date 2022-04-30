@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Client, Intents } from 'discord.js';
-import { SlashCommandBuilder } from '@discordjs/builders';
+import { Client, Intents, Interaction, GuildMember } from 'discord.js';
 import * as definition from './interface';
+import * as Sentry from '@sentry/node';
 import * as config from '../config.json';
 /* Internal Services */
 import CmdRegister from './services/CmdRegister';
@@ -11,13 +11,18 @@ import VerifyHandler from './services/VerificationHandler';
 import UserJoinHandler from './services/UserJoinHandler';
 import YouTubeNotifier from './services/youtubeNotification';
 
+// Pre-Load Services
+Sentry.init({
+  dsn: "https://4674d92fdd22407a8af689f4d869b77e@o125145.ingest.sentry.io/6372351"
+});
+
 // Internal Interface
 interface ICommandList {
     [key: string]: definition.ICommand;
 }
 
-const commandList : ICommandList = {};
 /* Load all the internal commands */
+const commandList : ICommandList = {};
 const cmdDir = path.join(__dirname, 'commands');
 fs.readdirSync(cmdDir).forEach(file => {
   if (file.endsWith('.js')) {
@@ -43,14 +48,14 @@ client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on('guildMemberAdd',async member => {
+client.on('guildMemberAdd',async (member : GuildMember) => {
   await UserJoinHandler(member, client);
 });
 
-client.on('interactionCreate', async interaction => {
+client.on('interactionCreate', async (interaction : Interaction) => {
   if (interaction.isCommand()) {
     if (!commandList[interaction.commandName]) return;
-    await commandList[interaction.commandName].function(interaction);
+    await commandList[interaction.commandName].function(interaction, client);
   } else if(interaction.isButton()) {
     if(interaction.customId === "RuleConfirm") return await VerifyHandler(interaction);
   }

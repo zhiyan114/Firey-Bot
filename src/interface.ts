@@ -1,9 +1,9 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
+import { Client, CommandInteraction } from 'discord.js';
 
 interface ICommand {
     command: SlashCommandBuilder;
-    function: (interaction: CommandInteraction) => Promise<void>;
+    function: (interaction: CommandInteraction, client : Client) => Promise<void>;
     disabled?: boolean;
 }
 interface IService {
