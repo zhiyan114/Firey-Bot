@@ -1,4 +1,4 @@
-import { MessageEmbed, GuildMember, Client, TextChannel } from "discord.js";
+import { MessageEmbed, GuildMember, Client, TextChannel, Constants, DiscordAPIError } from "discord.js";
 
 export default async (member : GuildMember, client : Client) => {
     // Send message to channel 907121158376288307
@@ -15,8 +15,9 @@ export default async (member : GuildMember, client : Client) => {
         .setColor("#0000FF")
     try {
         await member.send({embeds: [embed]});
-    } catch(ex) {
-        channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`,embeds: [embed]});
+    } catch(ex : any) {
+        if(ex instanceof DiscordAPIError && ex.code === Constants.APIErrors.CANNOT_MESSAGE_USER)
+            channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`,embeds: [embed]});
     }
     
 }
