@@ -44,7 +44,7 @@ export default (client : Client) => {
 
     // @ts-ignore (Legacy Library)
     notifier.on('notified', data =>{
-        NotificationChannel.send({ content: `<@&968319680093773844> New Video is out!! Check it out here: ${data.video.link}` });
+        NotificationChannel.send({ content: `<@&946613137031974963> New Video is out!! Check it out here: ${data.video.link}` });
     })
     // @ts-ignore
     notifier.on('subscribe', data =>{
