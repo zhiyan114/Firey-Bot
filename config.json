@@ -2,5 +2,9 @@
     "clientID": "963420862483144735",
     "botToken": "OTYzNDIwODYyNDgzMTQ0NzM1.YlV1mQ.06-w0uXaPMtmjKIDgs2gFgoCjMQ",
     "serverID": "906899666656956436",
-    "adminRoleID": "908090260087513098"
+    "adminRoleID": "908090260087513098",
+    "https": {
+        "certificate": "",
+        "key": ""
+    }
 }
