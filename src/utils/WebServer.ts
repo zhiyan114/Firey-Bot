@@ -1,7 +1,6 @@
 /* Webhook service using express-based server (for replit compatibility) */
 
 import * as fastify from 'fastify';
-import fastifyRedirect from 'fastify-https-redirect';
 import fs from 'fs';
 import websocket from 'ws';
 import https from 'https';
@@ -34,7 +33,7 @@ const restServer = fastify.fastify({
 restServer.register(middie);
 if(isHttpsMode) {
     // Enable HTTPS Mode
-    restServer.register(fastifyRedirect);
+    restServer.register(require('fastify-https-redirect'));
     restServer.listen(443,()=>console.log("Internal Webserver launched (HTTPS Mode)..."));
 } else {
     // Enable HTTP Mode

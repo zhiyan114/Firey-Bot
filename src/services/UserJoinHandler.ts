@@ -1,8 +1,9 @@
 import { MessageEmbed, GuildMember, Client, TextChannel, Constants, DiscordAPIError } from "discord.js";
+import { welcomeChannelID } from "../../config.json";
 
 export default async (member : GuildMember, client : Client) => {
     // Send message to channel 907121158376288307
-    const channel = await client.channels.fetch("907121158376288307") as TextChannel;
+    const channel = await client.channels.fetch(welcomeChannelID) as TextChannel;
     const embed2 = new MessageEmbed()
         .setTitle("New Member")
         .setDescription(`**${member.user.username}#${member.user.discriminator}** has joined the server!`)

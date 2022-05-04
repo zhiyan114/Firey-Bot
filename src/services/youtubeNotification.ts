@@ -2,6 +2,7 @@ const YouTubeNotifier = require('youtube-notification');
 import { Client, TextChannel } from 'discord.js';
 import { restServer } from '../utils/WebServer';
 import 'middie';
+import config from '../../config.json';
 
 /*
 import WebhookServer from '../utils/WebhookServer';
@@ -30,11 +31,10 @@ Example Reference
 }
 */
 
+const conf = config.youtubeNotification;
 
-
-const ChannelID = "UCKsRmVfwU-IkVWhfiSVp1ig";
 export default (client : Client) => {
-    const NotificationChannel = client.channels.cache.find(channel => channel.id === "912150616908890142") as TextChannel;
+    const NotificationChannel = client.channels.cache.find(channel => channel.id === conf.guildChannelID) as TextChannel;
     const notifier = new YouTubeNotifier({
         //hubCallback: 'http://service.zhiyan114.com:46271/youtube/callback',
         hubCallback: 'http://service.zhiyan114.com/youtube/callback',
@@ -48,17 +48,17 @@ export default (client : Client) => {
 
     // @ts-ignore (Legacy Library)
     notifier.on('notified', data =>{
-        NotificationChannel.send({ content: `<@&946613137031974963> New Video is out!! Check it out here: ${data.video.link}` });
+        NotificationChannel.send({ content: `<@&${conf.pingRoleID}> New Video is out!! Check it out here: ${data.video.link}` });
     })
     // @ts-ignore
     notifier.on('subscribe', data =>{
         console.log("Youtube Notification Service started...");
-        setTimeout(()=> notifier.subscribe(ChannelID), (data.lease_seconds * 1000) - 5000); // Resubscribe 5 seconds before the lease expires
+        setTimeout(()=> notifier.subscribe(conf.youtubeChannelID), (data.lease_seconds * 1000) - 5000); // Resubscribe 5 seconds before the lease expires
     })
     // @ts-ignore
     notifier.on('unsubscribe', data => {
         console.log("Youtube Notification Service Stopped. Restarting....")
-        notifier.subscribe(ChannelID)
+        notifier.subscribe(conf.youtubeChannelID)
     })
-    notifier.subscribe(ChannelID);
+    notifier.subscribe(conf.youtubeChannelID);
 }

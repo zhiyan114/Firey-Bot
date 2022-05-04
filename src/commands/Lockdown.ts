@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, GuildMember, Permissions } from 'discord.js';
-import { adminRoleID }  from '../../config.json';
+import { adminRoleID, newUserRoleID }  from '../../config.json';
 import { userRoleManager, roleManager } from '../utils/roleManager';
 /* Command Builder */
 const LockdownCmd = new SlashCommandBuilder()
@@ -15,7 +15,7 @@ const LockdownCmd = new SlashCommandBuilder()
 /* Function Builder */
 const LockdownFunc = async (interaction : CommandInteraction) => {
     if (!(new userRoleManager(interaction.member as GuildMember)).check(adminRoleID)) return await interaction.reply({content: 'Access Denied!', ephemeral: true}); // Permission Check
-    const userRole = new roleManager(interaction.guild.roles.cache.find(r => r.id === "907768073442983966"));
+    const userRole = new roleManager(interaction.guild.roles.cache.find(r => r.id === newUserRoleID));
     const optEnabled = interaction.options.getBoolean('Enabled',true);
     const isEnabled = userRole.checkPermission(Permissions.FLAGS.SEND_MESSAGES);
 
