@@ -57,7 +57,7 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
 
 client.on('interactionCreate', async (interaction : Interaction) => {
   if (interaction.isCommand()) {
-    const command = commandList[interaction.command.name];
+    const command = commandList[interaction.commandName];
     if (!command) return;
     await command.function(interaction, client);
   } else if(interaction.isButton()) {
