@@ -1,8 +1,9 @@
 /* Command Builder */
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction, BaseGuildTextChannel, GuildMember } from 'discord.js';
+import { CommandInteraction, BaseGuildTextChannel, GuildMember, TextChannel } from 'discord.js';
 import { userRoleManager } from '../utils/roleManager';
-import { adminRoleID }  from '../../config.json';
+import { sendLog, LogType } from '../utils/eventLogger';
+import { adminRoleID, logChannelID }  from '../../config.json';
 const PurgeCmd = new SlashCommandBuilder()
     .setName('purge')
     .setDescription(`Purge messages from a channel`)
@@ -21,6 +22,10 @@ const PurgeFunc = async (interaction : CommandInteraction) => {
     await interaction.deferReply({ ephemeral: true })
     await (interaction.channel as BaseGuildTextChannel).bulkDelete(amount+1);
     await interaction.followUp({content: `Successfully purged ${amount} messages!`, ephemeral: true});
+    if(interaction.channel.id !== logChannelID) await sendLog(LogType.Command, `${interaction.user.tag} has executed **purge** command`, {
+        channelName: (interaction.channel as TextChannel).name,
+        amount: amount.toString()
+    });
 }
 
 export default {

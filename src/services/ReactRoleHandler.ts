@@ -1,21 +1,25 @@
 /* Message Maker: const MessageEmbed=require("discord.js").MessageEmbed;const embed=new MessageEmbed();embed.setColor("#00FFFF");embed.setDescription("If you would like to know when the derg is streaming. Please press on <a:FireyTailwag:907314933648199700> to be in the know when he goes live.\nTo be pinged for any videos recently uploaded to his youtube press on <:FireyPeek:941368077856161885>"); client.channels.cache.find(channel => channel.id === "908719210040008755").send({embeds:[embed]}); */
 /* Message Reactor: const msg = (client.channels.cache.find(opt=>opt.id === "908719210040008755")).messages.cache.find(opt=>opt.id === "970021524763471893"); msg.react("<a:FireyTailwag:907314933648199700>"); msg.react("<:FireyPeek:941368077856161885>"); */
 import { Client, TextChannel, MessageReaction, User } from 'discord.js';
+import {guildID, reactionRole}  from '../../config.json';
 
 // Internal Interface
 interface IReactRoleList {
     [key: string]: string;
 }
-
+/*
 const AllRolesGrant : IReactRoleList = {
     "907314933648199700": "908723067067437076", // Derg Gaming Role
     "941368077856161885": "946613137031974963", // Derg Showing Role
     // "Emote ID": "Role ID"
 }
+*/
+const AllRolesGrant : IReactRoleList = reactionRole.reactionLists;
+
 const filterEmotes = Object.entries(AllRolesGrant).map(([k,_]) => k);
 export default async (client : Client) => {
-    const guild = await client.guilds.cache.find(opt=>opt.id == "906899666656956436")
-    const message = await (guild.channels.cache.find(opt=>opt.id == "908719210040008755") as TextChannel).messages.fetch("970021524763471893");
+    const guild = await client.guilds.cache.find(opt=>opt.id == guildID);
+    const message = await (guild.channels.cache.find(opt=>opt.id == reactionRole.channelID) as TextChannel).messages.fetch(reactionRole.messageID);
     const deleteFilter = (reaction : MessageReaction, user : User) => filterEmotes.includes(reaction.emoji.id);
     const collector = message.createReactionCollector({filter: deleteFilter, dispose: true});
     collector.on('collect', async (react : MessageReaction, user : User) => {

@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { MessageEmbed, CommandInteraction, GuildMember, TextChannel } from 'discord.js';
 import { userRoleManager } from '../utils/roleManager';
+import { sendLog, LogType } from '../utils/eventLogger';
 import { adminRoleID }  from '../../config.json';
 /* Command Builder */
 const KickCmd = new SlashCommandBuilder()
@@ -44,6 +45,11 @@ const KickFunc = async (interaction : CommandInteraction) => {
     await targetMember.send({embeds:[embed]});
     await targetMember.kick(reason);
     await interaction.reply({content: 'User has been successfully kicked!', ephemeral: true});
+    await sendLog(LogType.Command, `${interaction.user.tag} has executed **kick** command`, {
+        target: targetMember.user.tag,
+        reason: reason,
+        includeInvite: invite.toString(),
+    });
 }
 
 export default {

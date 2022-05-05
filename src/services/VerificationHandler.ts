@@ -2,9 +2,10 @@
 
 import { ButtonInteraction, GuildMember } from 'discord.js';
 import { userRoleManager as RoleManager } from '../utils/roleManager';
+import { newUserRoleID } from '../../config.json';
 export default async (interaction : ButtonInteraction) => {
     const userRole = new RoleManager(interaction.member as GuildMember);
-    if(await userRole.check('907768073442983966')) return await interaction.reply({content: "You've already confirmed the rules.", ephemeral: true});
-    await userRole.add('907768073442983966');
+    if(await userRole.check(newUserRoleID)) return await interaction.reply({content: "You've already confirmed the rules.", ephemeral: true});
+    await userRole.add(newUserRoleID);
     await interaction.reply({content: "Thank you for confirming the rules.", ephemeral: true});
 }
