@@ -8,6 +8,7 @@ import http from 'http';
 import middie from 'middie';
 
 import config from '../../config.json';
+import { sendLog, LogType } from '../utils/eventLogger';
 
 
 const isHttpsMode = config.https.certificate && config.https.key;
@@ -34,10 +35,16 @@ restServer.register(middie);
 if(isHttpsMode) {
     // Enable HTTPS Mode
     restServer.register(require('fastify-https-redirect'));
-    restServer.listen(443,()=>console.log("Internal Webserver launched (HTTPS Mode)..."));
+    restServer.listen(443,()=> {
+        console.log("Internal Webserver launched (HTTPS Mode)...");
+        sendLog(LogType.Info, "Webserver has been successfully launched", {"Mode": "HTTPS"});
+    });
 } else {
     // Enable HTTP Mode
-    restServer.listen(80,()=>console.log("Internal Webserver launched (HTTP Mode)..."));
+    restServer.listen(80,()=>{
+        console.log("Internal Webserver launched (HTTP Mode)...")
+        sendLog(LogType.Info, "Webserver has been successfully launched", {"Mode": "HTTP"});
+    });
 }
 
 export {

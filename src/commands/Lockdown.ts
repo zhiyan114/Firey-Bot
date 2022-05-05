@@ -1,7 +1,8 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, GuildMember, Permissions } from 'discord.js';
-import { adminRoleID, newUserRoleID }  from '../../config.json';
 import { userRoleManager, roleManager } from '../utils/roleManager';
+import { sendLog, LogType } from '../utils/eventLogger';
+import { adminRoleID, newUserRoleID }  from '../../config.json';
 /* Command Builder */
 const LockdownCmd = new SlashCommandBuilder()
     .setName('lockdown')
@@ -24,6 +25,9 @@ const LockdownFunc = async (interaction : CommandInteraction) => {
     if(!optEnabled) await userRole.addPermission(Permissions.FLAGS.SEND_MESSAGES, "Lockdown mode disabled");
     else await userRole.removePermission(Permissions.FLAGS.SEND_MESSAGES, "Lockdown mode enabled");
     await interaction.reply({content: optEnabled ? "Lockdown has been successfully enabled" : "Lockdown has been successfully disabled", ephemeral: false});
+    await sendLog(LogType.Command, `${interaction.user.tag} has executed **lockdown** command`, {
+        enabled: optEnabled.toString(),
+    });
 }
 
 export default {

@@ -1,6 +1,7 @@
 const YouTubeNotifier = require('youtube-notification');
 import { Client, TextChannel } from 'discord.js';
 import { restServer } from '../utils/WebServer';
+import { sendLog, LogType } from '../utils/eventLogger';
 import 'middie';
 import config from '../../config.json';
 
@@ -53,11 +54,16 @@ export default (client : Client) => {
     // @ts-ignore
     notifier.on('subscribe', data =>{
         console.log("Youtube Notification Service started...");
-        setTimeout(()=> notifier.subscribe(conf.youtubeChannelID), (data.lease_seconds * 1000) - 5000); // Resubscribe 5 seconds before the lease expires
+        sendLog(LogType.Info, "Youtube Notification Service started...");
+        setTimeout(()=> { 
+          notifier.subscribe(conf.youtubeChannelID);
+          sendLog(LogType.Info, "Youtube Notification Service: PubSubHubbub has been successfully renewed");
+        }, (data.lease_seconds * 1000) - 5000); // Resubscribe 5 seconds before the lease expires
     })
     // @ts-ignore
     notifier.on('unsubscribe', data => {
-        console.log("Youtube Notification Service Stopped. Restarting....")
+        console.log("Youtube Notification Service Stopped. Restarting....");
+        sendLog(LogType.Warning, "Youtube Notification Service stopped...");
         notifier.subscribe(conf.youtubeChannelID)
     })
     notifier.subscribe(conf.youtubeChannelID);

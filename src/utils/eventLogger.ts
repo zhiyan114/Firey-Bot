@@ -1,4 +1,4 @@
-import { Client, TextChannel, MessageEmbed, ColorResolvable } from "discord.js";
+import { Client, TextChannel, MessageEmbed, ColorResolvable, GuildMember, User } from "discord.js";
 import { logChannelID } from "../../config.json";
 
 // Exported data for the loggers
@@ -32,7 +32,7 @@ export async function sendLog(type: LogType, message: string, extraMetadata?: Lo
     if(logChannel === undefined || logChannel === null) return console.log("Log channel not initialized, cannot send any logs!");
     // Create Discord Channel Log Embed
     const embed = new MessageEmbed()
-        .setTitle(`${type} Log`)
+        .setTitle(`${getLogType(type)} Log`)
         .setDescription(message)
         .setColor(getEmbedColor(type));
     // Add extra metadata
@@ -61,5 +61,19 @@ function getEmbedColor(type: LogType) : ColorResolvable {
             return "#FF0000";
         default:
             return "#00FFFF";
+    }
+}
+function getLogType(type: LogType) : string {
+    switch(type) {
+        case LogType.Command:
+            return "Command";
+        case LogType.Info:
+            return "Info";
+        case LogType.Warning:
+            return "Warning";
+        case LogType.Error:
+            return "Error";
+        default:
+            return "Unknown";
     }
 }

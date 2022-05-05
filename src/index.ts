@@ -4,6 +4,7 @@ import { Client, Intents, Interaction, GuildMember } from 'discord.js';
 import * as definition from './interface';
 import * as Sentry from '@sentry/node';
 import * as config from '../config.json';
+import { initailizeLogger, sendLog, LogType, LogMetadata } from './utils/eventLogger';
 /* Internal Services */
 import CmdRegister from './services/CmdRegister';
 import ReactRole from './services/ReactRoleHandler';
@@ -43,8 +44,10 @@ client.on('ready', async () => {
       type: "WATCHING",
     }]
   })
+  await initailizeLogger(client);
   await ReactRole(client);
   YouTubeNotifier(client);
+  await sendLog(LogType.Info, "Discord.js client has been initialized!");
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
@@ -54,8 +57,9 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
 
 client.on('interactionCreate', async (interaction : Interaction) => {
   if (interaction.isCommand()) {
-    if (!commandList[interaction.commandName]) return;
-    await commandList[interaction.commandName].function(interaction, client);
+    const command = commandList[interaction.command.name];
+    if (!command) return;
+    await command.function(interaction, client);
   } else if(interaction.isButton()) {
     if(interaction.customId === "RuleConfirm") return await VerifyHandler(interaction);
   }

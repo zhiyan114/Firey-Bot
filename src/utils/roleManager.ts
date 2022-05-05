@@ -1,4 +1,4 @@
-import { serverID } from '../../config.json';
+import { guildID } from '../../config.json';
 import { GuildMember, Client, RoleManager, Guild, Collection, Role, Snowflake, PermissionResolvable } from 'discord.js';
 
 // User Role Manager
@@ -8,7 +8,7 @@ class userRoleManager {
         if(user) this.user = user;
     }
     public async IDSetup(id: string, client?: Client): Promise<void> {
-        this.user = await client.guilds.cache.find(k=> k.id === serverID).members.fetch(id);
+        this.user = await client.guilds.cache.find(k=> k.id === guildID).members.fetch(id);
     }
     public async check(roleID: string): Promise<boolean> {
         return this.user.roles.cache.has(roleID);
