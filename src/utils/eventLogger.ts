@@ -12,24 +12,43 @@ export interface LogMetadata {
     [key: string]: string;
 }
 
+interface pendingLogs {
+    type: LogType;
+    message: string;
+    metadata?: LogMetadata;
+}
 
 // Main Logging functions
 let logChannel : TextChannel;
 
+let pendingLogs : pendingLogs[] = [];
+
 export async function initailizeLogger(channel : Client) : Promise<void> {
-    // Check if the log channel alreadyinitalized
-    if(logChannel !== undefined || logChannel !== null) {
+    // Check if the log channel already initalized
+    if(logChannel !== undefined && logChannel !== null) {
         console.log("Log channel already initialized!");
         sendLog(LogType.Error, "System attempted to initialize log channel twice!");
         return;
     }
     // Configure the discord log channel
     logChannel = await channel.channels.fetch(logChannelID) as TextChannel;
+    for(let log of pendingLogs) {
+        await sendLog(log.type, log.message, log.metadata);
+    }
+    pendingLogs = undefined;
 }
 
 export async function sendLog(type: LogType, message: string, extraMetadata?: LogMetadata) : Promise<void> {
     // Check if the log channel is initialized
-    if(logChannel === undefined || logChannel === null) return console.log("Log channel not initialized, cannot send any logs!");
+    if(logChannel === undefined || logChannel === null)  {
+        console.log(`Log channel not initialized, this log will be added to the pre-initialization queue! (Log Message: ${message})`);
+        pendingLogs.push({
+            type: type,
+            message: message,
+            metadata: extraMetadata
+        });
+        return;
+    }
     // Create Discord Channel Log Embed
     const embed = new MessageEmbed()
         .setTitle(`${getLogType(type)} Log`)

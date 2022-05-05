@@ -35,13 +35,13 @@ restServer.register(middie);
 if(isHttpsMode) {
     // Enable HTTPS Mode
     restServer.register(require('fastify-https-redirect'));
-    restServer.listen(443,()=> {
+    restServer.listen(443, "0.0.0.0",()=> {
         console.log("Internal Webserver launched (HTTPS Mode)...");
         sendLog(LogType.Info, "Webserver has been successfully launched", {"Mode": "HTTPS"});
     });
 } else {
     // Enable HTTP Mode
-    restServer.listen(80,()=>{
+    restServer.listen(80, "0.0.0.0",()=>{
         console.log("Internal Webserver launched (HTTP Mode)...")
         sendLog(LogType.Info, "Webserver has been successfully launched", {"Mode": "HTTP"});
     });
