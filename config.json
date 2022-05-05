@@ -3,6 +3,9 @@
     "botToken": "OTYzNDIwODYyNDgzMTQ0NzM1.YlV1mQ.06-w0uXaPMtmjKIDgs2gFgoCjMQ",
     "guildID": "906899666656956436",
     "adminRoleID": "908090260087513098",
+    "newUserRoleID": "907768073442983966",
+    "welcomeChannelID": "907769010981205856",
+    "logChannelID": "971584951076147261",
     "https": {
         "certificate": "",
         "key": ""
@@ -12,11 +15,8 @@
         "guildChannelID": "912150616908890142",
         "pingRoleID": "946613137031974963"
     },
-    "newUserRoleID": "907768073442983966",
-    "welcomeChannelID": "907769010981205856",
     "reactionRole": {
         "reactionLists": {
-            "Emote ID": "Role ID",
             "907314933648199700": "908723067067437076",
             "941368077856161885": "946613137031974963"
         },
