@@ -1,6 +1,6 @@
 const YouTubeNotifier = require('youtube-notification');
 import { Client, TextChannel } from 'discord.js';
-import { restServer } from '../utils/WebServer';
+//import { restServer } from '../utils/WebServer';
 import { sendLog, LogType } from '../utils/eventLogger';
 import 'middie';
 import config from '../../config.json';
@@ -37,15 +37,15 @@ const conf = config.youtubeNotification;
 export default (client : Client) => {
     const NotificationChannel = client.channels.cache.find(channel => channel.id === conf.guildChannelID) as TextChannel;
     const notifier = new YouTubeNotifier({
-        //hubCallback: 'http://service.zhiyan114.com:46271/youtube/callback',
-        hubCallback: 'http://service.zhiyan114.com/youtube/callback',
-        middleware: true,
-        //port: 46271,
+        hubCallback: 'http://service.zhiyan114.com:46271/youtube/callback',
+        //hubCallback: 'http://service.zhiyan114.com/youtube/callback',
+        //middleware: true,
+        port: 46271,
         secret: 'NotifierSecret_aos9z8vh2na68z8df7aa982jahfg6738',
-        //path: '/youtube/callback'
+        path: '/youtube/callback'
     })
-    //notifier.setup();
-    restServer.use("/youtube/callback", notifier.listener());
+    notifier.setup();
+    //restServer.use("/youtube/callback", notifier.listener());
 
     // @ts-ignore (Legacy Library)
     notifier.on('notified', data =>{
