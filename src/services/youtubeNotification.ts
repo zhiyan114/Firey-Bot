@@ -53,17 +53,17 @@ export default (client : Client) => {
     })
     // @ts-ignore
     notifier.on('subscribe', data =>{
-        console.log("Youtube Notification Service started...");
-        sendLog(LogType.Info, "Youtube Notification Service started...");
+        console.log("Youtube Notification Service: PubSubHubbub has been Subscribed...");
+        sendLog(LogType.Info, "Youtube Notification: PubSubHubbub has been Subscribed...");
         setTimeout(()=> { 
           notifier.subscribe(conf.youtubeChannelID);
           sendLog(LogType.Info, "Youtube Notification Service: PubSubHubbub has been successfully renewed");
-        }, (data.lease_seconds * 1000) - 5000); // Resubscribe 5 seconds before the lease expires
+        }, (data.lease_seconds * 1000) - 60000); // Resubscribe 60 seconds before the lease expires
     })
     // @ts-ignore
     notifier.on('unsubscribe', data => {
-        console.log("Youtube Notification Service Stopped. Restarting....");
-        sendLog(LogType.Warning, "Youtube Notification Service stopped...");
+        console.log("Youtube Notification Service: Even has been unsubscribed, resubscribing...");
+        sendLog(LogType.Warning, "Youtube Notification Service: Even has been unsubscribed, resubscribing...");
         notifier.subscribe(conf.youtubeChannelID)
     })
     notifier.subscribe(conf.youtubeChannelID);
