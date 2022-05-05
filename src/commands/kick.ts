@@ -45,7 +45,7 @@ const KickFunc = async (interaction : CommandInteraction) => {
     await targetMember.send({embeds:[embed]});
     await targetMember.kick(reason);
     await interaction.reply({content: 'User has been successfully kicked!', ephemeral: true});
-    await sendLog(LogType.Command, `${interaction.user.tag} has executed **kick** command`, {
+    await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **kick** command`, {
         target: targetMember.user.tag,
         reason: reason,
         includeInvite: invite.toString(),

@@ -19,8 +19,8 @@ export default async (member : GuildMember, client : Client) => {
         await member.send({embeds: [embed]});
     } catch(ex : any) {
         if(ex instanceof DiscordAPIError && ex.code === Constants.APIErrors.CANNOT_MESSAGE_USER)
-            return channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`,embeds: [embed]});
-        Sentry.captureException(ex);
+            channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`,embeds: [embed]});
+        else Sentry.captureException(ex);
     }
     
 }

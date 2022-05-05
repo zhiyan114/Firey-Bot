@@ -22,7 +22,7 @@ const PurgeFunc = async (interaction : CommandInteraction) => {
     await interaction.deferReply({ ephemeral: true })
     await (interaction.channel as BaseGuildTextChannel).bulkDelete(amount+1);
     await interaction.followUp({content: `Successfully purged ${amount} messages!`, ephemeral: true});
-    if(interaction.channel.id !== logChannelID) await sendLog(LogType.Command, `${interaction.user.tag} has executed **purge** command`, {
+    if(interaction.channel.id !== logChannelID) await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **purge** command`, {
         channelName: (interaction.channel as TextChannel).name,
         amount: amount.toString()
     });
