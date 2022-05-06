@@ -52,7 +52,7 @@ export async function sendLog(type: LogType, message: string, extraMetadata?: Lo
     // Create Discord Channel Log Embed
     const embed = new MessageEmbed()
         .setTitle(`${getLogType(type)} Log`)
-        .setDescription(message)
+        .setDescription(type === LogType.Error ? "||<@233955058604179457>|| "+message : message)
         .setColor(getEmbedColor(type));
     // Add extra metadata
     if(typeof extraMetadata !== "undefined" && extraMetadata !== null) {
