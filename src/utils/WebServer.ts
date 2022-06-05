@@ -34,6 +34,16 @@ const restServer = fastify.fastify({
 const restServer = Express();
 // Configure Websocket Server
 const socketServer = new websocket.Server({ noServer: true, path: "/api/v1/websocket" });
+
+// No internal websocket implementation, just log and kick off illegal client
+socketServer.on('connection', (socket, req) => {
+    console.log("Illegal webSocket connection established...");
+    sendLog(LogType.Warning, "Illegal webSocket connection established",{
+        ip: req.socket.remoteAddress,
+    });
+    socket.close(1011);
+});
+
 //@ts-ignore For some reason, this type check keeps failing dispite the fact that it's a valid usage.
 restServer.on('upgrade', (request, socket, head) => {
     socketServer.handleUpgrade(request, socket, head, (ws) => {

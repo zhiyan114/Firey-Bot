@@ -39,13 +39,9 @@ export default (client : Client) => {
     let timeoutEvent : NodeJS.Timeout;
     const notifier = new YouTubeNotifier({
         hubCallback: `${isHttpsMode ? "https" : "http"}://service.zhiyan114.com${config.webServerPort ? `:${config.webServerPort}` : ""}/youtube/callback`,
-        //hubCallback: 'http://service.zhiyan114.com/youtube/callback',
         middleware: true,
-        //port: 46271,
         secret: 'NotifierSecret_aos9z8vh2na68z8df7aa982jahfg6738',
-        //path: '/youtube/callback'
-    })
-    //notifier.setup();
+    });
     restServer.use("/youtube/callback", notifier.listener());
 
     // @ts-ignore (Legacy Library)
