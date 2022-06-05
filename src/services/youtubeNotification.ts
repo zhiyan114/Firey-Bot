@@ -56,7 +56,7 @@ export default (client : Client) => {
         if(timeoutEvent) clearTimeout(timeoutEvent);
         timeoutEvent = setTimeout(()=> { 
           notifier.subscribe(conf.youtubeChannelID);
-          sendLog(LogType.Info, "Youtube Notification Service: PubSubHubbub has been successfully renewed");
+          sendLog(LogType.Info, "Youtube Notification Service: Renewing Subscription...");
         }, (data.lease_seconds * 1000) - 60000); // Resubscribe 60 seconds before the lease expires
         
         

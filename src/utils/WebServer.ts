@@ -31,9 +31,15 @@ const restServer = fastify.fastify({
         }
     }
 }); */
-const restServer = Express();
+export const restServer = Express();
+let internalServer : https.Server | http.Server;
+if(isHttpsMode) {
+    internalServer = https.createServer(restServer);
+} else {
+    internalServer = http.createServer(restServer);
+}
 // Configure Websocket Server
-const socketServer = new websocket.Server({ noServer: true, path: "/api/v1/websocket" });
+export const socketServer = new websocket.Server({ server: internalServer, path: "/api/v1/websocket" });
 
 // No internal websocket implementation, just log and kick off illegal client
 socketServer.on('connection', (socket, req) => {
@@ -44,28 +50,10 @@ socketServer.on('connection', (socket, req) => {
     socket.close(1011);
 });
 
-//@ts-ignore For some reason, this type check keeps failing dispite the fact that it's a valid usage.
-restServer.on('upgrade', (request, socket, head) => {
-    socketServer.handleUpgrade(request, socket, head, (ws) => {
-        socketServer.emit('connection', ws, request);
-    });
-});
 // Start Server
-if(isHttpsMode) {
-    // Enable HTTPS Mode
-    restServer.listen(config.webServerPort || 443, "0.0.0.0",()=> {
-        console.log("Internal Webserver launched (HTTPS Mode)...");
-        sendLog(LogType.Info, "Webserver has been successfully launched", {"Mode": "HTTPS"});
-    });
-} else {
-    // Enable HTTP Mode
-    restServer.listen(config.webServerPort || 80, "0.0.0.0",()=>{
-        console.log("Internal Webserver launched (HTTP Mode)...")
-        sendLog(LogType.Info, "Webserver has been successfully launched", {"Mode": "HTTP"});
-    });
-}
 
-export {
-    restServer,
-    socketServer,
-};
+let strMode = isHttpsMode ? "HTTPS" : "HTTP";
+internalServer.listen(config.webServerPort || isHttpsMode ? 443 : 80, "0.0.0.0",()=> {
+    console.log(`Internal Webserver launched (${strMode} Mode)...`);
+    sendLog(LogType.Info, "Webserver has been successfully launched", {"Mode": strMode});
+});
