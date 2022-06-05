@@ -17,6 +17,7 @@ File: config.json
 * botToken - This should be the authentication token for the discord bot. This token will be used for all API calls.
 * guildID - This is the guild ID which the bot will operate in (this bot is intended to operate in one server at a time) 
 * https - This should be used for secure websocket and REST request (if either option is empty, an insecured HTTP will be launched instead)
+* webServerPort - Custom Port for the webserver (regardless if it http or https mode)
 * newUserRoleID - role ID for the new user role
 * welcomeChannelID - Channel to send welcome message to for new user
 * logChannelID - Channel to send all the internal log information

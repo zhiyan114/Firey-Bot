@@ -3,7 +3,7 @@ import { logChannelID } from "../../config.json";
 
 // Exported data for the loggers
 export enum LogType {
-    Command,
+    Interaction,
     Info,
     Warning,
     Error
@@ -52,7 +52,7 @@ export async function sendLog(type: LogType, message: string, extraMetadata?: Lo
     // Create Discord Channel Log Embed
     const embed = new MessageEmbed()
         .setTitle(`${getLogType(type)} Log`)
-        .setDescription(message)
+        .setDescription(type === LogType.Error ? "||<@233955058604179457>|| "+message : message)
         .setColor(getEmbedColor(type));
     // Add extra metadata
     if(typeof extraMetadata !== "undefined" && extraMetadata !== null) {
@@ -70,7 +70,7 @@ export async function sendLog(type: LogType, message: string, extraMetadata?: Lo
 // Internal Functions
 function getEmbedColor(type: LogType) : ColorResolvable {
     switch(type) {
-        case LogType.Command:
+        case LogType.Interaction:
             return "#00FF00";
         case LogType.Info:
             return "#0000FF";
@@ -84,8 +84,8 @@ function getEmbedColor(type: LogType) : ColorResolvable {
 }
 function getLogType(type: LogType) : string {
     switch(type) {
-        case LogType.Command:
-            return "Command";
+        case LogType.Interaction:
+            return "Interaction";
         case LogType.Info:
             return "Info";
         case LogType.Warning:

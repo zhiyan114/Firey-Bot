@@ -40,7 +40,7 @@ const BanFunc = async (interaction : CommandInteraction) => {
     await targetMember.send({embeds:[embed]});
     await targetMember.ban({days: deleteMessages ? 7 : 0, reason: reason});
     await interaction.reply({content: 'User has been successfully banned!', ephemeral: true});
-    await sendLog(LogType.Command, `${interaction.user.tag} has executed **ban** command`, {
+    await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **ban** command`, {
         target: targetMember.user.tag,
         reason: reason,
         deleteMessages: deleteMessages.toString(),

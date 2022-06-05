@@ -1,6 +1,6 @@
 const YouTubeNotifier = require('youtube-notification');
 import { Client, TextChannel } from 'discord.js';
-//import { restServer } from '../utils/WebServer';
+import { restServer, isHttpsMode } from '../utils/WebServer';
 import { sendLog, LogType } from '../utils/eventLogger';
 import 'middie';
 import config from '../../config.json';
@@ -36,16 +36,17 @@ const conf = config.youtubeNotification;
 
 export default (client : Client) => {
     const NotificationChannel = client.channels.cache.find(channel => channel.id === conf.guildChannelID) as TextChannel;
+    let timeoutEvent : NodeJS.Timeout;
     const notifier = new YouTubeNotifier({
-        hubCallback: 'http://service.zhiyan114.com:46271/youtube/callback',
+        hubCallback: `${isHttpsMode ? "https" : "http"}://service.zhiyan114.com${config.webServerPort ? `:${config.webServerPort}` : ""}/youtube/callback`,
         //hubCallback: 'http://service.zhiyan114.com/youtube/callback',
-        //middleware: true,
-        port: 46271,
+        middleware: true,
+        //port: 46271,
         secret: 'NotifierSecret_aos9z8vh2na68z8df7aa982jahfg6738',
-        path: '/youtube/callback'
+        //path: '/youtube/callback'
     })
-    notifier.setup();
-    //restServer.use("/youtube/callback", notifier.listener());
+    //notifier.setup();
+    restServer.use("/youtube/callback", notifier.listener());
 
     // @ts-ignore (Legacy Library)
     notifier.on('notified', data =>{
@@ -53,17 +54,21 @@ export default (client : Client) => {
     })
     // @ts-ignore
     notifier.on('subscribe', data =>{
-        console.log("Youtube Notification Service started...");
-        sendLog(LogType.Info, "Youtube Notification Service started...");
-        setTimeout(()=> { 
+        console.log("Youtube Notification Service: PubSubHubbub has been Subscribed...");
+        sendLog(LogType.Info, "Youtube Notification Service: PubSubHubbub has been Subscribed...");
+        // Cancel the timeout event if it already set
+        if(timeoutEvent) clearTimeout(timeoutEvent);
+        timeoutEvent = setTimeout(()=> { 
           notifier.subscribe(conf.youtubeChannelID);
           sendLog(LogType.Info, "Youtube Notification Service: PubSubHubbub has been successfully renewed");
-        }, (data.lease_seconds * 1000) - 5000); // Resubscribe 5 seconds before the lease expires
+        }, (data.lease_seconds * 1000) - 60000); // Resubscribe 60 seconds before the lease expires
+        
+        
     })
     // @ts-ignore
     notifier.on('unsubscribe', data => {
-        console.log("Youtube Notification Service Stopped. Restarting....");
-        sendLog(LogType.Warning, "Youtube Notification Service stopped...");
+        console.log("Youtube Notification Service: Even has been unsubscribed, resubscribing...");
+        sendLog(LogType.Warning, "Youtube Notification Service: Even has been unsubscribed, resubscribing...");
         notifier.subscribe(conf.youtubeChannelID)
     })
     notifier.subscribe(conf.youtubeChannelID);
