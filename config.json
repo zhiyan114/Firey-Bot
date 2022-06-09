@@ -6,11 +6,16 @@
     "newUserRoleID": "907768073442983966",
     "welcomeChannelID": "907121158376288307",
     "logChannelID": "971584951076147261",
-    "https": {
-        "certificate": "",
-        "key": ""
+    
+    "webServer": {
+        "FQDN": "service.zhiyan114.com",
+        "webServerPort": 46271,
+        "https": {
+            "certificate": "",
+            "key": ""
+        }
     },
-    "webServerPort": 46271,
+    
     "youtubeNotification": {
         "youtubeChannelID": "UCKsRmVfwU-IkVWhfiSVp1ig",
         "guildChannelID": "912150616908890142",

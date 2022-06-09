@@ -33,12 +33,13 @@ Example Reference
 */
 
 const conf = config.youtubeNotification;
+const webConf = config.webServer;
 
 export default (client : Client) => {
     const NotificationChannel = client.channels.cache.find(channel => channel.id === conf.guildChannelID) as TextChannel;
     let timeoutEvent : NodeJS.Timeout;
     const notifier = new YouTubeNotifier({
-        hubCallback: `${isHttpsMode ? "https" : "http"}://service.zhiyan114.com${config.webServerPort ? `:${config.webServerPort}` : ""}/youtube/callback`,
+        hubCallback: `${isHttpsMode ? "https" : "http"}://${webConf.FQDN}${webConf.webServerPort ? `:${webConf.webServerPort}` : ""}/youtube/callback`,
         middleware: true,
         secret: 'NotifierSecret_aos9z8vh2na68z8df7aa982jahfg6738',
     });

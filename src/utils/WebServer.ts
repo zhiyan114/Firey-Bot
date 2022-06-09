@@ -9,8 +9,8 @@ import http, { Server } from 'http';
 import config from '../../config.json';
 import { sendLog, LogType } from '../utils/eventLogger';
 
-
-export const isHttpsMode = config.https.certificate && config.https.key;
+const webConf = config.webServer
+export const isHttpsMode = webConf.https.certificate && webConf.https.key;
 //let socketServer : websocket.Server = null;
 /*
 const restServer = fastify.fastify({
@@ -45,7 +45,7 @@ export const socketServer = new websocket.Server({ server: internalServer, path:
 socketServer.on('connection', (socket, req) => {
     console.log("Illegal webSocket connection established...");
     sendLog(LogType.Warning, "Illegal webSocket connection established",{
-        ip: req.socket.remoteAddress,
+        IP: req.socket.remoteAddress,
     });
     socket.close(1011);
 });
@@ -53,7 +53,7 @@ socketServer.on('connection', (socket, req) => {
 // Start Server
 
 let strMode = isHttpsMode ? "HTTPS" : "HTTP";
-internalServer.listen(config.webServerPort || isHttpsMode ? 443 : 80, "0.0.0.0",()=> {
+internalServer.listen(webConf.webServerPort || isHttpsMode ? 443 : 80, "0.0.0.0",()=> {
     console.log(`Internal Webserver launched (${strMode} Mode)...`);
     sendLog(LogType.Info, "Webserver has been successfully launched", {"Mode": strMode});
 });
