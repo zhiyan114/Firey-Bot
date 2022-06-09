@@ -2,7 +2,6 @@ const YouTubeNotifier = require('youtube-notification');
 import { Client, TextChannel } from 'discord.js';
 import { restServer, isHttpsMode } from '../utils/WebServer';
 import { sendLog, LogType } from '../utils/eventLogger';
-import 'middie';
 import config from '../../config.json';
 
 /*
