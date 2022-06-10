@@ -1,11 +1,9 @@
 /* Webhook service using express-based server (for replit compatibility) */
 
 import { default as Express } from 'express';
-import fs from 'fs';
 import websocket from 'ws';
 import https from 'https';
-import http, { Server } from 'http';
-
+import http from 'http';
 import config from '../../config.json';
 import { sendLog, LogType } from '../utils/eventLogger';
 

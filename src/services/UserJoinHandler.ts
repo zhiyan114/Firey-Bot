@@ -1,8 +1,10 @@
 import { MessageEmbed, GuildMember, Client, TextChannel, Constants, DiscordAPIError } from "discord.js";
 import * as Sentry from '@sentry/node';
 import { welcomeChannelID } from "../../config.json";
+import { client } from "../index"
 
-export default async (member : GuildMember, client : Client) => {
+
+client.on('guildMemberAdd',async (member : GuildMember) => {
     // Send message to channel 907121158376288307
     const channel = await client.channels.fetch(welcomeChannelID) as TextChannel;
     const embed2 = new MessageEmbed()
@@ -22,5 +24,4 @@ export default async (member : GuildMember, client : Client) => {
             channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`,embeds: [embed]});
         else Sentry.captureException(ex);
     }
-    
-}
+});
