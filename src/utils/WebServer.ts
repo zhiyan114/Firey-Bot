@@ -1,22 +1,20 @@
 /* Webhook service using express-based server (for replit compatibility) */
 
-import * as fastify from 'fastify';
-import fs from 'fs';
+import { default as Express } from 'express';
 import websocket from 'ws';
 import https from 'https';
 import http from 'http';
-import middie from 'middie';
-
 import config from '../../config.json';
 import { sendLog, LogType } from '../utils/eventLogger';
 
-
-const isHttpsMode = config.https.certificate && config.https.key;
-let socketServer : websocket.Server = null;
+const webConf = config.webServer
+export const isHttpsMode = webConf.https.certificate && webConf.https.key;
+//let socketServer : websocket.Server = null;
+/*
 const restServer = fastify.fastify({
     logger: false,
     serverFactory: (handler, opt) => {
-        /* Although http2 is compatible with fastify (tested with js), typescript disliked it thus we won't be using it for now */
+        / Although http2 is compatible with fastify (tested with js), typescript disliked it thus we won't be using it for now
         if(isHttpsMode) {
             const secureServer = new https.Server({
                 key: fs.readFileSync(config.https.key),
@@ -30,24 +28,30 @@ const restServer = fastify.fastify({
             return server;
         }
     }
-});
-restServer.register(middie);
+}); */
+export const restServer = Express();
+let internalServer : https.Server | http.Server;
 if(isHttpsMode) {
-    // Enable HTTPS Mode
-    restServer.register(require('fastify-https-redirect'));
-    restServer.listen(443, "0.0.0.0",()=> {
-        console.log("Internal Webserver launched (HTTPS Mode)...");
-        sendLog(LogType.Info, "Webserver has been successfully launched", {"Mode": "HTTPS"});
-    });
+    internalServer = https.createServer(restServer);
 } else {
-    // Enable HTTP Mode
-    restServer.listen(80, "0.0.0.0",()=>{
-        console.log("Internal Webserver launched (HTTP Mode)...")
-        sendLog(LogType.Info, "Webserver has been successfully launched", {"Mode": "HTTP"});
-    });
+    internalServer = http.createServer(restServer);
 }
+// Configure Websocket Server
+export const socketServer = new websocket.Server({ server: internalServer, path: "/api/v1/websocket" });
 
-export {
-    restServer,
-    socketServer,
-};
+// No internal websocket implementation, just log and kick off illegal client
+socketServer.on('connection', (socket, req) => {
+    console.log("Illegal webSocket connection established...");
+    sendLog(LogType.Warning, "Illegal webSocket connection established",{
+        IP: req.socket.remoteAddress,
+    });
+    socket.close(1011);
+});
+
+// Start Server
+
+let strMode = isHttpsMode ? "HTTPS" : "HTTP";
+internalServer.listen(webConf.webServerPort || (isHttpsMode ? 443 : 80), "0.0.0.0",()=> {
+    console.log(`Internal Webserver launched (${strMode} Mode)...`);
+    sendLog(LogType.Info, "Webserver has been successfully launched", {"Mode": strMode});
+});

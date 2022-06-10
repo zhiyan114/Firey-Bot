@@ -25,7 +25,7 @@ const LockdownFunc = async (interaction : CommandInteraction) => {
     if(!optEnabled) await userRole.addPermission(Permissions.FLAGS.SEND_MESSAGES, "Lockdown mode disabled");
     else await userRole.removePermission(Permissions.FLAGS.SEND_MESSAGES, "Lockdown mode enabled");
     await interaction.reply({content: optEnabled ? "Lockdown has been successfully enabled" : "Lockdown has been successfully disabled", ephemeral: false});
-    await sendLog(LogType.Command, `${interaction.user.tag} has executed **lockdown** command`, {
+    await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **lockdown** command`, {
         enabled: optEnabled.toString(),
     });
 }
