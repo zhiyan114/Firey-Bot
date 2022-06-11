@@ -18,18 +18,18 @@ const AllRolesGrant : IReactRoleList = reactionRole.reactionLists;
 
 const filterEmotes = Object.entries(AllRolesGrant).map(([k,_]) => k);
 export default async (client : Client) => {
-    const guild = await client.guilds.cache.find(opt=>opt.id == guildID);
+    const guild = await client.guilds.cache.find(opt=>opt.id == guildID)!;
     const message = await (guild.channels.cache.find(opt=>opt.id == reactionRole.channelID) as TextChannel).messages.fetch(reactionRole.messageID);
-    const deleteFilter = (reaction : MessageReaction, user : User) => filterEmotes.includes(reaction.emoji.id);
+    const deleteFilter = (reaction : MessageReaction, user : User) => filterEmotes.includes(reaction.emoji.id!);
     const collector = message.createReactionCollector({filter: deleteFilter, dispose: true});
     collector.on('collect', async (react : MessageReaction, user : User) => {
-        const member = guild.members.cache.find(opt=>opt.id == user.id);
-        const role = guild.roles.cache.find(opt=>opt.id == AllRolesGrant[react.emoji.id]);
+        const member = guild.members.cache.find(opt=>opt.id == user.id)!;
+        const role = guild.roles.cache.find(opt=>opt.id == AllRolesGrant[react.emoji.id!])!;
         await member.roles.add(role);
     });
     collector.on('remove',async (react,user)=>{
-        const member = guild.members.cache.find(opt=>opt.id == user.id);
-        const role = guild.roles.cache.find(opt=>opt.id == AllRolesGrant[react.emoji.id]);
+        const member = guild.members.cache.find(opt=>opt.id == user.id)!;
+        const role = guild.roles.cache.find(opt=>opt.id == AllRolesGrant[react.emoji.id!])!;
         await member.roles.remove(role);
     })
 }

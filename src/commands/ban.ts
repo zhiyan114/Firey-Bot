@@ -33,7 +33,7 @@ const BanFunc = async (interaction : CommandInteraction) => {
     const embed = new MessageEmbed()
         .setColor('#ff0000')
         .setTitle('Banned')
-        .setDescription(`You have been banned from ${interaction.guild.name}!`)
+        .setDescription(`You have been banned from ${interaction.guild!.name}!`)
         .addField('Reason', reason)
         .setFooter({text: `Banned by ${interaction.user.username}#${interaction.user.discriminator}`})
         .setTimestamp();

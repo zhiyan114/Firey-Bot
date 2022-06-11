@@ -16,7 +16,7 @@ const LockdownCmd = new SlashCommandBuilder()
 /* Function Builder */
 const LockdownFunc = async (interaction : CommandInteraction) => {
     if (!(new userRoleManager(interaction.member as GuildMember)).check(adminRoleID)) return await interaction.reply({content: 'Access Denied!', ephemeral: true}); // Permission Check
-    const userRole = new roleManager(interaction.guild.roles.cache.find(r => r.id === newUserRoleID));
+    const userRole = new roleManager(interaction.guild!.roles.cache.find(r => r.id === newUserRoleID)!);
     const optEnabled = interaction.options.getBoolean('Enabled',true);
     const isEnabled = userRole.checkPermission(Permissions.FLAGS.SEND_MESSAGES);
 

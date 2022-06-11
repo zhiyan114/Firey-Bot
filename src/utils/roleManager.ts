@@ -1,25 +1,27 @@
 import { guildID } from '../../config.json';
 import { GuildMember, Client, RoleManager, Guild, Collection, Role, Snowflake, PermissionResolvable } from 'discord.js';
+import { client } from '../index';
 
 // User Role Manager
 class userRoleManager {
-    private user: GuildMember;
+    private user: GuildMember | undefined;
     constructor(user?: GuildMember) {
+        this.user = undefined;
         if(user) this.user = user;
     }
-    public async IDSetup(id: string, client?: Client): Promise<void> {
-        this.user = await client.guilds.cache.find(k=> k.id === guildID).members.fetch(id);
+    public async IDSetup(id: string): Promise<void> {
+        this.user = await client.guilds.cache.find(k=> k.id === guildID)!.members.fetch(id);
     }
-    public async check(roleID: string): Promise<boolean> {
-        return this.user.roles.cache.has(roleID);
+    public async check(roleID: string): Promise<boolean | undefined> {
+        return this.user?.roles.cache.has(roleID);
     }
     public async add(roleID: string): Promise<void> {
-        const role = await this.user.guild.roles.fetch(roleID);
-        await this.user.roles.add(role);
+        const role = await this.user!.guild.roles.fetch(roleID);
+        await this.user?.roles.add(role!);
     }
     public async remove(roleID: string): Promise<void> {
-        const role = await this.user.guild.roles.fetch(roleID);
-        await this.user.roles.remove(role);
+        const role = await this.user!.guild.roles.fetch(roleID);
+        await this.user?.roles.remove(role!);
     }
 }
 

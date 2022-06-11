@@ -21,7 +21,7 @@ interface pendingLogs {
 // Main Logging functions
 let logChannel : TextChannel;
 
-let pendingLogs : pendingLogs[] = [];
+let pendingLogs : pendingLogs[] | null = [];
 
 export async function initailizeLogger(channel : Client) : Promise<void> {
     // Check if the log channel already initalized
@@ -32,17 +32,17 @@ export async function initailizeLogger(channel : Client) : Promise<void> {
     }
     // Configure the discord log channel
     logChannel = await channel.channels.fetch(logChannelID) as TextChannel;
-    for(let log of pendingLogs) {
+    for(let log of pendingLogs!) {
         await sendLog(log.type, log.message, log.metadata);
     }
-    pendingLogs = undefined;
+    pendingLogs = null;
 }
 
 export async function sendLog(type: LogType, message: string, extraMetadata?: LogMetadata) : Promise<void> {
     // Check if the log channel is initialized
     if(logChannel === undefined || logChannel === null)  {
         console.log(`Log channel not initialized, this log will be added to the pre-initialization queue! (Log Message: ${message})`);
-        pendingLogs.push({
+        pendingLogs?.push({
             type: type,
             message: message,
             metadata: extraMetadata

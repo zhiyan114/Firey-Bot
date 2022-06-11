@@ -33,13 +33,13 @@ const KickFunc = async (interaction : CommandInteraction) => {
     const embed = new MessageEmbed()
         .setColor('#FFFF00')
         .setTitle('Kicked')
-        .setDescription(`You have been kicked from ${interaction.guild.name}!`)
+        .setDescription(`You have been kicked from ${interaction.guild!.name}!`)
         .addField('Reason', reason)
         .setFooter({text: `Kicked by ${interaction.user.username}#${interaction.user.discriminator}`})
         .setTimestamp();
     if(invite) {
         embed.setDescription(`${embed.description} A re-invite link has been attached to this message (expires in 1 week).`);
-        const inviteLink = await (interaction.guild.channels.cache.find(channel => channel.id == "907311644076564511") as TextChannel).createInvite({maxAge: 604800, maxUses: 1, reason: "Moderator attached invitation link for this kick action"});
+        const inviteLink = await (interaction.guild!.channels.cache.find(channel => channel.id == "907311644076564511") as TextChannel).createInvite({maxAge: 604800, maxUses: 1, reason: "Moderator attached invitation link for this kick action"});
         embed.addField('Invite Link', inviteLink.url);
     }
     await targetMember.send({embeds:[embed]});
