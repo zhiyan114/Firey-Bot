@@ -19,12 +19,12 @@ File: config.json
 * webServer - Configuration for WebServer
     * FQDN - Full Qualified Domain Name for the server
     * https - This should be used for secure websocket and REST request (if either option is empty, an insecured HTTP will be launched instead)
+        * certificate - Certificate (.crt/.cer) for HTTPS
+        * key - Private key associated with the certificate
     * webServerPort - Custom Port for the webserver (regardless if it http or https mode)
 * newUserRoleID - role ID for the new user role
 * welcomeChannelID - Channel to send welcome message to for new user
 * logChannelID - Channel to send all the internal log information
-    * certificate - Certificate (.crt/.cer) for HTTPS
-    * key - Private key associated with the certificate
 * youtubeNotification - Post a notification message to a guild channel when a youtube channel posted a new video
     * youtubeChannelID - The youtube channel which will be subscribing to
     * guildChannelID - The guild channel which the notification will be sent into

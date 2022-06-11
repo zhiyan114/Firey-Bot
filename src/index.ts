@@ -18,7 +18,7 @@ Sentry.init({
 /* Client Loader */
 export const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_BANS, Intents.FLAGS.GUILD_MEMBERS], partials: ["CHANNEL"] });
 client.on('ready', async () => {
-  client.user.setPresence({
+  client.user!.setPresence({
     status: "dnd",
     activities: [{
       name: "all dergs UwU",
@@ -29,7 +29,7 @@ client.on('ready', async () => {
   await ReactRole(client);
   YouTubeNotifier(client);
   await sendLog(LogType.Info, "Discord.js client has been initialized!");
-  console.log(`Logged in as ${client.user.tag}!`);
+  console.log(`Logged in as ${client.user!.tag}!`);
 });
 
 // Start the client

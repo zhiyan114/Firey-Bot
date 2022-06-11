@@ -43,7 +43,7 @@ export const socketServer = new websocket.Server({ server: internalServer, path:
 socketServer.on('connection', (socket, req) => {
     console.log("Illegal webSocket connection established...");
     sendLog(LogType.Warning, "Illegal webSocket connection established",{
-        IP: req.socket.remoteAddress,
+        IP: req.socket.remoteAddress || "Unavailable",
     });
     socket.close(1011);
 });

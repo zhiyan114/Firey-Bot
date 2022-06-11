@@ -13,6 +13,6 @@ client.on('interactionCreate', async (interaction : Interaction) => {
         if(await userRole.check(newUserRoleID)) return await interaction.reply({content: "You've already confirmed the rules.", ephemeral: true});
         await userRole.add(newUserRoleID);
         await interaction.reply({content: "Thank you for confirming the rules.", ephemeral: true});
-        await sendLog(LogType.Interaction, `${(interaction.member.user as User).tag} confirmed the rules.`);
+        await sendLog(LogType.Interaction, `${(interaction.member!.user as User).tag} confirmed the rules.`);
     }
 });
