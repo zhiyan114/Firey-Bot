@@ -31,6 +31,30 @@ Example Reference
 }
 */
 
+// Type Interfaces for notified and subscribed event.
+
+interface VideoData {
+  id: string;
+  title: string;
+  link: string;
+}
+interface ChannelData {
+  id: string;
+  name: string;
+  link: string;
+}
+interface SubEvent {
+  type: string;
+  channel: string;
+  lease_seconds?: string;
+}
+interface NotifiedEvent {
+  video: VideoData;
+  channel: ChannelData;
+  published: Date;
+  updated: Date;
+}
+
 const conf = config.youtubeNotification;
 const webConf = config.webServer;
 
@@ -44,12 +68,12 @@ export default (client : Client) => {
     });
     restServer.use("/youtube/callback", notifier.listener());
 
-    // @ts-ignore (Legacy Library)
-    notifier.on('notified', data =>{
+
+    notifier.on('notified', (data : NotifiedEvent) =>{
         NotificationChannel.send({ content: `<@&${conf.pingRoleID}> New Video is out!! Check it out here: ${data.video.link}` });
     })
-    // @ts-ignore
-    notifier.on('subscribe', data =>{
+
+    notifier.on('subscribe', (data : SubEvent) =>{
         console.log("Youtube Notification Service: PubSubHubbub has been Subscribed...");
         sendLog(LogType.Info, "Youtube Notification Service: PubSubHubbub has been Subscribed...");
         // Cancel the timeout event if it already set
@@ -57,12 +81,12 @@ export default (client : Client) => {
         timeoutEvent = setTimeout(()=> { 
           notifier.subscribe(conf.youtubeChannelID);
           sendLog(LogType.Info, "Youtube Notification Service: Renewing Subscription...");
-        }, (data.lease_seconds * 1000) - 60000); // Resubscribe 60 seconds before the lease expires
+        }, (parseInt(data.lease_seconds!) * 1000) - 60000); // Resubscribe 60 seconds before the lease expires
         
         
     })
     // @ts-ignore
-    notifier.on('unsubscribe', data => {
+    notifier.on('unsubscribe', (data : SubEvent) => {
         console.log("Youtube Notification Service: Even has been unsubscribed, resubscribing...");
         sendLog(LogType.Warning, "Youtube Notification Service: Even has been unsubscribed, resubscribing...");
         notifier.subscribe(conf.youtubeChannelID)

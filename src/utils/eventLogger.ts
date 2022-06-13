@@ -1,4 +1,4 @@
-import { Client, TextChannel, MessageEmbed, ColorResolvable, GuildMember, User } from "discord.js";
+import { Client, TextChannel, MessageEmbed, ColorResolvable } from "discord.js";
 import { logChannelID } from "../../config.json";
 
 // Exported data for the loggers
@@ -32,7 +32,7 @@ export async function initailizeLogger(channel : Client) : Promise<void> {
     }
     // Configure the discord log channel
     logChannel = await channel.channels.fetch(logChannelID) as TextChannel;
-    for(let log of pendingLogs!) {
+    for(const log of pendingLogs!) {
         await sendLog(log.type, log.message, log.metadata);
     }
     pendingLogs = null;

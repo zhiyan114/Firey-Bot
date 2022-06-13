@@ -1,5 +1,8 @@
 # Firey-Bot Internal Documentation
-This is an internal documentation for better maintainability. WARNING: THIS PRODUCT HAS BEEN PROTECTED UNDER THE COPYRIGHT ACT, IF ANY MATERIAL IS BEING USED WITHOUT AUTHORIZATION EVEN IF IT UNDER FAIR USE, YOU WILL BE SUED.
+This is an internal documentation for better maintainability.
+
+[![CodeFactor](https://www.codefactor.io/repository/github/zhiyan114/firey-bot/badge/master?s=4eccfaa078509d205bc5fb5b76374c0972fb7fc2)](https://www.codefactor.io/repository/github/zhiyan114/firey-bot/overview/master)
+
 
 
 # Organization Standard
