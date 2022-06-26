@@ -82,14 +82,13 @@ export default (client : Client) => {
           notifier.subscribe(conf.youtubeChannelID);
           sendLog(LogType.Info, "Youtube Notification Service: Renewing Subscription...");
         }, (parseInt(data.lease_seconds!) * 1000) - 60000); // Resubscribe 60 seconds before the lease expires
-        
-        
     })
-    // @ts-ignore
-    notifier.on('unsubscribe', (data : SubEvent) => {
+
+    notifier.on('unsubscribe', () => {
         console.log("Youtube Notification Service: Even has been unsubscribed, resubscribing...");
         sendLog(LogType.Warning, "Youtube Notification Service: Even has been unsubscribed, resubscribing...");
         notifier.subscribe(conf.youtubeChannelID)
     })
+
     notifier.subscribe(conf.youtubeChannelID);
 }

@@ -3,12 +3,6 @@ import { Client, Intents } from 'discord.js';
 import * as Sentry from '@sentry/node';
 import * as config from '../config.json';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
-/* Internal Services */
-import './services/CmdHandler';
-import ReactRole from './services/ReactRoleHandler';
-import './services/VerificationHandler';
-import './services/UserJoinHandler';
-import YouTubeNotifier from './services/youtubeNotification';
 
 // Pre-Load Services
 Sentry.init({
@@ -17,6 +11,14 @@ Sentry.init({
 
 /* Client Loader */
 export const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_BANS, Intents.FLAGS.GUILD_MEMBERS], partials: ["CHANNEL"] });
+
+/* Internal Services */
+import './services/CmdHandler';
+import ReactRole from './services/ReactRoleHandler';
+import './services/VerificationHandler';
+import './services/UserJoinHandler';
+import YouTubeNotifier from './services/youtubeNotification';
+
 client.on('ready', async () => {
   client.user!.setPresence({
     status: "dnd",

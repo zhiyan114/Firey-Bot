@@ -14,7 +14,7 @@ interface ICommandList {
 
 /* Load all the internal commands */
 const commandList : ICommandList = {};
-const cmdDir = path.join(__dirname, 'commands');
+const cmdDir = path.join(__dirname, '../', 'commands');
 fs.readdirSync(cmdDir).forEach(file => {
   if (file.endsWith('.js')) {
       const cmdModule : ICommand = require(path.join(cmdDir, file)).default;
