@@ -6,6 +6,7 @@ import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
+  sendLog(LogType.Info,"Sentry DSN Detected, Exception Logging will be enabled")
   Sentry.init({
     dsn: process.env['SENTRY_DSN']
   });
