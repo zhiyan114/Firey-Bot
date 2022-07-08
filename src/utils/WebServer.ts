@@ -4,10 +4,10 @@ import { default as Express } from 'express';
 import websocket from 'ws';
 import https from 'https';
 import http from 'http';
-import config from '../../config.json';
+import {webServer as webConf} from '../config';
 import { sendLog, LogType } from '../utils/eventLogger';
 
-const webConf = config.webServer
+
 export const isHttpsMode = webConf.https.certificate && webConf.https.key;
 //let socketServer : websocket.Server = null;
 /*
@@ -51,7 +51,7 @@ socketServer.on('connection', (socket, req) => {
 // Start Server
 
 let strMode = isHttpsMode ? "HTTPS" : "HTTP";
-internalServer.listen(webConf.webServerPort || (isHttpsMode ? 443 : 80), "0.0.0.0",()=> {
+internalServer.listen(webConf.webServerPort || (isHttpsMode ? 443 : 80), "0.0.0.0", undefined,()=> {
     console.log(`Internal Webserver launched (${strMode} Mode)...`);
     sendLog(LogType.Info, "Webserver has been successfully launched", {"Mode": strMode});
 });

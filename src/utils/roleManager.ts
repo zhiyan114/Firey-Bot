@@ -1,4 +1,4 @@
-import { guildID } from '../../config.json';
+import { guildID } from '../config';
 import { GuildMember, Client, RoleManager, Guild, Collection, Role, Snowflake, PermissionResolvable } from 'discord.js';
 import { client } from '../index';
 

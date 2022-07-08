@@ -1,5 +1,5 @@
 import { Client, TextChannel, MessageEmbed, ColorResolvable } from "discord.js";
-import { logChannelID } from "../../config.json";
+import { logChannelID } from "../config";
 
 // Exported data for the loggers
 export enum LogType {

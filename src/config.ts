@@ -39,7 +39,7 @@ export const welcomeChannelID = process.env['WELCOMECHANNELID'] || "";
 export const logChannelID = process.env['LOGCHANNELID'] || "";
 export const webServer = {
     FQDN: process.env['WEBSERVER_FQDN'] || "",
-    webServerPort: process.env["WEBSERVER_FQDN"],
+    webServerPort: process.env["WEBSERVER_FQDN"] ? parseInt(process.env["WEBSERVER_FQDN"]) : undefined,
     https: {
         certificate: process.env['WEBSERVER_HTTPS_CERTIFICATE'],
         key: process.env['WEBSERVER_HTTPS_KEY']
