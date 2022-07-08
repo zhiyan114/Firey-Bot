@@ -1,7 +1,7 @@
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import { ICommand } from '../interface';
-import * as config from '../../config.json';
+import * as config from '../config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { client } from '../index';

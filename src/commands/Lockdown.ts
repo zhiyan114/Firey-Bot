@@ -2,7 +2,7 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, GuildMember, Permissions } from 'discord.js';
 import { userRoleManager, roleManager } from '../utils/roleManager';
 import { sendLog, LogType } from '../utils/eventLogger';
-import { adminRoleID, newUserRoleID }  from '../../config.json';
+import { adminRoleID, newUserRoleID }  from '../config';
 /* Command Builder */
 const LockdownCmd = new SlashCommandBuilder()
     .setName('lockdown')

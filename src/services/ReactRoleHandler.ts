@@ -1,7 +1,7 @@
 /* Message Maker: const MessageEmbed=require("discord.js").MessageEmbed;const embed=new MessageEmbed();embed.setColor("#00FFFF");embed.setDescription("If you would like to know when the derg is streaming. Please press on <a:FireyTailwag:907314933648199700> to be in the know when he goes live.\nTo be pinged for any videos recently uploaded to his youtube press on <:FireyPeek:941368077856161885>"); client.channels.cache.find(channel => channel.id === "908719210040008755").send({embeds:[embed]}); */
 /* Message Reactor: const msg = (client.channels.cache.find(opt=>opt.id === "908719210040008755")).messages.cache.find(opt=>opt.id === "970021524763471893"); msg.react("<a:FireyTailwag:907314933648199700>"); msg.react("<:FireyPeek:941368077856161885>"); */
 import { Client, TextChannel, MessageReaction, User } from 'discord.js';
-import {guildID, reactionRole}  from '../../config.json';
+import {guildID, reactionRole} from '../config';
 
 // Internal Interface
 interface IReactRoleList {

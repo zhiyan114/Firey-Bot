@@ -1,6 +1,6 @@
 import { MessageEmbed, GuildMember, Client, TextChannel, Constants, DiscordAPIError } from "discord.js";
 import * as Sentry from '@sentry/node';
-import { welcomeChannelID } from "../../config.json";
+import { welcomeChannelID } from '../config';
 import { client } from "../index"
 
 

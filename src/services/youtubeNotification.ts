@@ -2,7 +2,7 @@ const YouTubeNotifier = require('youtube-notification');
 import { Client, TextChannel } from 'discord.js';
 import { restServer, isHttpsMode } from '../utils/WebServer';
 import { sendLog, LogType } from '../utils/eventLogger';
-import config from '../../config.json';
+import {youtubeNotification as conf, webServer as webConf} from '../config';
 
 /*
 import WebhookServer from '../utils/WebhookServer';
@@ -54,9 +54,6 @@ interface NotifiedEvent {
   published: Date;
   updated: Date;
 }
-
-const conf = config.youtubeNotification;
-const webConf = config.webServer;
 
 export default (client : Client) => {
     const NotificationChannel = client.channels.cache.find(channel => channel.id === conf.guildChannelID) as TextChannel;

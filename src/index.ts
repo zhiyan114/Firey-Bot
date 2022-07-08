@@ -1,13 +1,15 @@
 
 import { Client, Intents } from 'discord.js';
 import * as Sentry from '@sentry/node';
-import * as config from '../config.json';
+import {botToken} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
 
-// Pre-Load Services
-Sentry.init({
-  dsn: "https://4674d92fdd22407a8af689f4d869b77e@o125145.ingest.sentry.io/6372351"
-});
+// Load sentry if key exists
+if(process.env['SENTRY_DSN']) {
+  Sentry.init({
+    dsn: process.env['SENTRY_DSN']
+  });
+}
 
 /* Client Loader */
 export const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_BANS, Intents.FLAGS.GUILD_MEMBERS], partials: ["CHANNEL"] });
@@ -35,4 +37,4 @@ client.on('ready', async () => {
 });
 
 // Start the client
-client.login(config['botToken']);
+client.login(botToken);

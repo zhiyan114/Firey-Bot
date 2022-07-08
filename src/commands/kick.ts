@@ -2,7 +2,7 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { MessageEmbed, CommandInteraction, GuildMember, TextChannel } from 'discord.js';
 import { userRoleManager } from '../utils/roleManager';
 import { sendLog, LogType } from '../utils/eventLogger';
-import { adminRoleID }  from '../../config.json';
+import { adminRoleID }  from '../config';
 /* Command Builder */
 const KickCmd = new SlashCommandBuilder()
     .setName('kick')

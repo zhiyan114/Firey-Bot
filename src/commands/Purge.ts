@@ -3,7 +3,7 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, BaseGuildTextChannel, GuildMember, TextChannel } from 'discord.js';
 import { userRoleManager } from '../utils/roleManager';
 import { sendLog, LogType } from '../utils/eventLogger';
-import { adminRoleID, logChannelID }  from '../../config.json';
+import { adminRoleID, logChannelID }  from '../config';
 const PurgeCmd = new SlashCommandBuilder()
     .setName('purge')
     .setDescription(`Purge messages from a channel`)

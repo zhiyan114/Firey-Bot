@@ -3,7 +3,7 @@
 import { GuildMember, User } from 'discord.js';
 import { userRoleManager as RoleManager } from '../utils/roleManager';
 import { sendLog, LogType } from '../utils/eventLogger';
-import { newUserRoleID } from '../../config.json';
+import { newUserRoleID } from '../config';
 import { client } from '../index';
 import { Interaction } from 'discord.js';
 
