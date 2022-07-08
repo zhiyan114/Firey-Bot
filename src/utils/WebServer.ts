@@ -51,7 +51,7 @@ socketServer.on('connection', (socket, req) => {
 // Start Server
 
 let strMode = isHttpsMode ? "HTTPS" : "HTTP";
-internalServer.listen(webConf.webServerPort || (isHttpsMode ? 443 : 80), "0.0.0.0", undefined,()=> {
+internalServer.listen(webConf.Port || (isHttpsMode ? 443 : 80), "0.0.0.0", undefined,()=> {
     console.log(`Internal Webserver launched (${strMode} Mode)...`);
     sendLog(LogType.Info, "Webserver has been successfully launched", {"Mode": strMode});
 });
