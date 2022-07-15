@@ -15,24 +15,22 @@ This is an internal documentation for better maintainability.
 * `src/interface.ts` should only contain exportable interfaces that will be used throughout multiple other modules
 
 # Configuration Guide
-File: config.json
-* clientID - This should be the Client/Application ID for the discord bot. This will only be used for slash command registration purpose.
-* botToken - This should be the authentication token for the discord bot. This token will be used for all API calls.
-* guildID - This is the guild ID which the bot will operate in (this bot is intended to operate in one server at a time) 
-* webServer - Configuration for WebServer
-    * FQDN - Full Qualified Domain Name for the server
-    * https - This should be used for secure websocket and REST request (if either option is empty, an insecured HTTP will be launched instead)
-        * certificate - Certificate (.crt/.cer) for HTTPS
-        * key - Private key associated with the certificate
-    * webServerPort - Custom Port for the webserver (regardless if it http or https mode)
-* newUserRoleID - role ID for the new user role
-* welcomeChannelID - Channel to send welcome message to for new user
-* logChannelID - Channel to send all the internal log information
-* youtubeNotification - Post a notification message to a guild channel when a youtube channel posted a new video
-    * youtubeChannelID - The youtube channel which will be subscribing to
-    * guildChannelID - The guild channel which the notification will be sent into
-    * pingRoleID - Role to ping when a new video is posted
-* reactionRole - Setup role reaction (user can react for roles)
-    * reactionLists - A dictionary of reaction which the role will be given (`{"Emote ID": "Role ID"}`)
-    * channelID - Channel which the reaction role exists in (avoid enumerating through the list to find the channel)
-    * messageID - The message which the reaction will be listening to
+File: config.ts
+
+Environment Variable:
+* CLIENTID - This should be the Client/Application ID for the discord bot. This will only be used for slash command registration purpose.
+* BOTTOKEN - This should be the authentication token for the discord bot. This token will be used for all API calls.
+* GUILDID - This is the guild ID which the bot will operate in (this bot is intended to operate in one server at a time) 
+* WEBSERVER_FQDN - Full Qualified Domain Name for the server
+* WEBSERVER_HTTPS_CERTIFICATE - Certificate (.crt/.cer) for HTTPS
+* WEBSERVER_HTTPS_KEY - Private key associated with the certificate
+* WEBSERVER_PORT - Custom Port for the webserver (regardless if it http or https mode)
+* NEWUSERROLEID - role ID for the new user role
+* WELCOMECHANNELID - Channel to send welcome message to for new user
+* LOGCHANNELID - Channel to send all the internal log information
+* YOUTUBENOTIFICATION_YOUTUBECHANNELID - The youtube channel which will be subscribing to
+* YOUTUBENOTIFICATION_GUILDCHANNELID - The guild channel which the notification will be sent into
+* YOUTUBENOTIFICATION_PINGROLEID - Role to ping when a new video is posted
+* REACTIONROLE_REACTIONLISTS - A dictionary of reaction which the role will be given (`{"Emote ID": "Role ID"}`)
+* REACTIONROLE_CHANNELID - Channel which the reaction role exists in (avoid enumerating through the list to find the channel)
+* REACTIONROLE_MESSAGEID - The message which the reaction will be listening to
