@@ -1,7 +1,7 @@
 
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
 import * as Sentry from '@sentry/node';
-import {botToken} from './config';
+import {botToken, guildID} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
 
 // Load sentry if key exists
@@ -26,8 +26,8 @@ client.on('ready', async () => {
   client.user!.setPresence({
     status: "dnd",
     activities: [{
-      name: "all dergs UwU",
-      type: ActivityType.Watching,
+      name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
+      type: ActivityType.Competing,
     }]
   })
   await initailizeLogger(client);

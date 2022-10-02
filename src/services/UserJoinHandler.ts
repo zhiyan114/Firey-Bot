@@ -1,6 +1,6 @@
-import { EmbedBuilder, GuildMember, TextChannel, DiscordAPIError } from "discord.js";
+import { EmbedBuilder, GuildMember, TextChannel, DiscordAPIError, ActivityType } from "discord.js";
 import * as Sentry from '@sentry/node';
-import { welcomeChannelID } from '../config';
+import { welcomeChannelID, guildID } from '../config';
 import { client } from "../index"
 import { APIErrors } from '../utils/StatusCodes';
 
@@ -24,4 +24,23 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
             channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`,embeds: [embed]});
         else Sentry.captureException(ex);
     }
+    client.user!.setPresence({
+        status: "dnd",
+        activities: [{
+          name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
+          type: ActivityType.Competing,
+        }]
+    })
 });
+
+/* Do some member leave stuff, which is nothing. */
+
+client.on('guildMemberRemove', async()=>{
+    client.user!.setPresence({
+        status: "dnd",
+        activities: [{
+          name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
+          type: ActivityType.Competing,
+        }]
+    })
+})
