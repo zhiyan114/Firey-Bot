@@ -13,7 +13,7 @@ if(process.env['SENTRY_DSN']) {
 }
 
 /* Client Loader */
-export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessageReactions, Intents.DirectMessages, Intents.GuildBans, Intents.GuildMembers], partials: [Partials.Channel] });
+export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessageReactions, Intents.DirectMessages, Intents.GuildBans, Intents.GuildMembers], partials: [Partials.Channel, Partials.GuildMember] });
 
 /* Internal Services */
 import './services/CmdHandler';
