@@ -16,7 +16,7 @@ const PurgeCmd = new SlashCommandBuilder()
 /* Function Builder */
 const PurgeFunc = async (interaction : CommandInteraction) => {
     if (!(new userRoleManager(interaction.member as GuildMember)).check(adminRoleID)) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
-    const amount = interaction.options.getNumber('amount',true);
+    const amount = interaction.options.get('amount',true).value as number;
     if(amount <= 0 || amount > 100) return await interaction.reply({content: 'Invalid amount!', ephemeral: true});
     //const messages = await interaction.channel.messages.fetch({limit: amount});
     await interaction.deferReply({ ephemeral: true })

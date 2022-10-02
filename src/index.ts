@@ -1,5 +1,5 @@
 
-import { Client, Intents } from 'discord.js';
+import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
 import * as Sentry from '@sentry/node';
 import {botToken} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
@@ -13,7 +13,7 @@ if(process.env['SENTRY_DSN']) {
 }
 
 /* Client Loader */
-export const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_BANS, Intents.FLAGS.GUILD_MEMBERS], partials: ["CHANNEL"] });
+export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessageReactions, Intents.DirectMessages, Intents.GuildBans, Intents.GuildMembers], partials: [Partials.Channel] });
 
 /* Internal Services */
 import './services/CmdHandler';
@@ -27,7 +27,7 @@ client.on('ready', async () => {
     status: "dnd",
     activities: [{
       name: "all dergs UwU",
-      type: "WATCHING",
+      type: ActivityType.Watching,
     }]
   })
   await initailizeLogger(client);
