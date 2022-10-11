@@ -1,4 +1,4 @@
-import { Client, TextChannel, MessageEmbed, ColorResolvable } from "discord.js";
+import { Client, TextChannel, EmbedBuilder, ColorResolvable } from "discord.js";
 import { logChannelID } from "../config";
 
 // Exported data for the loggers
@@ -50,15 +50,13 @@ export async function sendLog(type: LogType, message: string, extraMetadata?: Lo
         return;
     }
     // Create Discord Channel Log Embed
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setTitle(`${getLogType(type)} Log`)
         .setDescription(type === LogType.Error ? "||<@233955058604179457>|| "+message : message)
         .setColor(getEmbedColor(type));
     // Add extra metadata
     if(typeof extraMetadata !== "undefined" && extraMetadata !== null) {
-        for(const [key, value] of Object.entries(extraMetadata)) {
-            embed.addField(key, value);
-        }
+        for(const [name, value] of Object.entries(extraMetadata)) embed.addFields({name, value});
     }
     // Setup footer
     embed.setTimestamp();

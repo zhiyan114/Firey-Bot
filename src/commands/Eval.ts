@@ -13,7 +13,7 @@ const EvalCmd = new SlashCommandBuilder()
 /* Function Builder */
 const EvalFunc = async (interaction : CommandInteraction, client : Client) => {
     if (!['233955058604179457','445786517579759618'].includes(interaction.user.id)) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
-    const code = interaction.options.getString('code',true);
+    const code = interaction.options.get('code',true).value as string;
     await interaction.deferReply({ ephemeral: true })
     // Setup pre-defined variables
     const channel = interaction.channel;

@@ -22,7 +22,7 @@ fs.readdirSync(cmdDir).forEach(file => {
   }
 });
 let commands = Object.values(commandList);
-const rest = new REST({ version: '9' }).setToken(config['botToken']);
+const rest = new REST({ version: '10' }).setToken(config['botToken']);
 rest.put(
     Routes.applicationGuildCommands(config['clientID'], config['guildID']),
     { body: commands.map(cmd=>{ if(!cmd.disabled) return cmd.command.toJSON() }) },

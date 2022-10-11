@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction, MessageEmbed, GuildMember } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
 import { userRoleManager } from '../utils/roleManager';
 import { sendLog, LogType } from '../utils/eventLogger';
 import { adminRoleID }  from '../config';
@@ -27,18 +27,18 @@ const BanCmd = new SlashCommandBuilder()
 /* Function Builder */
 const BanFunc = async (interaction : CommandInteraction) => {
     if (!(new userRoleManager(interaction.member as GuildMember)).check(adminRoleID)) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
-    const targetMember = interaction.options.getMember('user',true) as GuildMember;
-    const reason = interaction.options.getString('reason',true);
-    const deleteMessages = interaction.options.getBoolean('delete',true);
-    const embed = new MessageEmbed()
+    const targetMember = interaction.options.getMember('user') as GuildMember;
+    const reason = interaction.options.get('reason',true).value as string;
+    const deleteMessages = interaction.options.get('delete',true).value as boolean;
+    const embed = new EmbedBuilder()
         .setColor('#ff0000')
         .setTitle('Banned')
         .setDescription(`You have been banned from ${interaction.guild!.name}!`)
-        .addField('Reason', reason)
+        .setFields({name: "Reason", value: reason})
         .setFooter({text: `Banned by ${interaction.user.username}#${interaction.user.discriminator}`})
         .setTimestamp();
     await targetMember.send({embeds:[embed]});
-    await targetMember.ban({days: deleteMessages ? 7 : 0, reason: reason});
+    await targetMember.ban({deleteMessageSeconds: deleteMessages ? 604800 : 0, reason: reason});
     await interaction.reply({content: 'User has been successfully banned!', ephemeral: true});
     await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **ban** command`, {
         target: targetMember.user.tag,
