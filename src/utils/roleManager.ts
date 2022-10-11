@@ -1,9 +1,9 @@
 import { guildID } from '../config';
-import { GuildMember, Client, RoleManager, Guild, Collection, Role, Snowflake, PermissionResolvable } from 'discord.js';
+import { GuildMember, RoleManager, Guild, Collection, Role, Snowflake, PermissionResolvable } from 'discord.js';
 import { client } from '../index';
 
 // User Role Manager
-class userRoleManager {
+export class userRoleManager {
     private user: GuildMember | undefined;
     constructor(user?: GuildMember) {
         this.user = undefined;
@@ -26,7 +26,7 @@ class userRoleManager {
 }
 
 // Server Role Manager (more for managing the role's configuration for a guild)
-class serverRoleManager {
+export class serverRoleManager {
     private guildRoleManager: RoleManager;
     constructor(server: Guild) {
         this.guildRoleManager = server.roles;
@@ -37,7 +37,7 @@ class serverRoleManager {
 
 }
 
-class roleManager {
+export class roleManager {
     private role: Role;
     constructor(role: Role) {
         this.role = role;
@@ -59,6 +59,3 @@ class roleManager {
         return this.role.permissions.has(permission);
     }
 }
-
-
-export { userRoleManager, serverRoleManager, roleManager };
