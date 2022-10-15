@@ -31,7 +31,7 @@ client.on('messageCreate', async (message) => {
     // Check if the user already existed
     if(userEconData) {
         // Don't grant point if they've already received one within a minute
-        if(userEconData.LastGrantedPoint < (new Date()).getTime() - 60000) return;
+        if(userEconData.LastGrantedPoint > (new Date()).getTime() - 60000) return;
         // Grant The Point
         await document.updateOne(docIdentifier, {
             $set: {
