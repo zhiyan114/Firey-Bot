@@ -50,7 +50,7 @@ client.on('messageCreate', async (message) => {
             $set: {
                 username: message.author.tag,
                 points: userEconData.points +pointsToGrant,
-                LastGrantedPoint: (new Date()).getTime(),
+                LastGrantedPoint: new Date(),
             }
         })
         return;
@@ -60,6 +60,6 @@ client.on('messageCreate', async (message) => {
         userID: message.author.id,
         username: message.author.tag,
         points: getRandomInt(5,10),
-        LastGrantedPoint: (new Date()).getTime()
+        LastGrantedPoint: new Date()
     })
 })
