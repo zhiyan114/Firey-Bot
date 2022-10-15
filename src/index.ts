@@ -15,7 +15,7 @@ if(process.env['SENTRY_DSN']) {
 }
 
 /* Client Loader */
-export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessageReactions, Intents.DirectMessages, Intents.GuildBans, Intents.GuildMembers], partials: [Partials.Channel, Partials.GuildMember] });
+export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessageReactions, Intents.DirectMessages, Intents.GuildBans, Intents.GuildMembers, Intents.MessageContent, Intents.GuildMessages], partials: [Partials.Channel, Partials.GuildMember] });
 
 /* Internal Services */
 import './services/CmdHandler';
@@ -42,9 +42,9 @@ client.on('ready', async () => {
 
 // Gracefully close setup
 const quitSignalHandler = () => {
-  console.log("Closing Service");
+  console.log("Closing Service...");
   dbclient.close();
-  console.log("Closed");
+  console.log("Closed...");
   process.exit(0);
 }
 process.on('SIGINT', quitSignalHandler)

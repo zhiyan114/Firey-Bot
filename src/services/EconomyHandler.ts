@@ -33,14 +33,14 @@ client.on('messageCreate', async (message) => {
         // Don't grant point if they've already received one within a minute
         if(userEconData.LastGrantedPoint < (new Date()).getTime() - 60000) return;
         // Grant The Point
-        document.updateOne(docIdentifier, {
+        await document.updateOne(docIdentifier, {
             points: userEconData.points+pointsToGrant,
             LastGrantedPoint: (new Date()).getTime()
         })
         return;
     }
     // User doesn't exist, create a new entry and grant it some point
-    document.insertOne({
+    await document.insertOne({
         userID: message.author.id,
         points: getRandomInt(40,60),
         LastGrantedPoint: (new Date()).getTime()
