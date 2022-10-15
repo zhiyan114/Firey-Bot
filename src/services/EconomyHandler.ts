@@ -15,8 +15,6 @@ function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-
-const a = new Date().getTime()
 // Grant currency based on chats
 client.on('messageCreate', async (message) => {
     // Do not proceed if the database is not connected
