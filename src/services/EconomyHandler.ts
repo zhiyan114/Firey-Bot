@@ -27,7 +27,7 @@ client.on('messageCreate', async (message) => {
 
     const document = database.collection<econDataType>("economy");
     const docIdentifier = {userID: message.author.id};
-    const pointsToGrant = getRandomInt(40,60);
+    const pointsToGrant = getRandomInt(5,10);
     const userEconData = await document.findOne(docIdentifier);
     // Check if the user already existed
     if(userEconData) {
@@ -36,8 +36,8 @@ client.on('messageCreate', async (message) => {
         // Grant The Point
         await document.updateOne(docIdentifier, {
             $set: {
-                points: userEconData.points+pointsToGrant,
                 username: message.author.tag,
+                points: userEconData.points+pointsToGrant,
                 LastGrantedPoint: (new Date()).getTime(),
             }
         })
@@ -47,7 +47,7 @@ client.on('messageCreate', async (message) => {
     await document.insertOne({
         userID: message.author.id,
         username: message.author.tag,
-        points: getRandomInt(40,60),
+        points: getRandomInt(5,10),
         LastGrantedPoint: (new Date()).getTime()
     })
 })
