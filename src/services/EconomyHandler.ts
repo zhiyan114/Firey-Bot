@@ -4,6 +4,7 @@ import { database, isConnected } from '../utils/DatabaseManager';
 
 type econDataType = {
     userID: string,
+    username: string;
     points: number,
     LastGrantedPoint: number; 
 }
@@ -36,7 +37,8 @@ client.on('messageCreate', async (message) => {
         await document.updateOne(docIdentifier, {
             $set: {
                 points: userEconData.points+pointsToGrant,
-                LastGrantedPoint: (new Date()).getTime()
+                username: message.author.tag,
+                LastGrantedPoint: (new Date()).getTime(),
             }
         })
         return;
@@ -44,6 +46,7 @@ client.on('messageCreate', async (message) => {
     // User doesn't exist, create a new entry and grant it some point
     await document.insertOne({
         userID: message.author.id,
+        username: message.author.tag,
         points: getRandomInt(40,60),
         LastGrantedPoint: (new Date()).getTime()
     })
