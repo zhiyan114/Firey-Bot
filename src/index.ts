@@ -44,9 +44,10 @@ client.on('ready', async () => {
 // Gracefully close setup
 const quitSignalHandler = () => {
   console.log("Closing Service...");
-  Mongoose.disconnect();
-  console.log("Closed...");
-  process.exit(0);
+  Mongoose.disconnect().then(()=>{
+    console.log("Closed...");
+    process.exit(0);
+  })
 }
 process.on('SIGINT', quitSignalHandler)
 process.on('SIGTERM', quitSignalHandler)

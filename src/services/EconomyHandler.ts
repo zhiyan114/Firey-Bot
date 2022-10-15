@@ -9,7 +9,7 @@ const econSchema = new Mongoose.Schema({
         required: true,
     },
     username: {
-        type: Number,
+        type: String,
         required: true,
     },
     points: {
