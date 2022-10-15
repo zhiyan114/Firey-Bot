@@ -34,8 +34,10 @@ client.on('messageCreate', async (message) => {
         if(userEconData.LastGrantedPoint < (new Date()).getTime() - 60000) return;
         // Grant The Point
         await document.updateOne(docIdentifier, {
-            points: userEconData.points+pointsToGrant,
-            LastGrantedPoint: (new Date()).getTime()
+            $set: {
+                points: userEconData.points+pointsToGrant,
+                LastGrantedPoint: (new Date()).getTime()
+            }
         })
         return;
     }
