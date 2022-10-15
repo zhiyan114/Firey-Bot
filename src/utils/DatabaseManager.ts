@@ -9,13 +9,9 @@ let _isConnected = false;
 export let isConnected = () => _isConnected;
 export let database: Db;
 
-// Wait before connecting to avoid certificate validation error.
-setTimeout(()=>{
-  dbclient.connect().then(()=>{
-    _isConnected = true;
-    database = dbclient.db("guildMembers");
-    console.log("Database Connected...");
-    sendLog(LogType.Info,"Database Connection Established");
-  })
-  
-}, 1500);
+dbclient.connect().then(()=>{
+  _isConnected = true;
+  database = dbclient.db("guildMembers");
+  console.log("Database Connected...");
+  sendLog(LogType.Info,"Database Connection Established");
+})
