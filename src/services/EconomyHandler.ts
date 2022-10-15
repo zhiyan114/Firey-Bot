@@ -47,11 +47,9 @@ client.on('messageCreate', async (message) => {
         if(userEconData.lastGrantedPoint.getTime() > (new Date()).getTime() - 60000) return;
         // Grant The Point
         await document.updateOne(docIdentifier, {
-            $set: {
-                username: message.author.tag,
-                points: userEconData.points +pointsToGrant,
-                lastGrantedPoint: new Date(),
-            }
+            username: message.author.tag,
+            points: userEconData.points +pointsToGrant,
+            lastGrantedPoint: new Date(),
         })
         return;
     }
