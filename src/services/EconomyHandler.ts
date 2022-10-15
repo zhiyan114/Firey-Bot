@@ -1,6 +1,6 @@
 import { ChannelType } from 'discord.js';
 import { client } from '../index';
-import { database, dbclient, isConnected } from '../utils/DatabaseManager';
+import { database, isConnected } from '../utils/DatabaseManager';
 
 type econDataType = {
     userID: string,
