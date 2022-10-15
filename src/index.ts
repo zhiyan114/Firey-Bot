@@ -4,7 +4,7 @@ import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'di
 import * as Sentry from '@sentry/node';
 import {botToken, guildID} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
-import { dbclient } from './utils/DatabaseManager';
+import Mongoose from 'mongoose';
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
@@ -25,6 +25,7 @@ import './services/UserJoinHandler';
 import './services/EconomyHandler';
 import YouTubeNotifier from './services/youtubeNotification';
 
+
 client.on('ready', async () => {
   client.user!.setPresence({
     status: "dnd",
@@ -43,7 +44,7 @@ client.on('ready', async () => {
 // Gracefully close setup
 const quitSignalHandler = () => {
   console.log("Closing Service...");
-  dbclient.close();
+  Mongoose.disconnect();
   console.log("Closed...");
   process.exit(0);
 }
