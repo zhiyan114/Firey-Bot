@@ -5,7 +5,7 @@ import { Client, CommandInteraction } from 'discord.js';
 /* Command Builder */
 const GetPointsCmd = new SlashCommandBuilder()
     .setName('getPoints')
-    .setDescription(`Showw your points privately`)
+    .setDescription(`Show your points privately`)
 
 /* Function Builder */
 const GetPointsFunc = async (interaction : CommandInteraction, client : Client) => {
