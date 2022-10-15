@@ -1,4 +1,5 @@
 
+// Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
 import * as Sentry from '@sentry/node';
 import {botToken, guildID} from './config';
@@ -20,6 +21,7 @@ import './services/CmdHandler';
 import ReactRole from './services/ReactRoleHandler';
 import './services/VerificationHandler';
 import './services/UserJoinHandler';
+import './services/EconomyHandler';
 import YouTubeNotifier from './services/youtubeNotification';
 
 client.on('ready', async () => {
