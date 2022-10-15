@@ -4,6 +4,7 @@ import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'di
 import * as Sentry from '@sentry/node';
 import {botToken, guildID} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
+import { dbclient } from './utils/DatabaseManager';
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
@@ -38,6 +39,14 @@ client.on('ready', async () => {
   await sendLog(LogType.Info, "Discord.js client has been initialized!");
   console.log(`Logged in as ${client.user!.tag}!`);
 });
+
+// Gracefully close setup
+const quitSignalHandler = () => {
+  dbclient.close();
+}
+process.on('SIGINT', quitSignalHandler)
+process.on('SIGTERM', quitSignalHandler)
+process.on('SIGQUIT', quitSignalHandler)
 
 // Start the client
 client.login(botToken);

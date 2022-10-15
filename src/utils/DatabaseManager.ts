@@ -5,10 +5,11 @@ export const dbclient = new MongoClient(process.env['MONGODB_CONN'] as string, {
   sslCert: process.env['MONGODB_CERT'],
   serverApi: ServerApiVersion.v1,
 });
-export let isConnected = false;
+let _isConnected = false;
+export let isConnected = () => _isConnected;
 export let database: Db;
 dbclient.connect().then(()=>{
-  isConnected = true;
+  _isConnected = true;
   database = dbclient.db("guildMembers");
   sendLog(LogType.Info,"Database Connection Established");
 })
