@@ -42,7 +42,10 @@ client.on('ready', async () => {
 
 // Gracefully close setup
 const quitSignalHandler = () => {
+  console.log("Closing Service");
   dbclient.close();
+  console.log("Closed");
+  process.exit(0);
 }
 process.on('SIGINT', quitSignalHandler)
 process.on('SIGTERM', quitSignalHandler)
