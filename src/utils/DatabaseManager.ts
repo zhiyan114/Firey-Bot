@@ -10,5 +10,6 @@ export let database: Db;
 dbclient.connect().then(()=>{
   _isConnected = true;
   database = dbclient.db("guildMembers");
+  console.log("Database Connected...");
   sendLog(LogType.Info,"Database Connection Established");
 })
