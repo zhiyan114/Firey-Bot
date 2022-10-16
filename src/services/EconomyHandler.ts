@@ -1,9 +1,17 @@
 import { ChannelType } from 'discord.js';
+import mongoose from 'mongoose';
 import Mongoose from 'mongoose';
 import { client } from '../index';
 import { isConnected } from '../utils/DatabaseManager';
 
-const econSchema = new Mongoose.Schema({
+export type econType = {
+    userID: string;
+    username: string;
+    points: number;
+    lastGrantedPoint: Date;
+}
+
+export const econSchema = new Mongoose.Schema({
     userID: {
         type: String,
         required: true,
@@ -19,7 +27,7 @@ const econSchema = new Mongoose.Schema({
     lastGrantedPoint: {
         type: Date,
         required: true,
-    },
+    }
 })
 
 // Random Value Generator
@@ -37,27 +45,27 @@ client.on('messageCreate', async (message) => {
     if(message.author.bot) return;
     // Prevent users that aren't in guild chat from participating (such as bot's DM)
     if(message.channel.type != ChannelType.GuildText && message.channel.type != ChannelType.GuildVoice) return;
-    const document = Mongoose.model("economy",econSchema);
+    const econModel = Mongoose.model<econType>("economy",econSchema);
     const docIdentifier = {userID: message.author.id};
     const pointsToGrant = getRandomInt(5,10);
-    const userEconData = await document.findOne(docIdentifier);
+    const userEconData = await econModel.findOne(docIdentifier);
     // Check if the user already existed
     if(userEconData) {
         // Don't grant point if they've already received one within a minute
         if(userEconData.lastGrantedPoint.getTime() > (new Date()).getTime() - 60000) return;
         // Grant The Point
-        await document.updateOne(docIdentifier, {
+        await econModel.updateOne(docIdentifier, {
             username: message.author.tag,
-            points: userEconData.points +pointsToGrant,
+            points: userEconData.points + pointsToGrant,
             lastGrantedPoint: new Date(),
         })
         return;
     }
     // User doesn't exist, create a new entry and grant it some point
-    await document.create({
+    await econModel.create({
         userID: message.author.id,
         username: message.author.tag,
-        points: getRandomInt(5,10),
+        points: pointsToGrant,
         lastGrantedPoint: new Date(),
     })
 })
