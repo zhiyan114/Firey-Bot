@@ -25,6 +25,7 @@ const GetPointsFunc = async (interaction : CommandInteraction, client : Client) 
     const userEconData = await econModel.findOne({_id: interaction.user.id});
     const embed = new EmbedBuilder();
     embed.setTitle(`Your Points`);
+    embed.setColor("#00FFFF");
     embed.setDescription(userEconData?.points.toString() ?? "[ERROR]: Your record is not found, please report this issue.");
     embed.setAuthor({name: interaction.user.tag, iconURL: interaction.user.avatarURL() ?? interaction.user.defaultAvatarURL});
     embed.setTimestamp();
