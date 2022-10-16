@@ -5,17 +5,12 @@ import { client } from '../index';
 import { isConnected } from '../utils/DatabaseManager';
 
 export type econType = {
-    userID: string;
     username: string;
     points: number;
     lastGrantedPoint: Date;
 }
 
 export const econSchema = new Mongoose.Schema({
-    userID: {
-        type: String,
-        required: true,
-    },
     username: {
         type: String,
         required: true,
@@ -46,7 +41,7 @@ client.on('messageCreate', async (message) => {
     // Prevent users that aren't in guild chat from participating (such as bot's DM)
     if(message.channel.type != ChannelType.GuildText && message.channel.type != ChannelType.GuildVoice) return;
     const econModel = Mongoose.model<econType>("economy",econSchema);
-    const docIdentifier = {userID: message.author.id};
+    const docIdentifier = {_id: message.author.id};
     const pointsToGrant = getRandomInt(5,10);
     const userEconData = await econModel.findOne(docIdentifier);
     // Check if the user already existed
@@ -63,7 +58,7 @@ client.on('messageCreate', async (message) => {
     }
     // User doesn't exist, create a new entry and grant it some point
     await econModel.create({
-        userID: message.author.id,
+        _id: message.author.id,
         username: message.author.tag,
         points: pointsToGrant,
         lastGrantedPoint: new Date(),
