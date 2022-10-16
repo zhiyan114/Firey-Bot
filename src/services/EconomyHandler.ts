@@ -23,7 +23,7 @@ export const econSchema = new Mongoose.Schema({
         type: Date,
         required: true,
     }
-})
+}, {_id: false})
 
 // Random Value Generator
 function getRandomInt(min: number, max: number) {
