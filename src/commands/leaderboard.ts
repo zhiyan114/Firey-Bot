@@ -28,7 +28,6 @@ const leaderboardFunc = async (interaction : CommandInteraction, client : Client
     embed.setTitle(`Global Leaderboard`);
     embed.setColor("#00FFFF");
     embed.setDescription(FormattedBoard);
-    embed.setAuthor({name: interaction.user.tag, iconURL: interaction.user.avatarURL() ?? interaction.user.defaultAvatarURL});
     embed.setTimestamp();
     await interaction.followUp({embeds:[embed], ephemeral: false});
 }
