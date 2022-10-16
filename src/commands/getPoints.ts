@@ -20,7 +20,7 @@ const GetPointsCmd = new SlashCommandBuilder()
 const GetPointsFunc = async (interaction : CommandInteraction, client : Client) => {
     const isEphmeral = interaction.options.get('ephemeral', false)?.value as boolean ?? true;
     if(!isConnected()) return await interaction.reply({content: "Unfortunately the database is not connected, please report this issue.", ephemeral: true});
-    await interaction.deferReply();
+    await interaction.deferReply({ephemeral: isEphmeral});
     const econModel = Mongoose.model<econType>("economy",econSchema);
     const userEconData = await econModel.findOne({_id: interaction.user.id});
     const embed = new EmbedBuilder();
