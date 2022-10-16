@@ -1,16 +1,20 @@
 import { ChannelType } from 'discord.js';
-import mongoose from 'mongoose';
 import Mongoose from 'mongoose';
 import { client } from '../index';
 import { isConnected } from '../utils/DatabaseManager';
 
 export type econType = {
+    _id: string;
     username: string;
     points: number;
     lastGrantedPoint: Date;
 }
 
 export const econSchema = new Mongoose.Schema({
+    _id: {
+        type: String,
+        required: true,
+    },
     username: {
         type: String,
         required: true,
