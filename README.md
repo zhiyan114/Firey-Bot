@@ -26,7 +26,6 @@ File: config.ts
 * `WEBSERVER_PORT` - Custom Port for the webserver (regardless if it http or https mode)
 * `SENTRY_DSN` - (Optional) Capture unhandled/handled errors
 * `MONGODB_CONN` - MongoDB Connection String
-* `MONGODB_CERT` - MongoDB X509 Certificate (Why tf would you use username/password auth)
 
 ## Standard Configuration:
 * `guildID` - The guild ID for the server that the bot will be running in. Yes, I can technically pull that ID out by getting a list of guilds that the bot is in and read the first array, but nah, I don't feel like doing that.

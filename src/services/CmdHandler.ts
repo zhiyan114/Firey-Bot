@@ -15,12 +15,14 @@ interface ICommandList {
 /* Load all the internal commands */
 const commandList : ICommandList = {};
 const cmdDir = path.join(__dirname, '../', 'commands');
-fs.readdirSync(cmdDir).forEach(file => {
-  if (file.endsWith('.js')) {
-      const cmdModule : ICommand = require(path.join(cmdDir, file)).default;
-      if(!cmdModule.disabled) commandList[cmdModule.command.name] = cmdModule;
-  }
-});
+for(let file of fs.readdirSync(cmdDir)) {
+    if (file.endsWith('.js')) {
+        const cmdModule : ICommand = require(path.join(cmdDir, file)).default;
+        if(!cmdModule) continue;
+        if(!cmdModule.disabled) commandList[cmdModule.command.name] = cmdModule;
+    }
+}
+
 let commands = Object.values(commandList);
 const rest = new REST({ version: '10' }).setToken(config['botToken']);
 rest.put(
