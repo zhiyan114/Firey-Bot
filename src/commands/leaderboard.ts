@@ -19,8 +19,10 @@ const leaderboardFunc = async (interaction : CommandInteraction, client : Client
     const topTenEconData = await econModel.find({}).sort({points: -1}).limit(10);
     let FormattedBoard = "";
     // Format all the data into a proper markup to display
+    let dataCount  = 0;
     for(let EconData of topTenEconData) {
-        FormattedBoard += `\`${EconData.username}\` - **${EconData.points}**\n\n`
+        dataCount += 1;
+        FormattedBoard += `${dataCount}. \`${EconData.username}\` - **${EconData.points}**\n\n`
     }
     // Remove the last 2 newline (or do nothing if there is nothing to show)
     if(FormattedBoard.length >= 2) FormattedBoard = FormattedBoard.substring(0,FormattedBoard.length-2);
