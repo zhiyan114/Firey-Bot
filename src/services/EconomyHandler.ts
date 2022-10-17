@@ -1,33 +1,7 @@
 import { ChannelType } from 'discord.js';
-import Mongoose from 'mongoose';
 import { client } from '../index';
 import { isConnected } from '../utils/DatabaseManager';
-
-export type econType = {
-    _id: string;
-    username: string;
-    points: number;
-    lastGrantedPoint: Date;
-}
-
-export const econSchema = new Mongoose.Schema({
-    _id: {
-        type: String,
-        required: true,
-    },
-    username: {
-        type: String,
-        required: true,
-    },
-    points: {
-        type: Number,
-        required: true,
-    },
-    lastGrantedPoint: {
-        type: Date,
-        required: true,
-    }
-}, {_id: false})
+import { econModel } from '../utils/EconomyManger';
 
 // Random Value Generator
 function getRandomInt(min: number, max: number) {
@@ -44,7 +18,6 @@ client.on('messageCreate', async (message) => {
     if(message.author.bot) return;
     // Prevent users that aren't in guild chat from participating (such as bot's DM)
     if(message.channel.type != ChannelType.GuildText && message.channel.type != ChannelType.GuildVoice) return;
-    const econModel = Mongoose.model<econType>("economy",econSchema);
     const docIdentifier = {_id: message.author.id};
     const pointsToGrant = getRandomInt(5,10);
     const userEconData = await econModel.findOne(docIdentifier);

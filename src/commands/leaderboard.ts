@@ -2,8 +2,7 @@
 
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { Client, CommandInteraction, EmbedBuilder } from 'discord.js';
-import Mongoose from 'mongoose';
-import { econSchema, econType } from '../services/EconomyHandler';
+import { econModel } from '../utils/EconomyManger';
 import { isConnected } from '../utils/DatabaseManager';
 /* Command Builder */
 const leaderboardCmd = new SlashCommandBuilder()
@@ -12,15 +11,13 @@ const leaderboardCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const leaderboardFunc = async (interaction : CommandInteraction, client : Client) => {
-    const isEphmeral = interaction.options.get('ephemeral', false)?.value as boolean ?? true;
     if(!isConnected()) return await interaction.reply({content: "Unfortunately the database is not connected, please report this issue.", ephemeral: true});
     await interaction.deferReply();
-    const econModel = Mongoose.model<econType>("economy",econSchema);
     const topTenEconData = await econModel.find({}).sort({points: -1}).limit(10);
     let FormattedBoard = "";
     // Format all the data into a proper markup to display
     let dataCount  = 0;
-    for(let EconData of topTenEconData) {
+    for(const EconData of topTenEconData) {
         dataCount += 1;
         FormattedBoard += `${dataCount}. \`${EconData.username}\` - **${EconData.points}**\n\n`
     }

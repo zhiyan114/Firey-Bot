@@ -21,9 +21,9 @@ File: config.ts
 * `CLIENTID` - This should be the Client/Application ID for the discord bot. This will only be used for slash command registration purpose.
 * `BOTTOKEN` - This should be the authentication token for the discord bot. This token will be used for all API calls.
 * `WEBSERVER_FQDN` - Full Qualified Domain Name for the server
-* `WEBSERVER_HTTPS_CERTIFICATE` - Certificate (.crt/.cer) for HTTPS
-* `WEBSERVER_HTTPS_KEY` - Private key associated with the certificate
-* `WEBSERVER_PORT` - Custom Port for the webserver (regardless if it http or https mode)
+* `WEBSERVER_HTTPS_CERTIFICATE` - (Optional) Certificate (.crt/.cer) for HTTPS
+* `WEBSERVER_HTTPS_KEY` - (Optional) Private key associated with the certificate
+* `WEBSERVER_PORT` - (Optional) Custom Port for the webserver (regardless if it http or https mode)
 * `SENTRY_DSN` - (Optional) Capture unhandled/handled errors
 * `MONGODB_CONN` - MongoDB Connection String
 
