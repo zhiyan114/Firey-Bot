@@ -1,7 +1,7 @@
 import { ChannelType } from 'discord.js';
 import { client } from '../index';
 import { isConnected } from '../utils/DatabaseManager';
-import { econModel } from '../utils/EconomyManger';
+import { econModel } from '../DBcomponent/EconomyManger';
 
 // Random Value Generator
 function getRandomInt(min: number, max: number) {

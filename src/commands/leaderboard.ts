@@ -2,7 +2,7 @@
 
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { Client, CommandInteraction, EmbedBuilder } from 'discord.js';
-import { econModel } from '../utils/EconomyManger';
+import { econModel } from '../DBcomponent/EconomyManger';
 import { isConnected } from '../utils/DatabaseManager';
 /* Command Builder */
 const leaderboardCmd = new SlashCommandBuilder()

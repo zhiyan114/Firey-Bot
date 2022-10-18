@@ -10,6 +10,7 @@ This bot is developed to serve a single server; thus, codes are not reusable wit
 * Inside the source, all user executable command should be stored under `src/commands` folder. This include administrative command and user interactable.
 * Any service related module should be stored under `src/services` folder. Services is any module that is executed once by the `src/index.ts` and will continue to operate independently. This is solely for the purpose of maintainability.
 * Any modules that are reusable or act as a utilty (such as a module to handle certain operation even if it only used once) should be placed under `src/utils`
+* Any component or utils that utilizes the database (except database.ts itself) will go under `src/DBUtils` (exception: If the component functions as a service defined above, keep it under that folder).
 * `dist` folder should be made available for compiled sources
 * `src/index.ts` should only be used for essential client initialization and even listeners which should be passed to `services` for further operations
 * `src/interface.ts` should only contain exportable interfaces that will be used throughout multiple other modules
