@@ -22,7 +22,7 @@ type getStreamData = {
     started_at: string,
     language: string,
     thumbnail_url: string,
-    tag_ids: string,
+    tag_ids: string[],
     is_mature: boolean,
     
 }

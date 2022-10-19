@@ -17,8 +17,10 @@ export type userDataType = {
     _id: string;
     username: string;
     rulesConfirmed?: Date;
-    twitchUser?: string;
-    twitchVerified?: boolean;
+    twitch?: {
+        username: string,
+        verified: boolean,
+    };
 
 }
 
@@ -35,14 +37,16 @@ const userDataSchema = new Mongoose.Schema({
         type: Date,
         required: false,
     },
-    twitchUser: {
-        type: String,
-        required: false,
+    twitch: {
+        username: {
+            type: String,
+            required: false,
+        },
+        verified: {
+            type: String,
+            required: false,
+        }
     },
-    twitchVerified: {
-        type: Date,
-        required: false,
-    }
 }, {_id: false})
 
 export const userDataModel = Mongoose.model<userDataType>("userData",userDataSchema);
