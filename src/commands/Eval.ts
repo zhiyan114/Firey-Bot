@@ -18,7 +18,7 @@ const EvalCmd = new SlashCommandBuilder()
 // This will add all the users that are in the server to the userData collections
 const updateUserData = async ()=> {
     const dataToPush: userDataType[] = [];
-    for(const [_,member] of client.guilds.cache.find(g=>g.id == guildID)!.members.cache) {
+    for(const [_,member] of await (client.guilds.cache.find(g=>g.id == guildID)!).members.fetch()) {
         const hasVerifyRole = member.roles.cache.find(role=>role.id == newUserRoleID);
         dataToPush.push({
             _id: member.user.id,
