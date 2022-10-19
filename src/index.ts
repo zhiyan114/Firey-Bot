@@ -15,7 +15,7 @@ if(process.env['SENTRY_DSN']) {
 }
 
 /* Client Loader */
-export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessageReactions, Intents.GuildBans, Intents.GuildMembers, Intents.MessageContent, Intents.GuildMessages], partials: [Partials.Channel, Partials.GuildMember] });
+export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessageReactions, Intents.GuildBans, Intents.GuildMembers, Intents.MessageContent, Intents.GuildMessages], partials: [Partials.Channel, Partials.GuildMember, Partials.User] });
 
 /* Internal Services */
 import './services/CmdHandler';
@@ -23,6 +23,7 @@ import ReactRole from './services/ReactRoleHandler';
 import './services/VerificationHandler';
 import './services/UserJoinHandler';
 import './services/EconomyHandler';
+import './services/userDataHandler';
 import YouTubeNotifier from './services/youtubeNotification';
 
 

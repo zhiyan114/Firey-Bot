@@ -4,17 +4,12 @@ import { isConnected } from '../utils/DatabaseManager';
 
 type econType = {
     _id: string;
-    username: string;
     points: number;
     lastGrantedPoint: Date;
 }
 
 const econSchema = new Mongoose.Schema({
     _id: {
-        type: String,
-        required: true,
-    },
-    username: {
         type: String,
         required: true,
     },
@@ -37,20 +32,20 @@ export class EconomyManager {
     }
     public async addPoint(amount: number) {
         if(!isConnected()) return false;
-        const response = await econModel.updateOne({_id: this.user.id}, {$set: {username: this.user.tag}, $inc: {points: amount}})
+        const response = await econModel.updateOne({_id: this.user.id}, {$inc: {points: amount}})
         if(response.matchedCount == 0) return await this._createEntry(amount);
         return (response.matchedCount == response.modifiedCount);
     }
     public async removePoint(amount: number, noNegative = true) {
         if(!isConnected()) return false;
         if(noNegative && (await this.getPoint())! - amount < 0) return false;
-        const response = await econModel.updateOne({_id: this.user.id}, {$set: {username: this.user.tag}, $inc: {points: -amount}})
+        const response = await econModel.updateOne({_id: this.user.id}, {$inc: {points: -amount}})
         if(response.matchedCount == 0) return await this._createEntry(-amount);
         return response.matchedCount == response.modifiedCount;
     }
     public async setPoint(amount: number) {
         if(!isConnected()) return false;
-        const response = await econModel.updateOne({_id: this.user.id}, {$set: {username: this.user.tag, points: amount}})
+        const response = await econModel.updateOne({_id: this.user.id}, {$set: {points: amount}})
         if(response.matchedCount == 0) return await this._createEntry(amount);
         return response.matchedCount == response.modifiedCount;
     }
@@ -64,7 +59,6 @@ export class EconomyManager {
     private async _createEntry(initalPoint?: number) {
         const newEntry : econType = {
             _id: this.user.id,
-            username: this.user.tag,
             points: initalPoint ?? 0,
             lastGrantedPoint: new Date()
         }

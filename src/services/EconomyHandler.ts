@@ -1,7 +1,7 @@
 import { ChannelType } from 'discord.js';
 import { client } from '../index';
 import { isConnected } from '../utils/DatabaseManager';
-import { econModel } from '../DBcomponent/EconomyManger';
+import { econModel } from '../DBUtils/EconomyManger';
 
 // Random Value Generator
 function getRandomInt(min: number, max: number) {
@@ -27,7 +27,6 @@ client.on('messageCreate', async (message) => {
         if(userEconData.lastGrantedPoint.getTime() > (new Date()).getTime() - 60000) return;
         // Grant The Point
         await econModel.updateOne(docIdentifier, {
-            username: message.author.tag,
             points: userEconData.points + pointsToGrant,
             lastGrantedPoint: new Date(),
         })
@@ -36,7 +35,6 @@ client.on('messageCreate', async (message) => {
     // User doesn't exist, create a new entry and grant it some point
     await econModel.create({
         _id: message.author.id,
-        username: message.author.tag,
         points: pointsToGrant,
         lastGrantedPoint: new Date(),
     })
