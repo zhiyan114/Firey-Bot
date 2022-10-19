@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { Client, CommandInteraction } from 'discord.js';
 import { guildID, newUserRoleID } from '../config';
-import { createUserData } from '../DBUtils/UserDataManager';
+import { createUserData, userDataModel, userDataType } from '../DBUtils/UserDataManager';
 import {client} from '../index';
 /* Command Builder */
 const EvalCmd = new SlashCommandBuilder()
@@ -17,10 +17,16 @@ const EvalCmd = new SlashCommandBuilder()
 
 // This will add all the users that are in the server to the userData collections
 const updateUserData = async ()=> {
+    const dataToPush: userDataType[] = [];
     for(const [_,member] of client.guilds.cache.find(g=>g.id == guildID)!.members.cache) {
         const hasVerifyRole = member.roles.cache.find(role=>role.id == newUserRoleID);
-        await createUserData(member, hasVerifyRole ? (new Date()) : undefined);
+        dataToPush.push({
+            _id: member.user.id,
+            username: member.user.tag,
+            rulesConfirmed: hasVerifyRole ? (new Date()) : undefined
+        })
     }
+    await userDataModel.insertMany(dataToPush);
 }
 
 

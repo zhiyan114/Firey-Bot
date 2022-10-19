@@ -13,12 +13,12 @@ import { GuildMember, User } from 'discord.js';
 import Mongoose from 'mongoose';
 import { isConnected } from '../utils/DatabaseManager';
 
-type userDataType = {
+export type userDataType = {
     _id: string;
     username: string;
-    rulesConfirmed: Date;
-    twitchUser: string;
-    lastTwitchUpdate: Date;
+    rulesConfirmed?: Date;
+    twitchUser?: string;
+    lastTwitchUpdate?: Date;
 
 }
 
