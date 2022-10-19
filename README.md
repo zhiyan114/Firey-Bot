@@ -27,6 +27,7 @@ File: config.ts
 * `WEBSERVER_PORT` - (Optional) Custom Port for the webserver (regardless if it http or https mode)
 * `SENTRY_DSN` - (Optional) Capture unhandled/handled errors
 * `MONGODB_CONN` - MongoDB Connection String
+* `TWITCH_TOKEN` - (Optional) Twitch Oauth token
 
 ## Standard Configuration:
 * `guildID` - The guild ID for the server that the bot will be running in. Yes, I can technically pull that ID out by getting a list of guilds that the bot is in and read the first array, but nah, I don't feel like doing that.
@@ -42,3 +43,6 @@ File: config.ts
     * `reactionLists` - Put all the reactions in an array format which each object as `{"Emote ID": "Role ID"}`
     * `ChannelID` - Which Channel is the reaction located. (To setup the reaction, look at the source on the top and use eval. This might change in the future)
     * `messageID` - The message ID which the reaction will be listening to. I could of use the same technique mentioned above but eh not feeling it.
+* `twitch` - Twitch Bot configuration
+    * `prefix` - Prefix to invoke the bot
+    * `channels` - Twitch channel name that the bot will be listening in. I only recommend one, unless you allow your viewer to earn points from another server.

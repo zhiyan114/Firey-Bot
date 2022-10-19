@@ -18,7 +18,7 @@ export type userDataType = {
     username: string;
     rulesConfirmed?: Date;
     twitchUser?: string;
-    lastTwitchUpdate?: Date;
+    twitchVerified?: boolean;
 
 }
 
@@ -39,7 +39,7 @@ const userDataSchema = new Mongoose.Schema({
         type: String,
         required: false,
     },
-    lastTwitchUpdate: {
+    twitchVerified: {
         type: Date,
         required: false,
     }

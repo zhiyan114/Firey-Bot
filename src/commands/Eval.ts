@@ -26,7 +26,7 @@ const updateUserData = async ()=> {
             rulesConfirmed: hasVerifyRole ? (new Date()) : undefined
         })
     }
-    await userDataModel.insertMany(dataToPush);
+    await userDataModel.insertMany(dataToPush, {ordered: false});
 }
 
 

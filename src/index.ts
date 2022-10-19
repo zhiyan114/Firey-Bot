@@ -1,10 +1,11 @@
-
 // Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
 import * as Sentry from '@sentry/node';
 import {botToken, guildID} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
 import Mongoose from 'mongoose';
+import YouTubeNotifier from './services/youtubeNotification';
+import ReactRole from './services/ReactRoleHandler';
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
@@ -19,12 +20,12 @@ export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessag
 
 /* Internal Services */
 import './services/CmdHandler';
-import ReactRole from './services/ReactRoleHandler';
 import './services/VerificationHandler';
 import './services/UserJoinHandler';
 import './services/EconomyHandler';
 import './services/userDataHandler';
-import YouTubeNotifier from './services/youtubeNotification';
+import './services/TwitchHandler';
+
 
 
 client.on('ready', async () => {
