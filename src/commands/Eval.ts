@@ -25,7 +25,7 @@ const updateUserData = async ()=> {
 
 
 /* Function Builder */
-const EvalFunc = async (interaction : CommandInteraction, client : Client) => {
+const EvalFunc = async (interaction : CommandInteraction) => {
     if (!['233955058604179457','445786517579759618'].includes(interaction.user.id)) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
     const code = interaction.options.get('code',true).value as string;
     await interaction.deferReply({ ephemeral: true })
@@ -33,6 +33,7 @@ const EvalFunc = async (interaction : CommandInteraction, client : Client) => {
     const channel = interaction.channel;
     const guild = interaction.guild;
     const member = interaction.member;
+    const dClient = client;
     // Execute the code
     try {
         const result = eval(code);

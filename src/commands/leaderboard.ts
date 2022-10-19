@@ -11,7 +11,7 @@ const leaderboardCmd = new SlashCommandBuilder()
     .setDescription(`Show the top ten points holder`)
 
 /* Function Builder */
-const leaderboardFunc = async (interaction : CommandInteraction, client : Client) => {
+const leaderboardFunc = async (interaction : CommandInteraction) => {
     if(!isConnected()) return await interaction.reply({content: "Unfortunately the database is not connected, please report this issue.", ephemeral: true});
     await interaction.deferReply();
     const topTenEconData = await econModel.find({}).sort({points: -1}).limit(10);

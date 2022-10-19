@@ -33,6 +33,6 @@ client.on('interactionCreate', async (interaction : Interaction) => {
     if (interaction.isCommand()) {
         const command = commandList[interaction.commandName];
         if (!command) return;
-        await command.function(interaction, client);
+        await command.function(interaction);
     }
 })

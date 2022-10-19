@@ -16,7 +16,7 @@ const GetPointsCmd = new SlashCommandBuilder()
     )
 
 /* Function Builder */
-const GetPointsFunc = async (interaction : CommandInteraction, client : Client) => {
+const GetPointsFunc = async (interaction : CommandInteraction) => {
     const isEphmeral = interaction.options.get('ephemeral', false)?.value as boolean ?? true;
     if(!isConnected()) return await interaction.reply({content: "Unfortunately the database is not connected, please report this issue.", ephemeral: true});
     await interaction.deferReply({ephemeral: isEphmeral});

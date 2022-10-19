@@ -3,6 +3,6 @@ import { Client, CommandInteraction } from 'discord.js';
 
 export interface ICommand {
     command: SlashCommandBuilder;
-    function: (interaction: CommandInteraction, client : Client) => Promise<void>;
+    function: (interaction: CommandInteraction) => Promise<void>;
     disabled?: boolean;
 }
