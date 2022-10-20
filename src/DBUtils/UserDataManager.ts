@@ -63,7 +63,7 @@ export const createUserData = async (user: User | GuildMember, isVerified?: Date
     if(user.bot) return;
     await userDataModel.create({
         _id: user.id,
-        username: user.username,
+        username: user.tag,
         rulesConfirmed: isVerified
     })
 }
