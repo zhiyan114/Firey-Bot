@@ -131,11 +131,15 @@ streamStatus.on('start',async (data: twitchGetStreamType)=>{
     const channel = await botClient.channels.fetch(twitch.discordChannelID) as TextChannel | null;
     if(!channel) return;
     const streamData = data.data[0];
+    streamData.thumbnail_url = streamData.thumbnail_url.replace("{width}","500");
+    streamData.thumbnail_url = streamData.thumbnail_url.replace("{height}","500");
     const streamUrl = `https://twitch.tv/${streamData.user_name}`
     const embed = new EmbedBuilder()
+        .setColor("#00FFFF")
         .setAuthor({name: `${streamData.user_name} do be streaming right now!`, url: streamUrl})
         .setTitle(streamData.title)
         .setDescription(`Currently streaming ${streamData.game_name} with ${streamData.viewer_count} viewers`)
+        .setURL(streamUrl)
         .setImage(streamData.thumbnail_url);
     await channel.send({content: `<@&${twitch.roleToPing}> Derg is streaming right now, come join!`, embeds: [embed]})
     
