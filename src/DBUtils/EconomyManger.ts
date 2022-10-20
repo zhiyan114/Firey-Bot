@@ -8,7 +8,7 @@ type econType = {
     lastGrantedPoint: Date;
 }
 
-const econSchema = new Mongoose.Schema({
+const econSchema = new Mongoose.Schema<econType>({
     _id: {
         type: String,
         required: true,

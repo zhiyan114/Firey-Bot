@@ -1,7 +1,7 @@
 import tmi from 'tmi.js';
 import { twitch } from '../config';
 import { LogType, sendLog } from '../utils/eventLogger';
-import streamStatus, { alreadyStreaming } from '../utils/twitchStream'
+import streamStatus, { isStreaming } from '../utils/twitchStream'
 
 type stringObject = {
     [key: string]: string
@@ -32,11 +32,13 @@ tmiClient.on('message', (channel, tags, message, self)=>{
     if(message.slice(0,1) == twitch.prefix) {
         // @TODO: Finish the command system
         const args = message.split(" ")
+        const command = args[0].slice(1,args[0].length);
+
         // You cant get awarded for using the commands lol
         return;
     }
     // Check if the server is active before giving out the points
-    if(alreadyStreaming) {
+    if(isStreaming()) {
         // @TODO: Finish point reward algorithm
     }
     

@@ -24,7 +24,7 @@ export type userDataType = {
 
 }
 
-const userDataSchema = new Mongoose.Schema({
+const userDataSchema = new Mongoose.Schema<userDataType>({
     _id: {
         type: String,
         required: true,
@@ -43,10 +43,10 @@ const userDataSchema = new Mongoose.Schema({
             required: false,
         },
         verified: {
-            type: String,
+            type: Boolean,
             required: false,
         }
-    },
+    }
 }, {_id: false})
 
 export const userDataModel = Mongoose.model<userDataType>("userData",userDataSchema);
