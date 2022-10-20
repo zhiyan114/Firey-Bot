@@ -128,7 +128,7 @@ streamStatus.on('start',async (data: twitchGetStreamType)=>{
     // Twitch Stream Started
     authUsers = {};
     // Notify all the users in the server that his stream started
-    const channel = await botClient.channels.fetch(twitch.discordChannelID) as TextChannel;
+    const channel = (botClient.channels.cache.find(c=>c.id == twitch.discordChannelID) ?? await botClient.channels.fetch(twitch.discordChannelID)) as TextChannel;
     const streamData = data.data[0];
     const streamUrl = `https://twitch.tv/${streamData.user_name}`
     const embed = new EmbedBuilder()
