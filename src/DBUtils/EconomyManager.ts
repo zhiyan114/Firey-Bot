@@ -25,6 +25,21 @@ const econSchema = new Mongoose.Schema<econType>({
 
 export const econModel = Mongoose.model<econType>("economy",econSchema);
 
+// Generate random amount of points
+export const getRewardPoints = (min?: number, max?: number) => {
+    min = Math.ceil(min ?? 5)
+    max = Math.floor(max ?? 10);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export const createEconData = async (userID: string, initalPoint?: number) => {
+    await econModel.create({
+        _id: userID,
+        points: initalPoint ?? getRewardPoints(),
+        lastGrantedPoint: new Date(),
+    })
+}
+
 export class EconomyManager {
     private user: User;
     constructor(member: User | GuildMember) {

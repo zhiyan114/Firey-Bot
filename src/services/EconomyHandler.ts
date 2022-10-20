@@ -1,14 +1,8 @@
 import { ChannelType } from 'discord.js';
 import { client } from '../index';
 import { isConnected } from '../utils/DatabaseManager';
-import { econModel } from '../DBUtils/EconomyManger';
+import { createEconData, econModel, getRewardPoints } from '../DBUtils/EconomyManager';
 
-// Random Value Generator
-export const getRewardPoints = (min?: number, max?: number) => {
-    min = Math.ceil(min ?? 5)
-    max = Math.floor(max ?? 10);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
 
 // Grant currency based on chats
 client.on('messageCreate', async (message) => {
@@ -33,9 +27,5 @@ client.on('messageCreate', async (message) => {
         return;
     }
     // User doesn't exist, create a new entry and grant it some point
-    await econModel.create({
-        _id: message.author.id,
-        points: pointsToGrant,
-        lastGrantedPoint: new Date(),
-    })
+    await createEconData(message.author.id);
 })

@@ -2,7 +2,7 @@
 
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { Client, CommandInteraction, EmbedBuilder } from 'discord.js';
-import { econModel } from '../DBUtils/EconomyManger';
+import { econModel } from '../DBUtils/EconomyManager';
 import { isConnected } from '../utils/DatabaseManager';
 
 /* Command Builder */

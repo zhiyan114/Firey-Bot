@@ -1,10 +1,10 @@
 import tmi from 'tmi.js';
 import { twitch } from '../config';
-import { econModel } from '../DBUtils/EconomyManger';
+import { createEconData, econModel } from '../DBUtils/EconomyManager';
 import { userDataModel } from '../DBUtils/UserDataManager';
 import { LogType, sendLog } from '../utils/eventLogger';
 import { isStreaming, streamStatus } from '../utils/twitchStream'
-import { getRewardPoints } from './EconomyHandler';
+import { getRewardPoints } from '../DBUtils/EconomyManager';
 
 type stringObject = {
     [key: string]: string
@@ -39,7 +39,9 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
         // command in question are switched
         switch(args[0].slice(1,args[0].length).toLowerCase()) {
             case "verify": {
-                if(!args[1]) return tmiClient.say(channel, `Hey, @${tags.username}, please make sure you supply your discord ID so that we can properly verify you!`);
+                if(!args[1]) return await tmiClient.say(channel, `Hey, @${tags.username}, please make sure you supply your discord ID so that we can properly verify you!`);
+                // Check if user input only contains number and has a valid length
+                if(!/^\d+$/.test(args[1]) || args[1].length < 17) return await tmiClient.say(channel,`Hey, @${tags.username}, your discord ID seems to be incorrect, please check to make sure it's correct. If this is an error, please contact the bot operator.`);
                 const userData = await userDataModel.findOne({
                     _id: args[1]
                 })
@@ -81,7 +83,6 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
         // You cant get awarded for using commands lol
         return;
     }
-    //@TODO: Fix the point system on a non-production stream!!!
     // Check if the server is active before giving out the points
     if(isStreaming()) {
         // Don't award the points to the user until they verify their account on twitch
@@ -108,7 +109,7 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
         const userEconData = await econModel.findOne({_id: authUsers[tags['user-id']]})
         // Don't grant point if they've already received one within a minute
         if(!userEconData || userEconData.lastGrantedPoint.getTime() > (new Date()).getTime() - 60000) return;
-        await econModel.updateOne({_id: authUsers[tags['user-id']]},{
+        const econResult = await econModel.updateOne({_id: authUsers[tags['user-id']]},{
             $set: {
                 lastGrantedPoint: new Date()
             },
@@ -116,6 +117,8 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
                 points: getRewardPoints(),
             },
         })
+        // If user doesn't exist on the Econ Collection, create a new entry for them
+        if(econResult.matchedCount == 0) await createEconData(authUsers[tags['user-id']]);
     }
     
 })
