@@ -60,10 +60,8 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
                 // Users are passing all the checks, verify them now and update the AuthUsers
                 await userDataModel.updateOne({_id: userData._id}, {
                     $set: {
-                        twitch: {
-                            ID: tags['user-id'],
-                            verified: true
-                        }
+                        "twitch.ID": tags['user-id'],
+                        "twitch.verified": true,
                     }
                 })
                 if(isStreaming()) authUsers[tags['user-id']] = userData._id;
@@ -83,6 +81,7 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
         // You cant get awarded for using commands lol
         return;
     }
+    //@TODO: Fix the point system on a non-production stream!!!
     // Check if the server is active before giving out the points
     if(isStreaming()) {
         // Don't award the points to the user until they verify their account on twitch
@@ -100,18 +99,16 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
                 // User probably has a new username, update them.
                 await userDataModel.updateOne({_id: userData._id},{
                     $set: {
-                        twitch: {
-                            username: tags['username']
-                        }
+                        "twitch.username": tags['username']
                     },
                 })
             }
         }
         // Now that user has their ID cached, give them the reward
-        const userEconData = await econModel.findOne({_id: authUsers['user-id']})
+        const userEconData = await econModel.findOne({_id: authUsers[tags['user-id']]})
         // Don't grant point if they've already received one within a minute
         if(!userEconData || userEconData.lastGrantedPoint.getTime() > (new Date()).getTime() - 60000) return;
-        await econModel.updateOne({_id: authUsers['user-id']},{
+        await econModel.updateOne({_id: authUsers[tags['user-id']]},{
             $set: {
                 lastGrantedPoint: new Date()
             },

@@ -38,10 +38,8 @@ const twitchLinkFunc = async (interaction : CommandInteraction) => {
         return await interaction.followUp({embeds:[embed], ephemeral: true});
     }
     await userDataModel.updateOne({_id: interaction.user.id}, {$set: {
-        twitch: {
-            username: twitchUsername,
-            verified: false,
-        }
+        "twitch.username": twitchUsername,
+        "twitch.verified": false,
     }})
     embed.setColor("#00FFFF")
     .setDescription(`Thank you for linking your twitch account! To complete this process, please visit Firey's twitch channel (https://www.twitch.tv/fireythealiendragon) and type: \`!verify ${interaction.user.id}\` to the chat. Please note that once you verify, you will not be able to change it again unless you contact the bot operator.`);
