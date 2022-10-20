@@ -1,6 +1,6 @@
 // Internal Library to detect twitch stream status
 import { captureException } from '@sentry/node';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import events from 'events';
 import { twitch } from '../config';
 import { LogType, sendLog } from './eventLogger';
@@ -61,8 +61,12 @@ const mainCheck = async () => {
         }
         if(errLogged) sendLog(LogType.Info, `Twitch API call can now be completed!`);
         errLogged = false;
-    } catch(ex: any) {
-        captureException(ex);
+    } catch(ex: unknown) {
+        if(!errLogged) {
+            captureException(ex);
+            if(ex instanceof AxiosError) await sendLog(LogType.Warning,`twitchStream: ${ex.status}: ${ex.response}`);
+            errLogged = true;
+        }
     } finally {
         // Check it again every 30 seconds regardless if the api fails or not
         setTimeout(mainCheck,30000);
