@@ -60,5 +60,5 @@ export const reactionRole = {
 };
 export const twitch = {
     prefix: "!",
-    channels: "fireythealiendragon",
+    channel: "fireythealiendragon",
 }
