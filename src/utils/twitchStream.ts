@@ -1,4 +1,5 @@
 // Internal Library to detect twitch stream status
+import { captureException } from '@sentry/node';
 import axios from 'axios';
 import events from 'events';
 import { twitch } from '../config';
@@ -36,37 +37,36 @@ let alreadyStreaming = false;
 export const isStreaming = () => alreadyStreaming;
 
 let errLogged = false;
-let lastCallSuccess = false;
 // Twitch is making things harder than it needs to smh
-const mainCheck = () => {
-    if(!lastCallSuccess && !errLogged) sendLog(LogType.Warning, "Twitch API may be down, you'll be notified again once the API call is successful")
-    lastCallSuccess = false;
-    axios.get<twitchGetStreamType>(`https://api.twitch.tv/helix/streams?user_login=${twitch.channels[0]}`,{
-        headers: {
-            "client-id": "q6batx0epp608isickayubi39itsckt", // Just using someone else's client ID
-            "Authorization": `Bearer ${process.env['TWITCH_TOKEN']}`
-        }
-    }).then(res=>{
-        if(res.status != 200) {
+const mainCheck = async () => {
+    try {
+        const serverResponse = await axios.get<twitchGetStreamType>(`https://api.twitch.tv/helix/streams?user_login=${twitch.channels[0]}`,{
+            headers: {
+                "client-id": "q6batx0epp608isickayubi39itsckt", // Just using someone else's client ID
+                "Authorization": `Bearer ${process.env['TWITCH_TOKEN']}`
+            }
+        });
+        if(serverResponse.status != 200) {
             errLogged = true;
-            lastCallSuccess = false;
-            sendLog(LogType.Warning, `Twitch API is responding with ${res.status} with message \`${JSON.stringify(res.data)}\``);
+            sendLog(LogType.Warning, `Twitch API is responding with ${serverResponse.status} with message \`${JSON.stringify(serverResponse.data)}\``);
             return;
         }
-        if(res.data.data.length > 0 && !alreadyStreaming) {
+        if(serverResponse.data.data.length > 0 && !alreadyStreaming) {
             alreadyStreaming = true;
-            streamStatus.emit('start', res.data);
+            streamStatus.emit('start', serverResponse.data);
         }
-        else if(res.data.data.length == 0 && alreadyStreaming) {
+        else if(serverResponse.data.data.length == 0 && alreadyStreaming) {
             alreadyStreaming = false;
             streamStatus.emit('end');
         }
-        if(!lastCallSuccess) sendLog(LogType.Info, `Twitch API call can now be completed!`);
-        lastCallSuccess = true;
+        if(errLogged) sendLog(LogType.Info, `Twitch API call can now be completed!`);
         errLogged = false;
-    })
-    // Check it again every 30 seconds regardless if the api fails or not
-    setTimeout(mainCheck,30000);
+    } catch(ex: any) {
+        captureException(ex);
+    } finally {
+        // Check it again every 30 seconds regardless if the api fails or not
+        setTimeout(mainCheck,30000);
+    }
 }
 mainCheck();
 
