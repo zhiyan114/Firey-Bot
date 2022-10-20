@@ -19,7 +19,7 @@ const tmiClient = new tmi.Client({
         username: "fireybotuwu",
         password: `oauth:${process.env['TWITCH_TOKEN']}`
     },
-    channels: twitch.channels,
+    channels: [twitch.channel],
 })
 
 tmiClient.connect().then(()=>{

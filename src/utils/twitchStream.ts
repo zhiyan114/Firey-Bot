@@ -40,7 +40,7 @@ let errLogged = false;
 // Twitch is making things harder than it needs to smh
 const mainCheck = async () => {
     try {
-        const serverResponse = await axios.get<twitchGetStreamType>(`https://api.twitch.tv/helix/streams?user_login=${twitch.channels[0]}`,{
+        const serverResponse = await axios.get<twitchGetStreamType>(`https://api.twitch.tv/helix/streams?user_login=${twitch.channel}`,{
             headers: {
                 "client-id": "q6batx0epp608isickayubi39itsckt", // Just using someone else's client ID
                 "Authorization": `Bearer ${process.env['TWITCH_TOKEN']}`

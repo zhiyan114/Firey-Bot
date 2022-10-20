@@ -45,4 +45,4 @@ File: config.ts
     * `messageID` - The message ID which the reaction will be listening to. I could of use the same technique mentioned above but eh not feeling it.
 * `twitch` - Twitch Bot configuration
     * `prefix` - Prefix to invoke the bot
-    * `channels` - Twitch channel name that the bot will be listening in. I only recommend one, unless you allow your viewer to earn points from another server.
+    * `channel` - Twitch channel name that the bot will be listening in.
