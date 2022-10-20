@@ -67,7 +67,8 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
                     }
                 })
                 if(isStreaming()) authUsers[tags['user-id']] = userData._id;
-                sendLog(LogType.Info,`${userData.username} has verified their twitch account with the database!`);
+                await sendLog(LogType.Info,`${userData.username} has verified their twitch account with the database!`);
+                await tmiClient.say(channel, `hey, @${tags.username}. Your account has been successfully verified!`);
                 break;
             }
             case "checkstream": {
