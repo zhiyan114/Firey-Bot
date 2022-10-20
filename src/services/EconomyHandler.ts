@@ -4,9 +4,9 @@ import { isConnected } from '../utils/DatabaseManager';
 import { econModel } from '../DBUtils/EconomyManger';
 
 // Random Value Generator
-function getRandomInt(min: number, max: number) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
+export const getRewardPoints = (min?: number, max?: number) => {
+    min = Math.ceil(min ?? 5)
+    max = Math.floor(max ?? 10);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -19,7 +19,7 @@ client.on('messageCreate', async (message) => {
     // Prevent users that aren't in guild chat from participating (such as bot's DM)
     if(message.channel.type != ChannelType.GuildText && message.channel.type != ChannelType.GuildVoice) return;
     const docIdentifier = {_id: message.author.id};
-    const pointsToGrant = getRandomInt(5,10);
+    const pointsToGrant = getRewardPoints();
     const userEconData = await econModel.findOne(docIdentifier);
     // Check if the user already existed
     if(userEconData) {

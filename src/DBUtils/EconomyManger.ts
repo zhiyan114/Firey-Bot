@@ -2,7 +2,7 @@ import { GuildMember, User } from 'discord.js';
 import Mongoose from 'mongoose';
 import { isConnected } from '../utils/DatabaseManager';
 
-type econType = {
+export type econType = {
     _id: string;
     points: number;
     lastGrantedPoint: Date;

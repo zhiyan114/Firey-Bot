@@ -3,8 +3,9 @@ User Data to collect:
 * _id (string) - User's discord ID
 * username (string) - discord member's username
 * rulesConfirmed (Date) - When did the user confirm the rules (changes after user rejoins the server and reconfirms);
-* twitchUser (string) - Twitch's username
-* lastTwitchUpdate (Date) - Last twitch's username update (7-days cooldown purposes)
+* Twitch UserID - Persistant account identifier
+* Twitch Username - Convient identifier
+* Twitch Verification - Determine if their linked account has been verified or not
 
 Data will remain in the database even if the user leaves the server. 
 */
@@ -18,6 +19,7 @@ export type userDataType = {
     username: string;
     rulesConfirmed?: Date;
     twitch?: {
+        ID: string,
         username: string,
         verified: boolean,
     };
@@ -38,6 +40,10 @@ const userDataSchema = new Mongoose.Schema<userDataType>({
         required: false,
     },
     twitch: {
+        ID: {
+            type: String,
+            required: false,
+        },
         username: {
             type: String,
             required: false,
