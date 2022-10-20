@@ -3,8 +3,10 @@ import { twitch } from '../config';
 import { createEconData, econModel } from '../DBUtils/EconomyManager';
 import { userDataModel } from '../DBUtils/UserDataManager';
 import { LogType, sendLog } from '../utils/eventLogger';
-import { isStreaming, streamStatus } from '../utils/twitchStream'
+import { isStreaming, streamStatus, twitchGetStreamType } from '../utils/twitchStream'
 import { getRewardPoints } from '../DBUtils/EconomyManager';
+import {client as botClient} from '../index'
+import { EmbedBuilder, TextChannel } from 'discord.js';
 
 type stringObject = {
     [key: string]: string
@@ -122,9 +124,20 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
     }
     
 })
-streamStatus.on('start',()=>{
+streamStatus.on('start',async (data: twitchGetStreamType)=>{
     // Twitch Stream Started
     authUsers = {};
+    // Notify all the users in the server that his stream started
+    const channel = await botClient.channels.fetch(twitch.discordChannelID) as TextChannel;
+    const streamData = data.data[0];
+    const streamUrl = `https://twitch.tv/${streamData.user_name}`
+    const embed = new EmbedBuilder()
+        .setAuthor({name: `${streamData.user_name} do be streaming right now!`, url: streamUrl})
+        .setTitle(streamData.title)
+        .setDescription(`Currently streaming ${streamData.game_name} with ${streamData.viewer_count} viewers`)
+        .setImage(streamData.thumbnail_url);
+    await channel.send({content: `<@&${twitch.roleToPing}> Derg is streaming right now, come join!`, embeds: [embed]})
+    
 })
 streamStatus.on('end',()=>{
     // Twitch Stream Ended

@@ -46,3 +46,5 @@ File: config.ts
 * `twitch` - Twitch Bot configuration
     * `prefix` - Prefix to invoke the bot
     * `channel` - Twitch channel name that the bot will be listening in.
+    * `discordChannelID` - The channel ID in discord to send the notification to
+    * `roleToPing` - The role ID to ping when stream starts
