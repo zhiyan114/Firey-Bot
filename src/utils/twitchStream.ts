@@ -64,7 +64,7 @@ const mainCheck = async () => {
     } catch(ex: unknown) {
         if(!errLogged) {
             captureException(ex);
-            if(ex instanceof AxiosError) await sendLog(LogType.Warning,`twitchStream: ${ex.status}: ${JSON.stringify(ex.response)}`);
+            if(ex instanceof AxiosError) await sendLog(LogType.Warning,`twitchStream: ${ex.response?.status}: ${JSON.stringify(ex.response?.data)}`);
             errLogged = true;
         }
     } finally {
