@@ -70,6 +70,10 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
                 sendLog(LogType.Info,`${userData.username} has verified their twitch account with the database!`);
                 break;
             }
+            case "checkstream": {
+                await tmiClient.say(channel, `Hey, @${tags.username}. The stream state is ${isStreaming()}`)
+                break;
+            }
             default: {
                 await tmiClient.say(channel,`hey, @${tags.username}, I believe that you may have typed the wrong command. If you didn't send a command, perhapse you've used my command prefix; thus, registered as you as trying to run a command.`);
                 break;
