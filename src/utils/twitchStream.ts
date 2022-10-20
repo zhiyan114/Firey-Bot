@@ -4,7 +4,7 @@ import events from 'events';
 import { twitch } from '../config';
 import { LogType, sendLog } from './eventLogger';
 
-const callback = new events({});
+export const streamStatus = new events({});
 
 // Type Reference: https://dev.twitch.tv/docs/api/reference#get-streams
 interface stringObjectType {
@@ -55,11 +55,11 @@ const mainCheck = () => {
         }
         if(res.data.data.length > 0 && !alreadyStreaming) {
             alreadyStreaming = true;
-            callback.emit('start', res.data);
+            streamStatus.emit('start', res.data);
         }
         else if(res.data.data.length == 0 && alreadyStreaming) {
             alreadyStreaming = false;
-            callback.emit('end');
+            streamStatus.emit('end');
         }
         if(!lastCallSuccess) sendLog(LogType.Info, `Twitch API call can now be completed!`);
         lastCallSuccess = true;
@@ -69,6 +69,4 @@ const mainCheck = () => {
     setTimeout(mainCheck,30000);
 }
 mainCheck();
-
-export default callback;
 

@@ -35,7 +35,7 @@ const twitchLinkFunc = async (interaction : CommandInteraction) => {
     if(userExist) {
         embed.setColor('#ff0000')
         .setDescription("This twitch account has already been linked, if you believe this is a mistake, please contact the bot operator.");
-        await interaction.followUp({embeds:[embed], ephemeral: true});
+        return await interaction.followUp({embeds:[embed], ephemeral: true});
     }
     await userDataModel.updateOne({_id: interaction.user.id}, {$set: {
         twitch: {
