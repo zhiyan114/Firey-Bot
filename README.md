@@ -20,6 +20,7 @@ File: config.ts
 
 ## Environment Variable:
 * `CLIENTID` - This should be the Client/Application ID for the discord bot. This will only be used for slash command registration purpose.
+* `CLIENTSECRET` - THis should be the application oauth secret for the client
 * `BOTTOKEN` - This should be the authentication token for the discord bot. This token will be used for all API calls.
 * `WEBSERVER_FQDN` - Full Qualified Domain Name for the server
 * `WEBSERVER_HTTPS_CERTIFICATE` - (Optional) Certificate (.crt/.cer) for HTTPS
@@ -28,6 +29,7 @@ File: config.ts
 * `SENTRY_DSN` - (Optional) Capture unhandled/handled errors
 * `MONGODB_CONN` - MongoDB Connection String
 * `TWITCH_TOKEN` - (Optional) Twitch Oauth token
+* `DISCORD_REFRESH_TOKEN` - Refresh Token containing application.command.update scope.
 
 ## Standard Configuration:
 * `guildID` - The guild ID for the server that the bot will be running in. Yes, I can technically pull that ID out by getting a list of guilds that the bot is in and read the first array, but nah, I don't feel like doing that.

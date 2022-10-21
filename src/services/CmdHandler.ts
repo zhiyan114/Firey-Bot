@@ -6,6 +6,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { client } from '../index';
 import { ApplicationCommandPermissions, ApplicationCommandPermissionType, Interaction } from 'discord.js'
+import { getAccessToken } from '../utils/discordTokenManager';
+import { LogType, sendLog } from '../utils/eventLogger';
+import Sentry from '@sentry/node'
 
 // Internal Interface
 interface ICommandList {
@@ -33,9 +36,11 @@ rest.put(
 // @TODO: Configure commands' permissions
 client.on('ready',async ()=>{
     const guild = client.guilds.cache.find(g=>g.id == config.guildID);
-    if(!guild) return;
-    const registeredCommands = await guild?.commands.fetch();
+    let accessToken = process.env["DISCORD_REFRESH_TOKEN"];
+    if(!guild || !accessToken) return await sendLog(LogType.Warning, "Missing bearer token, command perms may not be updated");
+    const registeredCommands = await guild.commands.fetch();
     if(!registeredCommands) return;
+    accessToken = await getAccessToken(accessToken);
     for(let [_, command] of registeredCommands) {
         const cmdData = commandList[command.name];
         if(!cmdData || !cmdData.permissions) continue;
@@ -63,11 +68,17 @@ client.on('ready',async ()=>{
                     permission: true,
                 })
             };
-        guild.commands.permissions.set({
-            command: command.id,
-            token: config['botToken'],
-            permissions: commandPermConfig,
-        })
+        try {
+            await guild.commands.permissions.set({
+                command: command.id,
+                token: accessToken,
+                permissions: commandPermConfig,
+            })
+        } catch(ex: unknown) {
+            await sendLog(LogType.Warning, "An error occured when attempting to set commands permission")
+            Sentry.captureException(ex);
+            break;
+        }
     }
 })
 
