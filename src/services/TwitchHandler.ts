@@ -41,26 +41,26 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
         // command in question are switched
         switch(args[0].slice(1,args[0].length).toLowerCase()) {
             case "verify": {
-                if(!args[1]) return await tmiClient.say(channel, `Hey, @${tags.username}, please make sure you supply your discord ID so that we can properly verify you!`);
+                if(!args[1]) return await tmiClient.say(channel, `@${tags.username}, please make sure you supply your discord ID so that we can properly verify you!`);
                 // Check if user input only contains number and has a valid length
-                if(!/^\d+$/.test(args[1]) || args[1].length < 17) return await tmiClient.say(channel,`Hey, @${tags.username}, your discord ID seems to be incorrect, please check to make sure it's correct. If this is an error, please contact the bot operator.`);
+                if(!/^\d+$/.test(args[1]) || args[1].length < 17) return await tmiClient.say(channel,`@${tags.username}, you have provided an invalid discord ID.`);
                 const userData = await userDataModel.findOne({
                     _id: args[1]
                 })
                 // Prompt user to join the discord before allowing them to verify
-                if(!userData) return await tmiClient.say(channel, `Hey, @${tags.username}. It looks like your profile doesn't exist in our database, please join Firey's discord server, which can be found below, and link it there before trying again.`);
+                if(!userData) return await tmiClient.say(channel, `@${tags.username}, your discord ID doesn't exist in the database, please join the server and confirm the rules so that it can be added.`);
                 // User haven't started the linking process
-                if(!userData.twitch) return await tmiClient.say(channel,`Hey, @${tags.username}! Looks like we already have your profile, but you haven't started the linking process. Please use the /twitchlink command found in the discord server to get started.`);
+                if(!userData.twitch) return await tmiClient.say(channel,`@${tags.username}, this discord account does not have an account linked to it. Please make sure you link your twitch account in the discord server first by using /twitchlink command.`);
                 // User can't verify accounts that aren't linked to them lol
-                if(userData.twitch.username != tags['username']) return await tmiClient.say(channel,`Hey, @${tags.username}! Looks like you didn't set this account as your linking account, please go back to discord and relink it.`);
+                if(userData.twitch.username != tags['username']) return await tmiClient.say(channel,`@${tags.username}, your twitch account has already been linked.`);
                 // User can't re-link or re-verify their account
-                if(userData.twitch.verified) return await tmiClient.say(channel, `hey, @${tags.username}. It looks like your account has already been verified! If this is an error or you would like to change the account, please contact the bot operator.`);
+                if(userData.twitch.verified) return await tmiClient.say(channel, `@${tags.username}, this twitch account has already been linked on another discord account.`);
                 // Prevent multi-linking accounts
                 const isVerified = await userDataModel.findOne({
                     "twitch.username": tags['username'],
                     "twitch.verified": true,
                 })
-                if(isVerified) return await tmiClient.say(channel, `Hey, @${tags.username}, another discord account has already linked this twitch account. If you believe this is a mistake, please contact the bot operator.`)
+                if(isVerified) return await tmiClient.say(channel, `@${tags.username}, this account has already been linked on another discord account. If you believe this is an error, please contact the bot operator.`)
                 // Users are passing all the checks, verify them now and update the AuthUsers
                 await userDataModel.updateOne({_id: userData._id}, {
                     $set: {
@@ -70,15 +70,15 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
                 })
                 if(isStreaming()) authUsers[tags['user-id']] = userData._id;
                 await sendLog(LogType.Info,`${userData.username} has verified their twitch account with the database!`);
-                await tmiClient.say(channel, `hey, @${tags.username}. Your account has been successfully verified!`);
+                await tmiClient.say(channel, `@${tags.username}, your account has been successfully verified!`);
                 break;
             }
             case "checkstream": {
-                await tmiClient.say(channel, `Hey, @${tags.username}. The stream state is ${isStreaming()}`)
+                await tmiClient.say(channel, `@${tags.username}, the stream state is ${isStreaming()}`)
                 break;
             }
             default: {
-                await tmiClient.say(channel,`hey, @${tags.username}, I believe that you may have typed the wrong command. If you didn't send a command, perhapse you've used my command prefix; thus, registered as you as trying to run a command.`);
+                await tmiClient.say(channel,`@${tags.username}, command not found.`);
                 break;
             }
         }
