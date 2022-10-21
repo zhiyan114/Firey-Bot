@@ -57,8 +57,8 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
                 if(userData.twitch.verified) return await tmiClient.say(channel, `hey, @${tags.username}. It looks like your account has already been verified! If this is an error or you would like to change the account, please contact the bot operator.`);
                 // Prevent multi-linking accounts
                 const isVerified = await userDataModel.findOne({
-                    twitch: tags['username'],
-                    verified: true,
+                    "twitch.username": tags['username'],
+                    "twitch.verified": true,
                 })
                 if(isVerified) return await tmiClient.say(channel, `Hey, @${tags.username}, another discord account has already linked this twitch account. If you believe this is a mistake, please contact the bot operator.`)
                 // Users are passing all the checks, verify them now and update the AuthUsers
@@ -92,9 +92,7 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
         // User is not on the temp AuthUsers list, check if they're verified or not
         if(!authUsers[tags['user-id']]) {
             const userData = await userDataModel.findOne({
-                twitch: {
-                    ID: tags['user-id']
-                }
+                "twitch.ID": tags['user-id']
             })
             if(!userData || !userData.twitch?.verified) return authUsers[tags['user-id']] = "-1";
             authUsers[tags['user-id']] = userData._id;

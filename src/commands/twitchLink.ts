@@ -28,10 +28,10 @@ const twitchLinkFunc = async (interaction : CommandInteraction) => {
         return await interaction.followUp({embeds:[embed],ephemeral: true})
     }
     // Check if the twitch account has already been linked on someone's account (prevent multi-account)
-    const userExist = await userDataModel.findOne({twitch: {
-        username: twitchUsername,
-        verified: true,
-    }})
+    const userExist = await userDataModel.findOne({
+        "twitch.username": twitchUsername,
+        "twitch.verified": true,
+    })
     if(userExist) {
         embed.setColor('#ff0000')
         .setDescription("This twitch account has already been linked, if you believe this is a mistake, please contact the bot operator.");
