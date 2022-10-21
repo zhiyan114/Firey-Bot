@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { userDataModel } from '../DBUtils/UserDataManager';
+import { ICommand } from '../interface';
 
 /* Command Builder */
 const twitchLinkCmd = new SlashCommandBuilder()
@@ -50,4 +51,4 @@ export default {
     command: twitchLinkCmd,
     function: twitchLinkFunc,
     disabled: false,
-};
+} as ICommand;

@@ -1,9 +1,10 @@
 // @TODO: Show global top 10 points holder.
 
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { Client, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { econModel } from '../DBUtils/EconomyManager';
 import { userDataModel } from '../DBUtils/UserDataManager';
+import { ICommand } from '../interface';
 import { isConnected } from '../utils/DatabaseManager';
 /* Command Builder */
 const leaderboardCmd = new SlashCommandBuilder()
@@ -37,4 +38,4 @@ export default {
     command: leaderboardCmd,
     function: leaderboardFunc,
     disabled: false,
-}
+} as ICommand;

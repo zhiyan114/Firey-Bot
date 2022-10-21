@@ -11,6 +11,7 @@ export default {
 }
 ```
 * command - this key should be configured with `SlashCommandBuilder`
+* permissions - (optional), limit the command to certain roles/users
 * function - this key should be configured with a function that takes in one parameter with type `CommandInteraction`
 * disabled - this key is optional and should be configured with a boolean value. If the value is set to `true`, the command will not initialize during runtime.
 
@@ -31,7 +32,11 @@ const ExampleFunc = async (interaction : CommandInteraction) => {
 
 export default {
     command: ExampleCmd,
+    permissions: {
+        roles: [],
+        users: []
+    }
     function: ExampleFunc,
     disabled: true,
-}
+} as ICommand;
 ```

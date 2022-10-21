@@ -3,6 +3,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { Client, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { econModel } from '../DBUtils/EconomyManager';
+import { ICommand } from '../interface';
 import { isConnected } from '../utils/DatabaseManager';
 
 /* Command Builder */
@@ -34,4 +35,4 @@ export default {
     command: GetPointsCmd,
     function: GetPointsFunc,
     disabled: false,
-}
+} as ICommand;

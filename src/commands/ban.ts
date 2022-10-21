@@ -3,6 +3,7 @@ import { CommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
 import { userRoleManager } from '../utils/roleManager';
 import { sendLog, LogType } from '../utils/eventLogger';
 import { adminRoleID }  from '../config';
+import { ICommand } from '../interface';
 
 /* Command Builder */
 const BanCmd = new SlashCommandBuilder()
@@ -26,7 +27,6 @@ const BanCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const BanFunc = async (interaction : CommandInteraction) => {
-    if (!(new userRoleManager(interaction.member as GuildMember)).check(adminRoleID)) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
     const targetMember = interaction.options.getMember('user') as GuildMember;
     const reason = interaction.options.get('reason',true).value as string;
     const deleteMessages = interaction.options.get('delete',true).value as boolean;
@@ -49,6 +49,9 @@ const BanFunc = async (interaction : CommandInteraction) => {
 
 export default {
     command: BanCmd,
+    permissions: {
+        roles: [adminRoleID]
+    },
     function: BanFunc,
     disabled: false,
-};
+} as ICommand;

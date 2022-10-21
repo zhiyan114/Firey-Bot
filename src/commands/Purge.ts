@@ -4,6 +4,7 @@ import { CommandInteraction, BaseGuildTextChannel, GuildMember, TextChannel } fr
 import { userRoleManager } from '../utils/roleManager';
 import { sendLog, LogType } from '../utils/eventLogger';
 import { adminRoleID, logChannelID }  from '../config';
+import { ICommand } from '../interface';
 const PurgeCmd = new SlashCommandBuilder()
     .setName('purge')
     .setDescription(`Purge messages from a channel`)
@@ -15,7 +16,6 @@ const PurgeCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const PurgeFunc = async (interaction : CommandInteraction) => {
-    if (!(new userRoleManager(interaction.member as GuildMember)).check(adminRoleID)) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
     const amount = interaction.options.get('amount',true).value as number;
     if(amount <= 0 || amount > 100) return await interaction.reply({content: 'Invalid amount!', ephemeral: true});
     //const messages = await interaction.channel.messages.fetch({limit: amount});
@@ -30,6 +30,9 @@ const PurgeFunc = async (interaction : CommandInteraction) => {
 
 export default {
     command: PurgeCmd,
+    permissions: {
+        roles: [adminRoleID]
+    },
     function: PurgeFunc,
     disabled: false,
-}
+} as ICommand;

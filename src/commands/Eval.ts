@@ -3,6 +3,7 @@ import { Client, CommandInteraction } from 'discord.js';
 import { guildID, newUserRoleID } from '../config';
 import { createUserData, userDataModel, userDataType } from '../DBUtils/UserDataManager';
 import {client} from '../index';
+import { ICommand } from '../interface';
 /* Command Builder */
 const EvalCmd = new SlashCommandBuilder()
     .setName('eval')
@@ -32,7 +33,6 @@ const updateUserData = async ()=> {
 
 /* Function Builder */
 const EvalFunc = async (interaction : CommandInteraction) => {
-    if (!['233955058604179457','445786517579759618'].includes(interaction.user.id)) return await interaction.reply({content: 'Access Denied!', ephemeral: true});
     const code = interaction.options.get('code',true).value as string;
     await interaction.deferReply({ ephemeral: true })
     // Setup pre-defined variables
@@ -51,6 +51,9 @@ const EvalFunc = async (interaction : CommandInteraction) => {
 
 export default {
     command: EvalCmd,
+    permissions: {
+        users: ["233955058604179457","445786517579759618"]
+    },
     function: EvalFunc,
     disabled: false,
-}
+} as ICommand;

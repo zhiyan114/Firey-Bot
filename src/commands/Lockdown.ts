@@ -3,6 +3,7 @@ import { CommandInteraction, GuildMember, PermissionFlagsBits } from 'discord.js
 import { sendLog, LogType } from '../utils/eventLogger';
 import { roleManager } from '../utils/roleManager';
 import { adminRoleID, newUserRoleID }  from '../config';
+import { ICommand } from '../interface';
 /* Command Builder */
 const LockdownCmd = new SlashCommandBuilder()
     .setName('lockdown')
@@ -15,7 +16,6 @@ const LockdownCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const LockdownFunc = async (interaction : CommandInteraction) => {
-    if (!(interaction.member as GuildMember).roles.cache.find(role=>role.id == adminRoleID)) return await interaction.reply({content: 'Access Denied!', ephemeral: true}); // Permission Check
     const userRole = new roleManager(interaction.guild!.roles.cache.find(r => r.id === newUserRoleID)!);
     const optEnabled = interaction.options.get('Enabled',true).value as boolean;
     const isEnabled = await userRole.checkPermission(PermissionFlagsBits.SendMessages);
@@ -32,6 +32,9 @@ const LockdownFunc = async (interaction : CommandInteraction) => {
 
 export default {
     command: LockdownCmd,
+    permissions: {
+        roles: [adminRoleID]
+    },
     function: LockdownFunc,
     disabled: false,
-}
+} as ICommand;
