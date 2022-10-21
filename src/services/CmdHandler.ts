@@ -8,7 +8,7 @@ import { client } from '../index';
 import { ApplicationCommandPermissions, ApplicationCommandPermissionType, Interaction } from 'discord.js'
 import { getAccessToken } from '../utils/discordTokenManager';
 import { LogType, sendLog } from '../utils/eventLogger';
-import Sentry from '@sentry/node'
+import * as Sentry from '@sentry/node'
 
 // Internal Interface
 interface ICommandList {
