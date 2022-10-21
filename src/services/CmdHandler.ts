@@ -5,7 +5,7 @@ import * as config from '../config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { client } from '../index';
-import { ApplicationCommandPermissions, ApplicationCommandPermissionType, Interaction } from 'discord.js'
+import { ApplicationCommandPermissions, ApplicationCommandPermissionType, GuildMember, Interaction } from 'discord.js'
 import { getAccessToken } from '../utils/discordTokenManager';
 import { LogType, sendLog } from '../utils/eventLogger';
 import * as Sentry from '@sentry/node'
@@ -32,60 +32,23 @@ rest.put(
     Routes.applicationGuildCommands(config['clientID'], config['guildID']),
     { body: Object.values(commandList).map(cmd=>{ if(!cmd.disabled) return cmd.command.toJSON() }) },
 );
-
-// @TODO: Configure commands' permissions
-client.on('ready',async ()=>{
-    const guild = client.guilds.cache.find(g=>g.id == config.guildID);
-    let accessToken = process.env["DISCORD_TOKEN"];
-    if(!guild || !accessToken) return await sendLog(LogType.Warning, "Missing bearer token, command perms may not be updated");
-    const registeredCommands = await guild.commands.fetch();
-    if(!registeredCommands) return;
-    for(let [_, command] of registeredCommands) {
-        const cmdData = commandList[command.name];
-        if(!cmdData || !cmdData.permissions) continue;
-        // Set to disable everyone's permission by default if there is a permission configured
-        const commandPermConfig: ApplicationCommandPermissions[] = [{
-            id: guild.roles.everyone.id,
-            type: ApplicationCommandPermissionType.Role,
-            permission: false,
-        }];
-        // Load the roles permission
-        if(cmdData.permissions.roles)
-            for(let roleID of cmdData.permissions.roles) {
-                commandPermConfig.push({
-                    id: roleID,
-                    type: ApplicationCommandPermissionType.Role,
-                    permission: true,
-                })
-            };
-        // Loads the users permission
-        if(cmdData.permissions.users)
-            for(let userID of cmdData.permissions.users) {
-                commandPermConfig.push({
-                    id: userID,
-                    type: ApplicationCommandPermissionType.User,
-                    permission: true,
-                })
-            };
-        try {
-            await guild.commands.permissions.set({
-                command: command.id,
-                token: accessToken,
-                permissions: commandPermConfig,
-            })
-        } catch(ex: unknown) {
-            await sendLog(LogType.Warning, "An error occured when attempting to set commands permission")
-            Sentry.captureException(ex);
-            break;
-        }
-    }
-})
+// Algorithm to check if user has permission
+const hasPerm = (command: ICommand, user: GuildMember) => {
+    // User perm check first
+    const perm = command.permissions
+    if(!perm) return true;
+    if(perm.users && perm.users.find(k=>k == user.user.id)) return true;
+    if(perm.roles && perm.roles.filter(r => user.roles.cache.find(ur=> ur.id == r)).length > 0) return true;
+    return false;
+}
 
 // Handles command interactions
 client.on('interactionCreate', async (interaction : Interaction) => {
     if (interaction.isCommand()) {
         const command = commandList[interaction.commandName];
         if (!command) return;
+        if (!interaction.member) return;
+        if (!hasPerm(command, interaction.member as GuildMember)) {interaction.reply({content: "Permission Denied", ephemeral: true}); return;};
         await command.function(interaction);
     }
 })
