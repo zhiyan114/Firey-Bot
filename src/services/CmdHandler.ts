@@ -46,21 +46,23 @@ client.on('ready',async ()=>{
             permission: false,
         }];
         // Load the roles permission
-        for(let roleID of cmdData.permissions.roles) {
-            commandPermConfig.push({
-                id: roleID,
-                type: ApplicationCommandPermissionType.Role,
-                permission: true,
-            })
-        }
+        if(cmdData.permissions.roles)
+            for(let roleID of cmdData.permissions.roles) {
+                commandPermConfig.push({
+                    id: roleID,
+                    type: ApplicationCommandPermissionType.Role,
+                    permission: true,
+                })
+            };
         // Loads the users permission
-        for(let userID of cmdData.permissions.users) {
-            commandPermConfig.push({
-                id: userID,
-                type: ApplicationCommandPermissionType.User,
-                permission: true,
-            })
-        }
+        if(cmdData.permissions.users)
+            for(let userID of cmdData.permissions.users) {
+                commandPermConfig.push({
+                    id: userID,
+                    type: ApplicationCommandPermissionType.User,
+                    permission: true,
+                })
+            };
         //command.set
         guild.commands.permissions.set({
             command: '123213123',

@@ -3,8 +3,8 @@ import { CommandInteraction } from 'discord.js';
 
 // Supply the role/user ID here for the whitelisted users
 export type commandPermOptions = {
-    roles: string[],
-    users: string[],
+    roles?: string[],
+    users?: string[],
 }
 
 export type ICommand = {
