@@ -24,6 +24,7 @@ for(let file of fs.readdirSync(cmdDir)) {
 }
 
 let commands = Object.values(commandList);
+//@TODO: Automatically set permission through export default
 const rest = new REST({ version: '10' }).setToken(config['botToken']);
 rest.put(
     Routes.applicationGuildCommands(config['clientID'], config['guildID']),

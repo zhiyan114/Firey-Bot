@@ -35,6 +35,25 @@ let authUsers: stringObject = {}
 tmiClient.on('message', async (channel, tags, message, self)=>{
     if(self) return;
     if(!tags['user-id'] || !tags['username']) return;
+    // User is not on the temp AuthUsers list, check if they're verified or not (if the stream is started)
+    if(!authUsers[tags['user-id']] && isStreaming()) {
+        const userData = await userDataModel.findOne({
+            "twitch.ID": tags['user-id']
+        })
+        if(userData && userData.twitch && userData.twitch.verified) {
+            // User is on the database
+            authUsers[tags['user-id']] = userData._id;
+            if(tags['username'] != userData.twitch.username) {
+                // User probably has a new username, update them.
+                await userDataModel.updateOne({_id: userData._id},{
+                    $set: {
+                        "twitch.username": tags['username']
+                    },
+                })
+            }
+        }
+        if(!authUsers[tags['user-id']]) authUsers[tags['user-id']] = "-1";
+    }
     // Check prefix to determine if this is a chat message or command
     if(message.slice(0,1) == twitch.prefix) {
         const args = message.split(" ")
@@ -73,6 +92,20 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
                 await tmiClient.say(channel, `@${tags.username}, your account has been successfully verified!`);
                 break;
             }
+            case "getpoints": {
+                if(authUsers[tags['user-id']] == "-1") return tmiClient.say(channel,`@${tags.username}, your account is not linked yet. Do that first then try again.`);
+                let discordUserID = authUsers[tags['user-id']];
+                if(!discordUserID) {
+                    // Get the user ID since it's not available when the stream is offline
+                    const userData = await econModel.findOne({"twitch.ID": tags['user-id']});
+                    if(userData) discordUserID = userData._id
+                }
+                // Fetch the points
+                const econData = await econModel.findOne({_id: discordUserID})
+                if(!econData) return await tmiClient.say(channel,`${tags.username}, you have 0 points!`);
+                await tmiClient.say(channel,`@${tags.username}, you have ${econData?.points} points!`);
+                break;
+            }
             case "checkstream": {
                 await tmiClient.say(channel, `@${tags.username}, the stream state is ${isStreaming()}`)
                 break;
@@ -88,23 +121,7 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
     // Check if the server is active before giving out the points
     if(isStreaming()) {
         // Don't award the points to the user until they verify their account on twitch
-        if(authUsers[tags['user-id']] == "-1") return;
-        // User is not on the temp AuthUsers list, check if they're verified or not
-        if(!authUsers[tags['user-id']]) {
-            const userData = await userDataModel.findOne({
-                "twitch.ID": tags['user-id']
-            })
-            if(!userData || !userData.twitch?.verified) return authUsers[tags['user-id']] = "-1";
-            authUsers[tags['user-id']] = userData._id;
-            if(tags['username'] != userData.twitch.username) {
-                // User probably has a new username, update them.
-                await userDataModel.updateOne({_id: userData._id},{
-                    $set: {
-                        "twitch.username": tags['username']
-                    },
-                })
-            }
-        }
+        if(!authUsers[tags['user-id']] || authUsers[tags['user-id']] == "-1") return;
         // Now that user has their ID cached, give them the reward
         const userEconData = await econModel.findOne({_id: authUsers[tags['user-id']]})
         // Don't grant point if they've already received one within a minute
