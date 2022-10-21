@@ -63,9 +63,8 @@ client.on('ready',async ()=>{
                     permission: true,
                 })
             };
-        //command.set
         guild.commands.permissions.set({
-            command: '123213123',
+            command: command.id,
             token: config['botToken'],
             permissions: commandPermConfig,
         })
