@@ -29,7 +29,7 @@ File: config.ts
 * `SENTRY_DSN` - (Optional) Capture unhandled/handled errors
 * `MONGODB_CONN` - MongoDB Connection String
 * `TWITCH_TOKEN` - (Optional) Twitch Oauth token
-* `DISCORD_REFRESH_TOKEN` - Refresh Token containing application.command.update scope.
+* `DISCORD_TOKEN` - Your temp bearer token containing application.command.update scope.
 
 ## Standard Configuration:
 * `guildID` - The guild ID for the server that the bot will be running in. Yes, I can technically pull that ID out by getting a list of guilds that the bot is in and read the first array, but nah, I don't feel like doing that.

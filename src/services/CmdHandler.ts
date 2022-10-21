@@ -36,11 +36,10 @@ rest.put(
 // @TODO: Configure commands' permissions
 client.on('ready',async ()=>{
     const guild = client.guilds.cache.find(g=>g.id == config.guildID);
-    let accessToken = process.env["DISCORD_REFRESH_TOKEN"];
+    let accessToken = process.env["DISCORD_TOKEN"];
     if(!guild || !accessToken) return await sendLog(LogType.Warning, "Missing bearer token, command perms may not be updated");
     const registeredCommands = await guild.commands.fetch();
     if(!registeredCommands) return;
-    accessToken = await getAccessToken(accessToken);
     for(let [_, command] of registeredCommands) {
         const cmdData = commandList[command.name];
         if(!cmdData || !cmdData.permissions) continue;
