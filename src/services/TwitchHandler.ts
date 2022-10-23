@@ -71,9 +71,9 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
                 // User haven't started the linking process
                 if(!userData.twitch) return await tmiClient.say(channel,`@${tags.username}, this discord account does not have an account linked to it. Please make sure you link your twitch account in the discord server first by using /twitchlink command.`);
                 // User can't verify accounts that aren't linked to them lol
-                if(userData.twitch.username != tags['username']) return await tmiClient.say(channel,`@${tags.username}, your twitch account has already been linked.`);
+                if(userData.twitch.username != tags['username']) return await tmiClient.say(channel,`@${tags.username}, you cannot link other people's account.`);
                 // User can't re-link or re-verify their account
-                if(userData.twitch.verified) return await tmiClient.say(channel, `@${tags.username}, this twitch account has already been linked on another discord account.`);
+                if(userData.twitch.verified) return await tmiClient.say(channel, `@${tags.username}, this twitch account has already been linked.`);
                 // Prevent multi-linking accounts
                 const isVerified = await userDataModel.findOne({
                     "twitch.username": tags['username'],
