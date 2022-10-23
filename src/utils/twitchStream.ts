@@ -1,6 +1,6 @@
 // Internal Library to detect twitch stream status
 import { captureException } from '@sentry/node';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import events from 'events';
 import { twitch } from '../config';
 import { LogType, sendLog } from './eventLogger';
@@ -11,7 +11,7 @@ export const streamStatus = new events({});
 interface stringObjectType {
     [key: string]: string
 }
-type getStreamData = {
+export type getStreamData = {
     id: string,
     user_id: string,
     user_login: string,
@@ -53,7 +53,7 @@ const mainCheck = async () => {
         }
         if(serverResponse.data.data.length > 0 && !alreadyStreaming) {
             alreadyStreaming = true;
-            streamStatus.emit('start', serverResponse.data);
+            streamStatus.emit('start', serverResponse.data.data[0]);
         }
         else if(serverResponse.data.data.length == 0 && alreadyStreaming) {
             alreadyStreaming = false;
@@ -64,7 +64,7 @@ const mainCheck = async () => {
     } catch(ex: unknown) {
         if(!errLogged) {
             captureException(ex);
-            if(ex instanceof AxiosError) await sendLog(LogType.Warning,`twitchStream: ${ex.response?.status}: ${JSON.stringify(ex.response?.data)}`);
+            if(ex instanceof axios.AxiosError) await sendLog(LogType.Warning,`twitchStream: ${ex.response?.status}: ${JSON.stringify(ex.response?.data)}`);
             errLogged = true;
         }
     } finally {

@@ -3,7 +3,7 @@ import { twitch } from '../config';
 import { createEconData, econModel } from '../DBUtils/EconomyManager';
 import { userDataModel } from '../DBUtils/UserDataManager';
 import { LogType, sendLog } from '../utils/eventLogger';
-import { isStreaming, streamStatus, twitchGetStreamType } from '../utils/twitchStream'
+import { isStreaming, streamStatus, getStreamData } from '../utils/twitchStream'
 import { getRewardPoints } from '../DBUtils/EconomyManager';
 import {client as botClient} from '../index'
 import { EmbedBuilder, TextChannel } from 'discord.js';
@@ -139,13 +139,12 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
     }
     
 })
-streamStatus.on('start',async (data: twitchGetStreamType)=>{
+streamStatus.on('start',async (streamData: getStreamData)=>{
     // Twitch Stream Started
     authUsers = {};
     // Notify all the users in the server that his stream started
     const channel = await botClient.channels.fetch(twitch.discordChannelID) as TextChannel | null;
     if(!channel) return;
-    const streamData = data.data[0];
     streamData.thumbnail_url = streamData.thumbnail_url.replace("{width}","1280");
     streamData.thumbnail_url = streamData.thumbnail_url.replace("{height}","720");
     const streamUrl = `https://twitch.tv/${streamData.user_name}`
