@@ -39,7 +39,39 @@ export const createEconData = async (userID: string, initalPoint?: number) => {
         lastGrantedPoint: new Date(),
     })
 }
+export const grantPoints = async (userID: string, points?: number, followCooldown = true, autoCreateData = true) => {
+    if(!points) points = getRewardPoints();
+    if(followCooldown) {
+        const userEconData = await econModel.findOne({_id: userID});
+        if(!userEconData) {
+            if(autoCreateData) {
+                createEconData(userID, points);
+                return true;
+            }
+            return false;
+        }
+        // 1 minute cooldown
+        if(userEconData.lastGrantedPoint.getTime() > (new Date()).getTime() - 60000) return false;
+    }
+    const updateRes = await econModel.updateOne({_id: userID}, {
+        $set: {
+            lastGrantedPoint: new Date()
+        },
+        $inc: {
+            points
+        }
+    })
+    // User exist and points are granted
+    if(updateRes.matchedCount > 0) return true;
+    // User doesn't exist. Return true if the user is automatically created with inital points.
+    if(autoCreateData) {
+        createEconData(userID, points);
+        return true;
+    }
+    return false;
+}
 
+// Why did I even create this if I won't even use it -_-
 export class EconomyManager {
     private user: User;
     constructor(member: User | GuildMember) {
