@@ -124,9 +124,11 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
         if(!authUsers[tags['user-id']] || authUsers[tags['user-id']] == "-1") return;
         // Now that user has their ID cached, give them the reward
         const userEconData = await econModel.findOne({_id: authUsers[tags['user-id']]})
+        // If user's econ data does not exist, create one for them. This shouldn't happen unless the user managed to not talk in the server at all before verifying.
+        if(!userEconData) return await createEconData(authUsers[tags['user-id']]);
         // Don't grant point if they've already received one within a minute
-        if(!userEconData || userEconData.lastGrantedPoint.getTime() > (new Date()).getTime() - 60000) return;
-        const econResult = await econModel.updateOne({_id: authUsers[tags['user-id']]},{
+        if(userEconData.lastGrantedPoint.getTime() > (new Date()).getTime() - 60000) return;
+        await econModel.updateOne({_id: authUsers[tags['user-id']]},{
             $set: {
                 lastGrantedPoint: new Date()
             },
@@ -134,8 +136,6 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
                 points: getRewardPoints(),
             },
         })
-        // If user doesn't exist on the Econ Collection, create a new entry for them
-        if(econResult.matchedCount == 0) await createEconData(authUsers[tags['user-id']]);
     }
     
 })
@@ -153,7 +153,7 @@ streamStatus.on('start',async (data: twitchGetStreamType)=>{
         .setColor("#00FFFF")
         .setAuthor({name: `${streamData.user_name} do be streaming right now!`, url: streamUrl})
         .setTitle(streamData.title)
-        .setDescription(`Currently streaming ${streamData.game_name} with ${streamData.viewer_count} viewers`)
+        .setDescription(`Currently streaming **${streamData.game_name}** with ${streamData.viewer_count} viewers`)
         .setURL(streamUrl)
         .setImage(streamData.thumbnail_url);
     await channel.send({content: `<@&${twitch.roleToPing}> Derg is streaming right now, come join!`, embeds: [embed]})
