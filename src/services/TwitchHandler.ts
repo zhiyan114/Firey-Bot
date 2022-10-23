@@ -1,6 +1,6 @@
 import tmi from 'tmi.js';
 import { twitch } from '../config';
-import { createEconData, econModel } from '../DBUtils/EconomyManager';
+import { createEconData, econModel, grantPoints } from '../DBUtils/EconomyManager';
 import { userDataModel } from '../DBUtils/UserDataManager';
 import { LogType, sendLog } from '../utils/eventLogger';
 import { isStreaming, streamStatus, getStreamData } from '../utils/twitchStream'
@@ -123,19 +123,7 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
         // Don't award the points to the user until they verify their account on twitch
         if(!authUsers[tags['user-id']] || authUsers[tags['user-id']] == "-1") return;
         // Now that user has their ID cached, give them the reward
-        const userEconData = await econModel.findOne({_id: authUsers[tags['user-id']]})
-        // If user's econ data does not exist, create one for them. This shouldn't happen unless the user managed to not talk in the server at all before verifying.
-        if(!userEconData) return await createEconData(authUsers[tags['user-id']]);
-        // Don't grant point if they've already received one within a minute
-        if(userEconData.lastGrantedPoint.getTime() > (new Date()).getTime() - 60000) return;
-        await econModel.updateOne({_id: authUsers[tags['user-id']]},{
-            $set: {
-                lastGrantedPoint: new Date()
-            },
-            $inc: {
-                points: getRewardPoints(),
-            },
-        })
+        await grantPoints(authUsers[tags['user-id']]);
     }
     
 })

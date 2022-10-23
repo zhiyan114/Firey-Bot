@@ -39,13 +39,19 @@ export const createEconData = async (userID: string, initalPoint?: number) => {
         lastGrantedPoint: new Date(),
     })
 }
-export const grantPoints = async (userID: string, points?: number, followCooldown = true, autoCreateData = true) => {
-    if(!points) points = getRewardPoints();
-    if(followCooldown) {
+type grantPointsOption = {
+    points?: number;
+    followCooldown?: boolean;
+    autoCreateData?: boolean;
+}
+export const grantPoints = async (userID: string, options?: grantPointsOption) => {
+    if(!options) options = {};
+    if(!options.points) options.points = getRewardPoints();
+    if(options.followCooldown) {
         const userEconData = await econModel.findOne({_id: userID});
         if(!userEconData) {
-            if(autoCreateData) {
-                createEconData(userID, points);
+            if(options.autoCreateData) {
+                createEconData(userID, options.points);
                 return true;
             }
             return false;
@@ -58,14 +64,14 @@ export const grantPoints = async (userID: string, points?: number, followCooldow
             lastGrantedPoint: new Date()
         },
         $inc: {
-            points
+            points: options.points
         }
     })
     // User exist and points are granted
     if(updateRes.matchedCount > 0) return true;
     // User doesn't exist. Return true if the user is automatically created with inital points.
-    if(autoCreateData) {
-        createEconData(userID, points);
+    if(options.autoCreateData) {
+        createEconData(userID, options.points);
         return true;
     }
     return false;
