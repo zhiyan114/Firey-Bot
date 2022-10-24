@@ -1,0 +1,7 @@
+version = 1
+
+exclude_patterns = ["src/utils/youtube-notifier/"]
+
+[[analyzers]]
+name = "javascript"
+enabled = true
