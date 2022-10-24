@@ -1,6 +1,9 @@
 version = 1
 
-exclude_patterns = ["src/utils/youtube-notifier/"]
+exclude_patterns = [
+  "src/utils/youtube-notifier/**",
+  "src/commands/Eval.ts"
+]
 
 [[analyzers]]
 name = "javascript"
