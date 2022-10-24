@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction, GuildMember, PermissionFlagsBits } from 'discord.js'
+import { CommandInteraction, PermissionFlagsBits } from 'discord.js'
 import { sendLog, LogType } from '../utils/eventLogger';
 import { roleManager } from '../utils/roleManager';
 import { adminRoleID, newUserRoleID }  from '../config';

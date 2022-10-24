@@ -1,6 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { EmbedBuilder, CommandInteraction, GuildMember, TextChannel } from 'discord.js';
-import { userRoleManager } from '../utils/roleManager';
 import { sendLog, LogType } from '../utils/eventLogger';
 import { adminRoleID }  from '../config';
 import { ICommand } from '../interface';

@@ -1,7 +1,6 @@
 /* Command Builder */
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction, BaseGuildTextChannel, GuildMember, TextChannel } from 'discord.js';
-import { userRoleManager } from '../utils/roleManager';
+import { CommandInteraction, BaseGuildTextChannel, TextChannel } from 'discord.js';
 import { sendLog, LogType } from '../utils/eventLogger';
 import { adminRoleID, logChannelID }  from '../config';
 import { ICommand } from '../interface';

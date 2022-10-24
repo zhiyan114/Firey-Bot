@@ -1,10 +1,9 @@
 import tmi from 'tmi.js';
 import { twitch } from '../config';
-import { createEconData, econModel, grantPoints } from '../DBUtils/EconomyManager';
+import {econModel, grantPoints } from '../DBUtils/EconomyManager';
 import { userDataModel } from '../DBUtils/UserDataManager';
 import { LogType, sendLog } from '../utils/eventLogger';
 import { isStreaming, streamStatus, getStreamData } from '../utils/twitchStream'
-import { getRewardPoints } from '../DBUtils/EconomyManager';
 import {client as botClient} from '../index'
 import { EmbedBuilder, TextChannel } from 'discord.js';
 

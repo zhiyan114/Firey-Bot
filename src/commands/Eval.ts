@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { Client, CommandInteraction } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import { guildID, newUserRoleID } from '../config';
-import { createUserData, userDataModel, userDataType } from '../DBUtils/UserDataManager';
+import { userDataModel, userDataType } from '../DBUtils/UserDataManager';
 import {client} from '../index';
 import { ICommand } from '../interface';
 /* Command Builder */

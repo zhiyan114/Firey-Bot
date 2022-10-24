@@ -1,7 +1,7 @@
 // @TODO: Show individual's balance privately?
 
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { Client, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { econModel } from '../DBUtils/EconomyManager';
 import { ICommand } from '../interface';
 import { isConnected } from '../utils/DatabaseManager';
