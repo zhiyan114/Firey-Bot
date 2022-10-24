@@ -2,8 +2,8 @@
 
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { Client, CommandInteraction, EmbedBuilder } from 'discord.js';
-import Mongoose from 'mongoose';
-import { econSchema, econType } from '../services/EconomyHandler';
+import { econModel } from '../DBUtils/EconomyManager';
+import { ICommand } from '../interface';
 import { isConnected } from '../utils/DatabaseManager';
 
 /* Command Builder */
@@ -17,11 +17,10 @@ const GetPointsCmd = new SlashCommandBuilder()
     )
 
 /* Function Builder */
-const GetPointsFunc = async (interaction : CommandInteraction, client : Client) => {
+const GetPointsFunc = async (interaction : CommandInteraction) => {
     const isEphmeral = interaction.options.get('ephemeral', false)?.value as boolean ?? true;
     if(!isConnected()) return await interaction.reply({content: "Unfortunately the database is not connected, please report this issue.", ephemeral: true});
     await interaction.deferReply({ephemeral: isEphmeral});
-    const econModel = Mongoose.model<econType>("economy",econSchema);
     const userEconData = await econModel.findOne({_id: interaction.user.id});
     const embed = new EmbedBuilder();
     embed.setTitle(`Your Points`);
@@ -36,4 +35,4 @@ export default {
     command: GetPointsCmd,
     function: GetPointsFunc,
     disabled: false,
-}
+} as ICommand;

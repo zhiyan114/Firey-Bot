@@ -3,6 +3,7 @@ import { EmbedBuilder, CommandInteraction, GuildMember, TextChannel } from 'disc
 import { userRoleManager } from '../utils/roleManager';
 import { sendLog, LogType } from '../utils/eventLogger';
 import { adminRoleID }  from '../config';
+import { ICommand } from '../interface';
 /* Command Builder */
 const KickCmd = new SlashCommandBuilder()
     .setName('kick')
@@ -25,7 +26,6 @@ const KickCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const KickFunc = async (interaction : CommandInteraction) => {
-    if (!(new userRoleManager(interaction.member as GuildMember)).check(adminRoleID)) return await interaction.reply({content: 'Access Denied!', ephemeral: true}); // Permission Check
     /* Get the supplied information */
     const targetMember = interaction.options.getMember('user') as GuildMember;
     const reason = interaction.options.get('reason',true).value as string;
@@ -56,6 +56,9 @@ const KickFunc = async (interaction : CommandInteraction) => {
 
 export default {
     command: KickCmd,
+    permissions: {
+        roles: [adminRoleID]
+    },
     function: KickFunc,
     disabled: false,
-}
+} as ICommand;

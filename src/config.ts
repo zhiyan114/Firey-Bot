@@ -58,3 +58,9 @@ export const reactionRole = {
     channelID: "908719210040008755",
     messageID: "970021524763471893"
 };
+export const twitch = {
+    prefix: "!",
+    channel: "fireythealiendragon",
+    discordChannelID: "908120379766231070",
+    roleToPing: "908723067067437076",
+}

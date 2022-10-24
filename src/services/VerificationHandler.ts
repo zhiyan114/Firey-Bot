@@ -6,12 +6,16 @@ import { sendLog, LogType } from '../utils/eventLogger';
 import { newUserRoleID } from '../config';
 import { client } from '../index';
 import { Interaction } from 'discord.js';
+import { createUserData } from '../DBUtils/UserDataManager';
 
 client.on('interactionCreate', async (interaction : Interaction) => {
     if(interaction.isButton() && interaction.customId === "RuleConfirm") {
         const userRole = new RoleManager(interaction.member as GuildMember);
         if(await userRole.check(newUserRoleID)) {await interaction.reply({content: "You've already confirmed the rules.", ephemeral: true});return;};
+        // Update the user's role and the database
         await userRole.add(newUserRoleID);
+        await createUserData(interaction.user, new Date());
+        // Thank the user for the confirmation
         await interaction.reply({content: "Thank you for confirming the rules.", ephemeral: true});
         await sendLog(LogType.Interaction, `${(interaction.member!.user as User).tag} confirmed the rules.`);
     }

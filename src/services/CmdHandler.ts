@@ -5,7 +5,10 @@ import * as config from '../config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { client } from '../index';
-import { Interaction } from 'discord.js'
+import { ApplicationCommandPermissions, ApplicationCommandPermissionType, GuildMember, Interaction } from 'discord.js'
+import { getAccessToken } from '../utils/discordTokenManager';
+import { LogType, sendLog } from '../utils/eventLogger';
+import * as Sentry from '@sentry/node'
 
 // Internal Interface
 interface ICommandList {
@@ -23,16 +26,29 @@ for(let file of fs.readdirSync(cmdDir)) {
     }
 }
 
-let commands = Object.values(commandList);
+// Add the commands to the server
 const rest = new REST({ version: '10' }).setToken(config['botToken']);
 rest.put(
     Routes.applicationGuildCommands(config['clientID'], config['guildID']),
-    { body: commands.map(cmd=>{ if(!cmd.disabled) return cmd.command.toJSON() }) },
+    { body: Object.values(commandList).map(cmd=>{ if(!cmd.disabled) return cmd.command.toJSON() }) },
 );
+// Algorithm to check if user has permission
+const hasPerm = (command: ICommand, user: GuildMember) => {
+    // User perm check first
+    const perm = command.permissions
+    if(!perm) return true;
+    if(perm.users && perm.users.find(k=>k == user.user.id)) return true;
+    if(perm.roles && perm.roles.filter(r => user.roles.cache.find(ur=> ur.id == r)).length > 0) return true;
+    return false;
+}
+
+// Handles command interactions
 client.on('interactionCreate', async (interaction : Interaction) => {
     if (interaction.isCommand()) {
         const command = commandList[interaction.commandName];
         if (!command) return;
-        await command.function(interaction, client);
+        if (!interaction.member) return;
+        if (!hasPerm(command, interaction.member as GuildMember)) {interaction.reply({content: "Permission Denied", ephemeral: true}); return;};
+        await command.function(interaction);
     }
 })
