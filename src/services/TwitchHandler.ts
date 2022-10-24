@@ -69,7 +69,7 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
                 // Prompt user to join the discord before allowing them to verify
                 if(!userData) return await tmiClient.say(channel, `@${tags.username}, your discord ID doesn't exist in the database, please join the server and confirm the rules so that it can be added.`);
                 // User haven't started the linking process
-                if(!userData.twitch) return await tmiClient.say(channel,`@${tags.username}, this discord account does not have an account linked to it. Please make sure you link your twitch account in the discord server first by using /twitchlink command.`);
+                if(!userData.twitch || !userData.twitch.username) return await tmiClient.say(channel,`@${tags.username}, this discord account does not have an account linked to it. Please make sure you link your twitch account in the discord server first by using /twitchlink command.`);
                 // User can't verify accounts that aren't linked to them lol
                 if(userData.twitch.username != tags['username']) return await tmiClient.say(channel,`@${tags.username}, you cannot link other people's account.`);
                 // User can't re-link or re-verify their account
