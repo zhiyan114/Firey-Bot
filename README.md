@@ -1,7 +1,7 @@
 # Firey-Bot Internal Documentation
 This bot is developed to serve a single server; thus, codes are not reusable without modification.
 
-[![CodeFactor](https://www.codefactor.io/repository/github/zhiyan114/firey-bot/badge/master?s=4eccfaa078509d205bc5fb5b76374c0972fb7fc2)](https://www.codefactor.io/repository/github/zhiyan114/firey-bot/overview/master)
+[![CodeFactor](https://www.codefactor.io/repository/github/zhiyan114/firey-bot/badge)](https://www.codefactor.io/repository/github/zhiyan114/firey-bot)
 [![DeepSource](https://deepsource.io/gh/zhiyan114/Firey-Bot.svg/?label=active+issues&show_trend=true&token=3NodfB5RfVFfrGbXlb3fV6t-)](https://deepsource.io/gh/zhiyan114/Firey-Bot/?ref=repository-badge)
 [![DeepSource](https://deepsource.io/gh/zhiyan114/Firey-Bot.svg/?label=resolved+issues&show_trend=true&token=3NodfB5RfVFfrGbXlb3fV6t-)](https://deepsource.io/gh/zhiyan114/Firey-Bot/?ref=repository-badge)
 
