@@ -132,8 +132,7 @@ streamStatus.on('start',async (streamData: getStreamData)=>{
     // Notify all the users in the server that his stream started
     const channel = await botClient.channels.fetch(twitch.discordChannelID) as TextChannel | null;
     if(!channel) return;
-    streamData.thumbnail_url = streamData.thumbnail_url.replace("{width}","1280");
-    streamData.thumbnail_url = streamData.thumbnail_url.replace("{height}","720");
+    streamData.thumbnail_url = streamData.thumbnail_url.replace("{width}","1280").replace("{height}","720");
     const streamUrl = `https://twitch.tv/${streamData.user_name}`
     const embed = new EmbedBuilder()
         .setColor("#00FFFF")

@@ -17,11 +17,13 @@ export class userRoleManager {
     }
     public async add(roleID: string): Promise<void> {
         const role = await this.user!.guild.roles.fetch(roleID);
-        await this.user?.roles.add(role!);
+        if(!role) return;
+        await this.user?.roles.add(role);
     }
     public async remove(roleID: string): Promise<void> {
         const role = await this.user!.guild.roles.fetch(roleID);
-        await this.user?.roles.remove(role!);
+        if(!role) return;
+        await this.user?.roles.remove(role);
     }
 }
 
