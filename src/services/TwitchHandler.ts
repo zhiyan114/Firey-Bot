@@ -102,7 +102,7 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
 let discordReminder: NodeJS.Timeout | null;
 
 const sendDiscordLink = async () => {
-    await tmiClient.say(twitch.channel,`A quick remindr that my discord server exists! You can join here: ${twitch.discordInvite}`);
+    await tmiClient.say(twitch.channel,`A quick reminder that my discord server exists! You can join here: ${twitch.discordInvite}`);
     if(isStreaming()) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
 }
 

@@ -19,8 +19,6 @@ export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessag
 /* Internal Services */
 import { ReactRole, YouTubeNotifier } from './services'
 
-
-
 client.on('ready', async () => {
   client.user!.setPresence({
     status: "dnd",
