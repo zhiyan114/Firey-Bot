@@ -48,7 +48,6 @@ for(let file of fs.readdirSync(cmdDir)) {
     }
 }
 
-// @TODO: Organize this hot mess lmfao
 tmiClient.on('message', async (channel, tags, message, self)=>{
     if(self) return;
     if(!tags['user-id'] || !tags['username']) return;
