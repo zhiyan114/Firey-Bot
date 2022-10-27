@@ -51,3 +51,5 @@ File: config.ts
     * `channel` - Twitch channel name that the bot will be listening in.
     * `discordChannelID` - The channel ID in discord to send the notification to
     * `roleToPing` - The role ID to ping when stream starts
+    * `discordInvite` - Discord server invite link (keeping the link consistent)
+    * `reminderInterval` - Interval to send a reminder for the discord server (in ms)

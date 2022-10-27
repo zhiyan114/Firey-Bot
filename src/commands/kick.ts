@@ -1,6 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { EmbedBuilder, CommandInteraction, GuildMember, TextChannel } from 'discord.js';
-import { userRoleManager } from '../utils/roleManager';
 import { sendLog, LogType } from '../utils/eventLogger';
 import { adminRoleID }  from '../config';
 import { ICommand } from '../interface';
@@ -30,9 +29,6 @@ const KickFunc = async (interaction : CommandInteraction) => {
     const targetMember = interaction.options.getMember('user') as GuildMember;
     const reason = interaction.options.get('reason',true).value as string;
     const invite = interaction.options.get('invite',true).value as boolean;
-    const Fields = [
-        
-    ]
     const embed = new EmbedBuilder()
         .setColor('#FFFF00')
         .setTitle('Kicked')

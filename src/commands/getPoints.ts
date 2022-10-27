@@ -1,7 +1,7 @@
 // @TODO: Show individual's balance privately?
 
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { Client, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { econModel } from '../DBUtils/EconomyManager';
 import { ICommand } from '../interface';
 import { isConnected } from '../utils/DatabaseManager';
@@ -25,7 +25,8 @@ const GetPointsFunc = async (interaction : CommandInteraction) => {
     const embed = new EmbedBuilder();
     embed.setTitle(`Your Points`);
     embed.setColor("#00FFFF");
-    embed.setDescription(userEconData?.points.toString() ?? "[ERROR]: Your record is not found, please report this issue.");
+    // User haven't chatted yet, response with just 0 points.
+    embed.setDescription(userEconData?.points.toString() ?? "0 (chat to get your first points)");
     embed.setAuthor({name: interaction.user.tag, iconURL: interaction.user.avatarURL() ?? interaction.user.defaultAvatarURL});
     embed.setTimestamp();
     await interaction.followUp({embeds:[embed], ephemeral: isEphmeral});

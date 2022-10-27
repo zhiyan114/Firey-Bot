@@ -5,10 +5,7 @@ import * as config from '../config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { client } from '../index';
-import { ApplicationCommandPermissions, ApplicationCommandPermissionType, GuildMember, Interaction } from 'discord.js'
-import { getAccessToken } from '../utils/discordTokenManager';
-import { LogType, sendLog } from '../utils/eventLogger';
-import * as Sentry from '@sentry/node'
+import { GuildMember, Interaction } from 'discord.js'
 
 // Internal Interface
 interface ICommandList {

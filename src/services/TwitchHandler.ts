@@ -1,12 +1,14 @@
 import tmi from 'tmi.js';
 import { twitch } from '../config';
-import { createEconData, econModel, grantPoints } from '../DBUtils/EconomyManager';
+import {econModel, grantPoints } from '../DBUtils/EconomyManager';
 import { userDataModel } from '../DBUtils/UserDataManager';
 import { LogType, sendLog } from '../utils/eventLogger';
 import { isStreaming, streamStatus, getStreamData } from '../utils/twitchStream'
-import { getRewardPoints } from '../DBUtils/EconomyManager';
 import {client as botClient} from '../index'
 import { EmbedBuilder, TextChannel } from 'discord.js';
+import { twitchCmdType } from '../CmdTwitch';
+import path from 'path';
+import fs from 'fs';
 
 type stringObject = {
     [key: string]: string
@@ -31,7 +33,21 @@ tmiClient.connect().then(()=>{
 // list of twitch users that haven't link to their discord channel. This is to prevent unnecessary database call everytime when user chats
 let authUsers: stringObject = {}
 
-// @TODO: Organize this hot mess lmfao
+/* Load all the internal commands */
+interface ICommandList {
+    [key: string]: twitchCmdType;
+}
+const twitchCmdList : ICommandList  = {};
+const cmdDir = path.join(__dirname, '../', 'CmdTwitch');
+for(let file of fs.readdirSync(cmdDir)) {
+    if (file.endsWith('.js') && file != "index.js") {
+        const cmdModule : twitchCmdType = require(path.join(cmdDir, file)).default;
+        if(!cmdModule) continue;
+        if(twitchCmdList[cmdModule.name]) continue; // Command already configured
+        if(!cmdModule.disabled) twitchCmdList[cmdModule.name] = cmdModule;
+    }
+}
+
 tmiClient.on('message', async (channel, tags, message, self)=>{
     if(self) return;
     if(!tags['user-id'] || !tags['username']) return;
@@ -57,66 +73,20 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
     // Check prefix to determine if this is a chat message or command
     if(message.slice(0,1) == twitch.prefix) {
         const args = message.split(" ")
-        // command in question are switched
-        switch(args[0].slice(1,args[0].length).toLowerCase()) {
-            case "verify": {
-                if(!args[1]) return await tmiClient.say(channel, `@${tags.username}, please make sure you supply your discord ID so that we can properly verify you!`);
-                // Check if user input only contains number and has a valid length
-                if(!/^\d+$/.test(args[1]) || args[1].length < 17) return await tmiClient.say(channel,`@${tags.username}, you have provided an invalid discord ID.`);
-                const userData = await userDataModel.findOne({
-                    _id: args[1]
-                })
-                // Prompt user to join the discord before allowing them to verify
-                if(!userData) return await tmiClient.say(channel, `@${tags.username}, your discord ID doesn't exist in the database, please join the server and confirm the rules so that it can be added.`);
-                // User haven't started the linking process
-                if(!userData.twitch || !userData.twitch.username) return await tmiClient.say(channel,`@${tags.username}, this discord account does not have an account linked to it. Please make sure you link your twitch account in the discord server first by using /twitchlink command.`);
-                // User can't verify accounts that aren't linked to them lol
-                if(userData.twitch.username != tags['username']) return await tmiClient.say(channel,`@${tags.username}, you cannot link other people's account.`);
-                // User can't re-link or re-verify their account
-                if(userData.twitch.verified) return await tmiClient.say(channel, `@${tags.username}, this twitch account has already been linked.`);
-                // Prevent multi-linking accounts
-                const isVerified = await userDataModel.findOne({
-                    "twitch.username": tags['username'],
-                    "twitch.verified": true,
-                })
-                if(isVerified) return await tmiClient.say(channel, `@${tags.username}, this account has already been linked on another discord account. If you believe this is an error, please contact the bot operator.`)
-                // Users are passing all the checks, verify them now and update the AuthUsers
-                await userDataModel.updateOne({_id: userData._id}, {
-                    $set: {
-                        "twitch.ID": tags['user-id'],
-                        "twitch.verified": true,
-                    }
-                })
-                if(isStreaming()) authUsers[tags['user-id']] = userData._id;
-                await sendLog(LogType.Info,`${userData.username} has verified their twitch account with the database!`);
-                await tmiClient.say(channel, `@${tags.username}, your account has been successfully verified!`);
-                break;
-            }
-            case "getpoints": {
-                if(authUsers[tags['user-id']] == "-1") return tmiClient.say(channel,`@${tags.username}, your account is not linked yet. Do that first then try again.`);
-                let discordUserID = authUsers[tags['user-id']];
-                if(!discordUserID) {
-                    // Get the user ID since it's not available when the stream is offline
-                    const userData = await econModel.findOne({"twitch.ID": tags['user-id']});
-                    if(userData) discordUserID = userData._id
-                }
-                // Fetch the points
-                const econData = await econModel.findOne({_id: discordUserID})
-                if(!econData) return await tmiClient.say(channel,`${tags.username}, you have 0 points!`);
-                await tmiClient.say(channel,`@${tags.username}, you have ${econData?.points} points!`);
-                break;
-            }
-            case "checkstream": {
-                await tmiClient.say(channel, `@${tags.username}, the stream state is ${isStreaming()}`)
-                break;
-            }
-            default: {
-                await tmiClient.say(channel,`@${tags.username}, command not found.`);
-                break;
-            }
-        }
-        // You cant get awarded for using commands lol
-        return;
+        // Get the command
+        const cmdObj = twitchCmdList[args[0].slice(1,args[0].length).toLowerCase()];
+        // Check if the command exist
+        if(!cmdObj) return await tmiClient.say(channel,`@${tags.username}, command not found.`);
+        // Run the command if it exist and return it since you cant get awarded for using it lol
+        return await cmdObj.func({
+            channel,
+            user: tags,
+            message,
+            self,
+            client: tmiClient,
+            args,
+            authUsers
+        })
     }
     // Check if the server is active before giving out the points
     if(isStreaming()) {
@@ -127,14 +97,24 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
     }
     
 })
+
+// Event stuff
+let discordReminder: NodeJS.Timeout | null;
+
+const sendDiscordLink = async () => {
+    await tmiClient.say(twitch.channel,`A quick remindr that my discord server exists! You can join here: ${twitch.discordInvite}`);
+    if(isStreaming()) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
+}
+
 streamStatus.on('start',async (streamData: getStreamData)=>{
     // Twitch Stream Started
     authUsers = {};
+    // Start the discord link notification timer if it haven't started yet
+    if(!discordReminder) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
     // Notify all the users in the server that his stream started
     const channel = await botClient.channels.fetch(twitch.discordChannelID) as TextChannel | null;
     if(!channel) return;
-    streamData.thumbnail_url = streamData.thumbnail_url.replace("{width}","1280");
-    streamData.thumbnail_url = streamData.thumbnail_url.replace("{height}","720");
+    streamData.thumbnail_url = streamData.thumbnail_url.replace("{width}","1280").replace("{height}","720");
     const streamUrl = `https://twitch.tv/${streamData.user_name}`
     const embed = new EmbedBuilder()
         .setColor("#00FFFF")
@@ -149,4 +129,11 @@ streamStatus.on('start',async (streamData: getStreamData)=>{
 streamStatus.on('end',()=>{
     // Twitch Stream Ended
     authUsers = {};
+    // Clear the discord timer notification if channel stops streaming
+    if(discordReminder) {
+        clearTimeout(discordReminder);
+        discordReminder = null;
+    }
 })
+
+if(isStreaming()) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
