@@ -4,8 +4,6 @@ import * as Sentry from '@sentry/node';
 import {botToken, guildID} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
 import Mongoose from 'mongoose';
-import YouTubeNotifier from './services/youtubeNotification';
-import ReactRole from './services/ReactRoleHandler';
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
@@ -19,12 +17,7 @@ if(process.env['SENTRY_DSN']) {
 export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessageReactions, Intents.GuildBans, Intents.GuildMembers, Intents.MessageContent, Intents.GuildMessages], partials: [Partials.Channel, Partials.GuildMember, Partials.User] });
 
 /* Internal Services */
-import './services/CmdHandler';
-import './services/VerificationHandler';
-import './services/UserJoinHandler';
-import './services/EconomyHandler';
-import './services/userDataHandler';
-import './services/TwitchHandler';
+import { ReactRole, YouTubeNotifier } from './services'
 
 
 
