@@ -6,6 +6,7 @@ Refer to `src/interface.ts -> ICommand` for the proper types
 ```ts
 export default {
     command,
+    permissions,
     function,
     disabled,
 }
