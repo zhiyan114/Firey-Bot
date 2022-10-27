@@ -63,4 +63,6 @@ export const twitch = {
     channel: "fireythealiendragon",
     discordChannelID: "908120379766231070",
     roleToPing: "908723067067437076",
+    discordInvite: "https://discord.gg/Rz3tct2PpJ",
+    reminderInterval: 1800000, // 30 minutes
 }

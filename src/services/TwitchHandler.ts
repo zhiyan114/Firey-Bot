@@ -98,9 +98,20 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
     }
     
 })
+
+// Event stuff
+let discordReminder: NodeJS.Timeout | null;
+
+const sendDiscordLink = async () => {
+    await tmiClient.say(twitch.channel,`A quick remindr that my discord server exists! You can join here: ${twitch.discordInvite}`);
+    if(isStreaming()) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
+}
+
 streamStatus.on('start',async (streamData: getStreamData)=>{
     // Twitch Stream Started
     authUsers = {};
+    // Start the discord link notification timer if it haven't started yet
+    if(!discordReminder) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
     // Notify all the users in the server that his stream started
     const channel = await botClient.channels.fetch(twitch.discordChannelID) as TextChannel | null;
     if(!channel) return;
@@ -119,4 +130,11 @@ streamStatus.on('start',async (streamData: getStreamData)=>{
 streamStatus.on('end',()=>{
     // Twitch Stream Ended
     authUsers = {};
+    // Clear the discord timer notification if channel stops streaming
+    if(discordReminder) {
+        clearTimeout(discordReminder);
+        discordReminder = null;
+    }
 })
+
+if(isStreaming()) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
