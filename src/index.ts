@@ -1,6 +1,7 @@
 // Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
 import * as Sentry from '@sentry/node';
+import {Integrations} from '@sentry/tracing'
 import {botToken, guildID} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
 import Mongoose from 'mongoose';
@@ -9,7 +10,11 @@ import Mongoose from 'mongoose';
 if(process.env['SENTRY_DSN']) {
   sendLog(LogType.Info,"Sentry DSN Detected, Exception Logging will be enabled")
   Sentry.init({
-    dsn: process.env['SENTRY_DSN']
+    dsn: process.env['SENTRY_DSN'],
+    integrations: [new Integrations.Mongo({
+      useMongoose: true,
+    })],
+    tracesSampleRate: 0.1 // Only send 10% of the total transactions
   });
 }
 
