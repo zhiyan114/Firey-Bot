@@ -1,6 +1,6 @@
 // Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
-import * as Sentry from '@sentry/node';
+import {init as sentryInit} from '@sentry/node';
 import {Integrations} from '@sentry/tracing'
 import {botToken, guildID} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
@@ -8,13 +8,13 @@ import Mongoose from 'mongoose';
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
-  sendLog(LogType.Info,"Sentry DSN Detected, Exception Logging will be enabled")
-  Sentry.init({
+  sendLog(LogType.Info,"Sentry DSN Detected, Error and Performance Logging will be enabled")
+  sentryInit({
     dsn: process.env['SENTRY_DSN'],
     integrations: [new Integrations.Mongo({
       useMongoose: true,
     })],
-    tracesSampleRate: 0.1 // Only send 10% of the total transactions
+    tracesSampleRate: 0.3 // Only send 30% of the total transactions
   });
 }
 

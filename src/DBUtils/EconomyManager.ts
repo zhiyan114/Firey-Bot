@@ -1,6 +1,8 @@
 import { GuildMember, User } from 'discord.js';
 import Mongoose from 'mongoose';
 import { isConnected } from '../utils/DatabaseManager';
+import { startTransaction } from '@sentry/node';
+import { Transaction, Span } from '@sentry/types';
 
 export type econType = {
     _id: string;
@@ -32,12 +34,17 @@ export const getRewardPoints = (min?: number, max?: number) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export const createEconData = async (userID: string, initalPoint?: number) => {
+export const createEconData = async (userID: string, initalPoint?: number, tx?: Transaction | Span) => {
+    const span = tx?.startChild({
+        op: "createEconData",
+        description: "Create a new economy data for the user",
+    })
     await econModel.create({
         _id: userID,
         points: initalPoint ?? getRewardPoints(),
         lastGrantedPoint: new Date(),
     })
+    span?.finish();
 }
 type grantPointsOption = {
     points?: number;
@@ -45,20 +52,41 @@ type grantPointsOption = {
     noNewEntry?: boolean;
 }
 export const grantPoints = async (userID: string, options?: grantPointsOption) => {
+    const tx = startTransaction({
+        op: "grantPoints",
+        name: "EconomyManager's grandPoints"
+    });
     if(!options) options = {};
     if(!options.points) options.points = getRewardPoints();
     if(!options.ignoreCooldown) {
+        const span = tx.startChild({
+            op: "findOne",
+            description: "Find the user's profile in the database"
+        })
         const userEconData = await econModel.findOne({_id: userID});
         if(!userEconData) {
             if(!options.noNewEntry) {
-                createEconData(userID, options.points);
+                await createEconData(userID, options.points, span);
+                span.finish();
+                tx.finish();
                 return true;
             }
+            span.finish();
+            tx.finish();
             return false;
         }
         // 1 minute cooldown
-        if(userEconData.lastGrantedPoint.getTime() > (new Date()).getTime() - 60000) return false;
+        if(userEconData.lastGrantedPoint.getTime() > (new Date()).getTime() - 60000) {
+            span.finish();
+            tx.finish();
+            return false
+        };
+        span.finish();
     }
+    const span = tx.startChild({
+        op: "updateOne",
+        description: "Increment user's points in their document"
+    })
     const updateRes = await econModel.updateOne({_id: userID}, {
         $set: {
             lastGrantedPoint: new Date()
@@ -68,12 +96,20 @@ export const grantPoints = async (userID: string, options?: grantPointsOption) =
         }
     })
     // User exist and points are granted
-    if(updateRes.matchedCount > 0) return true;
+    if(updateRes.matchedCount > 0) {
+        span.finish();
+        tx.finish();
+        return true;
+    };
     // User doesn't exist. Return true if the user is automatically created with inital points.
     if(!options.noNewEntry) {
-        createEconData(userID, options.points);
+        await createEconData(userID, options.points, span);
+        span.finish();
+        tx.finish();
         return true;
     }
+    span.finish();
+    tx.finish();
     return false;
 }
 
