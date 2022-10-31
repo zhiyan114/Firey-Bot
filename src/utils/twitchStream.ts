@@ -63,9 +63,9 @@ const mainCheck = async () => {
         errLogged = false;
     } catch(ex: unknown) {
         if(!errLogged) {
-            captureException(ex);
-            if(ex instanceof axios.AxiosError) await sendLog(LogType.Warning,`twitchStream: ${ex.response?.status}: ${JSON.stringify(ex.response?.data)}`);
             errLogged = true;
+            if(ex instanceof axios.AxiosError && ex.code == axios.AxiosError.ECONNABORTED) return await sendLog(LogType.Warning,`twitchStream: Connection Timeout - ${ex.message}`);
+            captureException(ex);
         }
     } finally {
         // Check it again every 30 seconds regardless if the api fails or not
