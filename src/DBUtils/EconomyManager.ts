@@ -54,14 +54,14 @@ type grantPointsOption = {
 export const grantPoints = async (userID: string, options?: grantPointsOption) => {
     const tx = startTransaction({
         op: "grantPoints",
-        name: "EconomyManager's grandPoints"
+        name: "EconomyManager's grantPoints"
     });
     if(!options) options = {};
     if(!options.points) options.points = getRewardPoints();
     if(!options.ignoreCooldown) {
         const span = tx.startChild({
             op: "findOne",
-            description: "Find the user's profile in the database"
+            description: "Find the user's economy profile in the database"
         })
         const userEconData = await econModel.findOne({_id: userID});
         if(!userEconData) {
