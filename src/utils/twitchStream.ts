@@ -64,7 +64,8 @@ const mainCheck = async () => {
     } catch(ex: unknown) {
         if(!errLogged) {
             errLogged = true;
-            if(ex instanceof axios.AxiosError && ex.code == axios.AxiosError.ECONNABORTED) return await sendLog(LogType.Warning,`twitchStream: Connection Timeout - ${ex.message}`);
+            if(ex instanceof axios.AxiosError && (ex.code == axios.AxiosError.ECONNABORTED || ex.code == axios.AxiosError.ETIMEDOUT)) return await sendLog(LogType.Warning,`twitchStream: Connection Timeout - ${ex.message}`);
+            await sendLog(LogType.Warning, "twitchStream: Service is down due to unhandled exception");
             captureException(ex);
         }
     } finally {
