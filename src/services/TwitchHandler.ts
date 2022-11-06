@@ -106,7 +106,10 @@ const sendDiscordLink = async () => {
     if(isStreaming()) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
 }
 
+let lastStream: Date;
 streamStatus.on('start',async (streamData: getStreamData)=>{
+    // Check last stream time before sending out notification (Patch for Firey's consistant stream issue; causing massive pings).
+    if((new Date()).getTime() - lastStream.getTime() < 18000) return;
     // Twitch Stream Started
     authUsers = {};
     // Start the discord link notification timer if it haven't started yet
@@ -134,6 +137,7 @@ streamStatus.on('end',()=>{
         clearTimeout(discordReminder);
         discordReminder = null;
     }
+    lastStream = new Date();
 })
 
 if(isStreaming()) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
