@@ -1,6 +1,6 @@
 import tmi from 'tmi.js';
 import { twitch } from '../config';
-import {econModel, grantPoints } from '../DBUtils/EconomyManager';
+import { grantPoints } from '../DBUtils/EconomyManager';
 import { userDataModel } from '../DBUtils/UserDataManager';
 import { LogType, sendLog } from '../utils/eventLogger';
 import { isStreaming, streamStatus, getStreamData } from '../utils/twitchStream'
@@ -109,7 +109,7 @@ const sendDiscordLink = async () => {
 let lastStream: Date;
 streamStatus.on('start',async (streamData: getStreamData)=>{
     // Check last stream time before sending out notification (Patch for Firey's consistant stream issue; causing massive pings).
-    if((new Date()).getTime() - lastStream.getTime() < 18000) return;
+    if(lastStream && (new Date()).getTime() - lastStream.getTime() < 18000) return;
     // Twitch Stream Started
     authUsers = {};
     // Start the discord link notification timer if it haven't started yet
