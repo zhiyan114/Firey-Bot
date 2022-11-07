@@ -1,6 +1,6 @@
 // Internal Library to detect twitch stream status
 import { captureException } from '@sentry/node';
-import axios from 'axios';
+import axios, { Axios } from 'axios';
 import events from 'events';
 import { LogType, sendLog } from './eventLogger';
 import https from 'https'; 
@@ -44,23 +44,27 @@ export class twitchClient extends events.EventEmitter {
     private cooldown: number;
     public isStreaming: boolean = false;
     private errLogged = false;
+    private axios: Axios;
     constructor(channelName: string, cooldown?: number, token?: string) {
         super();
         this.token = token ?? process.env['TWITCH_TOKEN'] ?? "";
-        if(this.token == "") throw new tClientError("TwitchClient's oauth token is not properly supplied", "BadToken");
+        if(this.token == "") throw new tClientError("TwitchClient's oauth token is not properly supplied", "twitchStream - BadToken");
         this.channel = channelName;
-        this.cooldown = cooldown ?? 30000; // Check every 20 seconds by default
+        this.cooldown = cooldown ?? 30000; // Check every 30 seconds by default
+        // Create a dedicated axios instance for this request to fix ETIMEDOUT (probably due to SNAT issue)
+        this.axios = axios.create({
+            timeout: Math.ceil(this.cooldown/2),
+            httpsAgent: new https.Agent({keepAlive: true})
+        })
         this.mainCheck();
     }
     private mainCheck = async () => {
         try {
-            const serverResponse = await axios.get<twitchGetStreamType>(`https://api.twitch.tv/helix/streams?user_login=${this.channel}`,{
+            const serverResponse = await this.axios.get<twitchGetStreamType>(`https://api.twitch.tv/helix/streams?user_login=${this.channel}`,{
                 headers: {
                     "client-id": "q6batx0epp608isickayubi39itsckt", // Just using someone else's client ID
                     "Authorization": `Bearer ${this.token}`,
-                },
-                timeout: 20000,
-                httpsAgent: new https.Agent({ keepAlive: true }),
+                }
             });
             if(serverResponse.status != 200) {
                 this.errLogged = true;
