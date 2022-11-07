@@ -3,7 +3,7 @@ import { twitch } from '../config';
 import { grantPoints } from '../DBUtils/EconomyManager';
 import { userDataModel } from '../DBUtils/UserDataManager';
 import { LogType, sendLog } from '../utils/eventLogger';
-import { isStreaming, streamStatus, getStreamData } from '../utils/twitchStream'
+import { streamCli } from '../index';
 import {client as botClient} from '../index'
 import { EmbedBuilder, TextChannel } from 'discord.js';
 import { twitchCmdType } from '../CmdTwitch';
@@ -52,7 +52,7 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
     if(self) return;
     if(!tags['user-id'] || !tags['username']) return;
     // User is not on the temp AuthUsers list, check if they're verified or not (if the stream is started)
-    if(!authUsers[tags['user-id']] && isStreaming()) {
+    if(!authUsers[tags['user-id']] && streamCli.isStreaming) {
         const userData = await userDataModel.findOne({
             "twitch.ID": tags['user-id']
         })
@@ -89,7 +89,7 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
         })
     }
     // Check if the server is active before giving out the points
-    if(isStreaming()) {
+    if(streamCli.isStreaming) {
         // Don't award the points to the user until they verify their account on twitch
         if(!authUsers[tags['user-id']] || authUsers[tags['user-id']] == "-1") return;
         // Now that user has their ID cached, give them the reward
@@ -103,11 +103,11 @@ let discordReminder: NodeJS.Timeout | null;
 
 const sendDiscordLink = async () => {
     await tmiClient.say(twitch.channel,`A quick reminder that my discord server exists! You can join here: ${twitch.discordInvite}`);
-    if(isStreaming()) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
+    if(streamCli.isStreaming) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
 }
 
 let lastStream: Date;
-streamStatus.on('start',async (streamData: getStreamData)=>{
+streamCli.on('start',async (streamData)=>{
     // Check last stream time before sending out notification (Patch for Firey's consistant stream issue; causing massive pings).
     if(lastStream && (new Date()).getTime() - lastStream.getTime() < 18000) return;
     // Twitch Stream Started
@@ -129,7 +129,7 @@ streamStatus.on('start',async (streamData: getStreamData)=>{
     await channel.send({content: `<@&${twitch.roleToPing}> Derg is streaming right now, come join!`, embeds: [embed]})
     
 })
-streamStatus.on('end',()=>{
+streamCli.on('end',()=>{
     // Twitch Stream Ended
     authUsers = {};
     // Clear the discord timer notification if channel stops streaming
@@ -139,5 +139,3 @@ streamStatus.on('end',()=>{
     }
     lastStream = new Date();
 })
-
-if(isStreaming()) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);

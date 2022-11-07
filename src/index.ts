@@ -2,9 +2,10 @@
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
 import {init as sentryInit} from '@sentry/node';
 import {Integrations} from '@sentry/tracing'
-import {botToken, guildID} from './config';
+import {botToken, guildID, twitch} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
 import Mongoose from 'mongoose';
+import { twitchClient as tStreamClient } from './utils/twitchStream';
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
@@ -20,7 +21,7 @@ if(process.env['SENTRY_DSN']) {
 
 /* Client Loader */
 export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessageReactions, Intents.GuildBans, Intents.GuildMembers, Intents.MessageContent, Intents.GuildMessages], partials: [Partials.Channel, Partials.GuildMember, Partials.User] });
-
+export const streamCli = new tStreamClient(twitch.channel);
 /* Internal Services */
 import { ReactRole, YouTubeNotifier } from './services'
 

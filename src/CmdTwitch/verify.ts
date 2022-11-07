@@ -1,6 +1,6 @@
 import { userDataModel } from '../DBUtils/UserDataManager';
 import { LogType, sendLog } from '../utils/eventLogger';
-import { isStreaming } from '../utils/twitchStream';
+import { streamCli } from '../index';
 import { twitchCmdType } from './index';
 
 
@@ -36,7 +36,7 @@ const VerifyFunc : twitchCmdType ={
                 "twitch.verified": true,
             }
         })
-        if(isStreaming()) data.authUsers[data.user['user-id']] = userData._id;
+        if(streamCli.isStreaming) data.authUsers[data.user['user-id']] = userData._id;
         await sendLog(LogType.Info,`${userData.username} has verified their twitch account with the database!`);
         await data.client.say(data.channel, `@${data.user.username}, your account has been successfully verified!`);
     } 
