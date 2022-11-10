@@ -1,3 +1,4 @@
+import { captureException } from "@sentry/node";
 import { DiscordAPIError, SlashCommandBuilder } from "discord.js";
 import { adminRoleID } from "../config";
 import { ICommand } from "../interface";
@@ -39,6 +40,7 @@ export default {
                 if(ex.code == APIErrors.UNKNOWN_USER) return await interaction.reply({content: "Invalid User/User's ID", ephemeral: true});
                 if(ex.code == APIErrors.UNKNOWN_BAN) return await interaction.reply({content: "User does not exist in the ban list", ephemeral: true});
             }
+            captureException(ex);
         }
     },
     disabled: false,
