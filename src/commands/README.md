@@ -20,24 +20,20 @@ export default {
 ## Example Usage/Template
 
 ```ts
-import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
-const ExampleCmd = new SlashCommandBuilder()
-    .setName('commandname')
-    .setDescription(`Command Description`)
-
-/* Function Builder */
-const ExampleFunc = async (interaction : CommandInteraction) => {
-    return await interaction.reply({content: 'Example Content', ephemeral: true});
-}
+import { SlashCommandBuilder } from "discord.js";
+import { ICommand } from "../interface";
 
 export default {
-    command: ExampleCmd,
+    command: new SlashCommandBuilder()
+    .setName('commandname')
+    .setDescription(`CommandDesc`),
     permissions: {
-        roles: [],
-        users: []
-    }
-    function: ExampleFunc,
-    disabled: true,
+        roles: ["RoleID"],
+        users: ["UserID"]
+    },
+    function: (command)=>{
+        
+    },
+    disabled: false,
 } as ICommand;
 ```
