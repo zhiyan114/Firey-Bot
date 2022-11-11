@@ -38,11 +38,11 @@ const BanFunc = async (interaction : CommandInteraction) => {
         .setFooter({text: `Banned by ${interaction.user.tag}`})
         .setTimestamp();
     await targetMember.send({embeds:[embed]});
-    await targetMember.ban({deleteMessageSeconds: deleteMessages ? 604800 : 0, reason: reason});
+    await targetMember.ban({deleteMessageSeconds: deleteMessages ? 604800 : 0, reason});
     await interaction.reply({content: 'User has been successfully banned!', ephemeral: true});
     await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **ban** command`, {
         target: targetMember.user.tag,
-        reason: reason,
+        reason,
         deleteMessages: deleteMessages.toString(),
     });
 }

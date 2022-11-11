@@ -47,7 +47,7 @@ export default {
         await interaction.reply({content: 'User has been successfully softban!', ephemeral: true});
         await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **softban** command`, {
             target: targetMember.user.tag,
-            reason: reason,
+            reason,
             includeInvite: invite.toString(),
         });
     },

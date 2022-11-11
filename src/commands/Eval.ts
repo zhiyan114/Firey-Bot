@@ -4,6 +4,7 @@ import { guildID, newUserRoleID } from '../config';
 import { userDataModel, userDataType } from '../DBUtils/UserDataManager';
 import {client} from '../index';
 import { ICommand } from '../interface';
+import { tmiClient } from '../services/TwitchHandler';
 /* Command Builder */
 const EvalCmd = new SlashCommandBuilder()
     .setName('eval')
@@ -40,13 +41,16 @@ const EvalFunc = async (interaction : CommandInteraction) => {
     const guild = interaction.guild;
     const member = interaction.member;
     const dClient = client;
+    const tClient = tmiClient;
     // Execute the code
+    const secureCode = `
     try {
-        const result = eval(code);
-        await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
-    } catch(err) {
-        await interaction.followUp({content: `Execution Error: \`${err}\``, ephemeral: true});
-    }
+        ${code}
+    } catch(ex) {
+        channel.send({content: "ERROR: ["+ex.name+"]: "+ex.message})
+    }`;
+    const result = eval(secureCode);
+    await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
 }
 
 export default {

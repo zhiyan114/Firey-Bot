@@ -30,7 +30,7 @@ export default {
         if(!banList) return await interaction.reply({content: "Command must be executed in a guild", ephemeral: true}); // Command is only registered in the main guild anyway so this shouldn't be seen anyway
         if(!targetUser) return await interaction.reply({content: "Invalid User/User's ID", ephemeral: true});
         try {
-            const result = await banList.remove(targetUser, reason?.value?.toString());
+            await banList.remove(targetUser, reason?.value?.toString());
             await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **unban** command`, {
                 target: targetUser.tag,
                 reason: (reason?.value?.toString()) ?? "[Not Provided]",
