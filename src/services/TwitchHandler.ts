@@ -14,7 +14,7 @@ type stringObject = {
     [key: string]: string
 }
 
-const tmiClient = new tmi.Client({
+export const tmiClient = new tmi.Client({
     connection: {
         secure: true,
         reconnect: true,
