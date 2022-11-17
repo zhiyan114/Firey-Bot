@@ -5,6 +5,7 @@ import { userDataModel, userDataType } from '../DBUtils/UserDataManager';
 import {client} from '../index';
 import { ICommand } from '../interface';
 import { tmiClient } from '../services/TwitchHandler';
+import { withScope as sentryScope } from '@sentry/node';
 /* Command Builder */
 const EvalCmd = new SlashCommandBuilder()
     .setName('eval')
@@ -49,8 +50,11 @@ const EvalFunc = async (interaction : CommandInteraction) => {
     } catch(ex) {
         channel.send({content: "ERROR: ["+ex.name+"]: "+ex.message})
     }`;
-    const result = eval(secureCode);
-    await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
+    sentryScope(async (scope) =>{
+        scope.setTag("isEval", true)
+        const result = eval(secureCode);
+        await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
+    })
 }
 
 export default {

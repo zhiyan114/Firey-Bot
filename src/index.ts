@@ -15,7 +15,7 @@ if(process.env['SENTRY_DSN']) {
     integrations: [new Integrations.Mongo({
       useMongoose: true,
     })],
-    tracesSampleRate: 0.3 // Only send 30% of the total transactions
+    tracesSampleRate: 0.2 // Only send 20% of the total transactions
   });
 }
 

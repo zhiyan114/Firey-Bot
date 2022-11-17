@@ -85,6 +85,9 @@ export class twitchClient extends events.EventEmitter {
             if(!this.errLogged) {
                 this.errLogged = true;
                 if(ex instanceof axios.AxiosError && (ex.code == axios.AxiosError.ECONNABORTED || ex.code == axios.AxiosError.ETIMEDOUT)) return await sendLog(LogType.Warning,`twitchStream: Connection Timeout - ${ex.message}`);
+                if(ex instanceof axios.AxiosError) {
+                    if(ex.response && Math.floor(ex.response.status/100) == 5) return sendLog(LogType.Warning, `twitchStream: Twitch's Backend Server Error (status: ${ex.response.status})`);
+                }
                 await sendLog(LogType.Warning, "twitchStream: Service is down due to unhandled exception");
                 captureException(ex);
             }
