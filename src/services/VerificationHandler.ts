@@ -17,6 +17,6 @@ client.on('interactionCreate', async (interaction : Interaction) => {
         await createUserData(interaction.user, new Date());
         // Thank the user for the confirmation
         await interaction.reply({content: "Thank you for confirming the rules.", ephemeral: true});
-        await sendLog(LogType.Interaction, `${(interaction.member!.user as User).tag} confirmed the rules.`);
+        await sendLog(LogType.Interaction, `${interaction.user.tag} confirmed the rules.`);
     }
 });

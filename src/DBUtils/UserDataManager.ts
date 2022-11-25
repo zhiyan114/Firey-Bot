@@ -56,14 +56,12 @@ const userDataSchema = new Mongoose.Schema<userDataType>({
 }, {_id: false})
 
 export const userDataModel = Mongoose.model<userDataType>("userData",userDataSchema);
-export const getUserData = async (userID: string) => {
-    return await userDataModel.findOne({_id: userID})
-}
+const userExists = async (userID: string) => (await userDataModel.findOne({_id: userID})) != undefined;
 export const createUserData = async (user: User | GuildMember, isVerified?: Date) => {
     if(!isConnected) return;
     if(user instanceof GuildMember) user = user.user;
     if(user.bot) return;
-    if(await getUserData(user.id)) return;
+    if(await userExists(user.id)) return;
     await userDataModel.create({
         _id: user.id,
         username: user.tag,
