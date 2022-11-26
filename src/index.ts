@@ -15,6 +15,10 @@ if(process.env['SENTRY_DSN']) {
     integrations: [new Integrations.Mongo({
       useMongoose: true,
     })],
+    beforeSend : (evnt) => { 
+      if(evnt.tags && evnt.tags['isEval']) return null;
+      return evnt;
+    },
     tracesSampleRate: 0.2 // Only send 20% of the total transactions
   });
 }

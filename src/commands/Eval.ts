@@ -35,25 +35,30 @@ const updateUserData = async ()=> {
 
 /* Function Builder */
 const EvalFunc = async (interaction : CommandInteraction) => {
-    const code = interaction.options.get('code',true).value as string;
-    await interaction.deferReply({ ephemeral: true })
-    // Setup pre-defined variables
-    const channel = interaction.channel;
-    const guild = interaction.guild;
-    const member = interaction.member;
-    const dClient = client;
-    const tClient = tmiClient;
-    // Execute the code
-    const secureCode = `
-    try {
-        ${code}
-    } catch(ex) {
-        channel.send({content: "ERROR: ["+ex.name+"]: "+ex.message})
-    }`;
-    sentryScope(async (scope) =>{
-        scope.setTag("isEval", true)
-        const result = eval(secureCode);
-        await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
+    sentryScope(async (scope)=>{
+        scope.setTag("isEval", true);
+        const code = interaction.options.get('code',true).value as string;
+        await interaction.deferReply({ ephemeral: true })
+        // Setup pre-defined variables
+        const channel = interaction.channel;
+        const guild = interaction.guild;
+        const member = interaction.member;
+        const dClient = client;
+        const tClient = tmiClient;
+        const secureCode = `
+        try {
+            ${code}
+        } catch(ex) {
+            channel.send({content: "ERROR: ["+ex.name+"]: "+ex.message})
+        }`;
+        try {
+            // Execute the code
+            const result = eval(secureCode);
+            await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
+        } catch(ex) {
+            const err = ex as Error;
+            await interaction.followUp({content: `Bad Execution [${err.name}]: \`${err.message}\``, ephemeral: true});
+        }
     })
 }
 
