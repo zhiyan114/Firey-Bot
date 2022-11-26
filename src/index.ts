@@ -1,20 +1,20 @@
 // Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
 import {init as sentryInit} from '@sentry/node';
-import {Integrations} from '@sentry/tracing'
 import {botToken, guildID, twitch} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
 import Mongoose from 'mongoose';
 import { twitchClient as tStreamClient } from './utils/twitchStream';
+import {ProfilingIntegration} from "@sentry/profiling-node";
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
   sendLog(LogType.Info,"Sentry DSN Detected, Error and Performance Logging will be enabled")
   sentryInit({
     dsn: process.env['SENTRY_DSN'],
-    integrations: [new Integrations.Mongo({
-      useMongoose: true,
-    })],
+    integrations: [
+      new ProfilingIntegration()
+    ],
     beforeSend : (evnt) => { 
       if(evnt.tags && evnt.tags['isEval']) return null;
       return evnt;
