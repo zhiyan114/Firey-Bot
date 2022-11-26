@@ -19,7 +19,9 @@ if(process.env['SENTRY_DSN']) {
       if(evnt.tags && evnt.tags['isEval']) return null;
       return evnt;
     },
-    tracesSampleRate: 0.2 // Only send 20% of the total transactions
+    tracesSampleRate: 0.2, // Only send 20% of the total transactions
+    //@ts-ignore Missing Type Definition: https://github.com/getsentry/sentry-javascript/pull/6310
+    profilesSampleRate: 0.5,
   });
 }
 

@@ -1,8 +1,9 @@
 {
   "dependencies": {
     "@discordjs/rest": "^1.2.0",
-    "@sentry/node": "^7.14.0",
-    "@sentry/tracing": "^7.17.3",
+    "@sentry/node": "^7.21.1",
+    "@sentry/profiling-node": "^0.0.12",
+    "@sentry/tracing": "^7.21.1",
     "axios": "^1.1.2",
     "bufferutil": "^4.0.6",
     "discord.js": "^14.5.0",
