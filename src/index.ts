@@ -1,6 +1,7 @@
 // Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
 import {init as sentryInit} from '@sentry/node';
+import "@sentry/tracing";
 import {botToken, guildID, twitch} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
 import Mongoose from 'mongoose';
