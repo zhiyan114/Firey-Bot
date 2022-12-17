@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@discordjs/rest": "^1.2.0",
+    "@prisma/client": "^4.7.1",
     "@sentry/node": "^7.21.1",
     "@sentry/profiling-node": "^0.0.12",
     "@sentry/tracing": "^7.21.1",
@@ -9,7 +10,6 @@
     "discord.js": "^14.5.0",
     "erlpack": "github:discord/erlpack",
     "express": "^4.18.1",
-    "mongoose": "^6.6.5",
     "rimraf": "^3.0.2",
     "tmi.js": "^1.8.5",
     "utf-8-validate": "^5.0.9",
@@ -18,16 +18,30 @@
     "zlib-sync": "^0.1.7"
   },
   "scripts": {
-    "build": "rimraf dist && tsc -p tsconfig.json",
-    "start": "doppler run node ./dist/index.js",
-    "start:insecure": "node ./dist/index.js",
-    "start:secure": "doppler run node ./dist/index.js"
+    "build": "prisma generate && rimraf dist && tsc -p tsconfig.json",
+    "start": "doppler run node ./dist/index.js"
   },
   "devDependencies": {
     "@types/express": "^4.17.13",
     "@types/node": "^18.8.0",
     "@types/tmi.js": "^1.8.2",
     "@types/xml2js": "^0.4.11",
+    "prisma": "^4.7.1",
     "typescript": "^4.6.3"
-  }
+  },
+  "name": "firey-bot",
+  "description": "This bot is developed to serve a single server; thus, codes are not reusable without modification.",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhiyan114/Firey-Bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zhiyan114/Firey-Bot/issues"
+  },
+  "homepage": "https://github.com/zhiyan114/Firey-Bot#readme"
 }
