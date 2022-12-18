@@ -23,8 +23,8 @@ model members {
 }
 
 model twitch {
-  memberid String  @id @db.VarChar(100)
-  twitchid String? @db.VarChar(100)
+  id       String  @id @db.VarChar(100)
+  memberid String  @unique @db.VarChar(100)
   username String
   verified Boolean @default(false)
   members  members @relation(fields: [memberid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_memberid")

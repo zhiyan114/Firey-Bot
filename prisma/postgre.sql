@@ -6,8 +6,8 @@ CREATE TABLE public.members (
     PRIMARY KEY ("id")
 );
 CREATE TABLE public.twitch (
-    memberID VARCHAR(100) PRIMARY KEY,
-    twitchID VARCHAR(100),
+    id VARCHAR(100) PRIMARY KEY,
+    memberID VARCHAR(100) UNIQUE NOT NULL,
     username TEXT NOT NULL,
     verified boolean NOT NULL DEFAULT false,
     CONSTRAINT FK_memberID FOREIGN KEY(memberID) REFERENCES public.members(id)
