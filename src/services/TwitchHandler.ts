@@ -56,7 +56,7 @@ tmiClient.on('message', async function(channel, tags, message, self){
     if(!authUsers[tags['user-id']] && streamCli.isStreaming) {
         const userData = await prisma.twitch.findFirst({
             where: {
-                twitchid: tags['user-id'],
+                id: tags['user-id'],
             }
         })
         if(userData && userData.verified) {

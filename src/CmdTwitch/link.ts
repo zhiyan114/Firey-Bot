@@ -20,7 +20,7 @@ const VerifyFunc : twitchCmdType ={
         // Check to see if the user is already verified
         if(user && user.verified) return await data.client.say(data.channel,`@${data.user.username}, unfortunately, your account has already been verified. Please contact zhiyan114 if you would like to relink this account.`)
         // Check to see if the user is trying to set the same discord ID (if yes, assuming they forgot their twitch ID for the verification)
-        if(user && user.memberid == discordID) return await data.client.say(data.channel,`@${data.user.username}, No new discord ID has been set. Please use /tverify ${data.user['user-id']} in the discord server to complete the process.`)
+        if(user && user.memberid == discordID) return await data.client.say(data.channel,`@${data.user.username}, No new discord ID has been set. Please use the tverify command in the discord server to complete the process.`)
         // Check if the discord account has already been claimed
         const tTotalAcc = await prisma.twitch.count({
             where: {
@@ -39,7 +39,7 @@ const VerifyFunc : twitchCmdType ={
                     id: data.user['user-id']
                 }
             })
-            return await data.client.say(data.channel, `@${data.user.username}, a new discord ID has been successfully attached to your account. Please use /tverify ${data.user['user-id']} in the discord server to complete the process.`)
+            return await data.client.say(data.channel, `@${data.user.username}, a new discord ID has been successfully attached to your account. Please use the tverify command in the discord server to complete the process.`)
         }
         // Assume the user doesn't exist and create one
         const dTotalAcc = await prisma.members.count({
@@ -57,7 +57,7 @@ const VerifyFunc : twitchCmdType ={
                 verified: false,
             }
         })
-        return await data.client.say(data.channel, `@${data.user.username}, your verification process has been started! Please use /tverify ${data.user['user-id']} in the discord server to complete the process.`)
+        return await data.client.say(data.channel, `@${data.user.username}, your verification process has been started! Please use the tverify command in the discord server to complete the process.`)
     } 
  }
 
