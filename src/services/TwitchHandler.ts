@@ -1,7 +1,7 @@
 import tmi from 'tmi.js';
 import { twitch } from '../config';
 import { grantPoints } from '../DBUtils/EconomyManager';
-import { userDataModel } from '../DBUtils/UserDataManager';
+import { prisma } from '../utils/DatabaseManager';
 import { LogType, sendLog } from '../utils/eventLogger';
 import { streamCli } from '../index';
 import {client as botClient} from '../index'
@@ -48,23 +48,29 @@ for(let file of fs.readdirSync(cmdDir)) {
     }
 }
 
-tmiClient.on('message', async (channel, tags, message, self)=>{
+tmiClient.on('message', async function(channel, tags, message, self){
     if(self) return;
+    if(!prisma) return;
     if(!tags['user-id'] || !tags['username']) return;
     // User is not on the temp AuthUsers list, check if they're verified or not (if the stream is started)
     if(!authUsers[tags['user-id']] && streamCli.isStreaming) {
-        const userData = await userDataModel.findOne({
-            "twitch.ID": tags['user-id']
+        const userData = await prisma.twitch.findFirst({
+            where: {
+                twitchid: tags['user-id'],
+            }
         })
-        if(userData && userData.twitch && userData.twitch.verified) {
+        if(userData && userData.verified) {
             // User is on the database
-            authUsers[tags['user-id']] = userData._id;
-            if(tags['username'] != userData.twitch.username) {
+            authUsers[tags['user-id']] = userData.memberid;
+            if(tags['username'] != userData.username) {
                 // User probably has a new username, update them.
-                await userDataModel.updateOne({_id: userData._id},{
-                    $set: {
-                        "twitch.username": tags['username']
+                await prisma.twitch.update({
+                    data: {
+                        username: tags["username"]
                     },
+                    where: {
+                        memberid: userData.memberid
+                    }
                 })
             }
         }

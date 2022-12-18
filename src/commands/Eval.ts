@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction } from 'discord.js';
 import { guildID, newUserRoleID } from '../config';
-import { userDataModel, userDataType } from '../DBUtils/UserDataManager';
+import { prisma } from '../utils/DatabaseManager';
 import {client} from '../index';
 import { ICommand } from '../interface';
 import { tmiClient } from '../services/TwitchHandler';
@@ -17,19 +17,27 @@ const EvalCmd = new SlashCommandBuilder()
     );
 
 /* Custom Super User Commands */
-
+type userDataType = {
+    id: string,
+    tag: string,
+    rulesconfirmedon: Date | undefined,
+}
 // This will add all the users that are in the server to the userData collections
 const updateUserData = async ()=> {
+    if(!prisma) return;
     const dataToPush: userDataType[] = [];
     for(const [_,member] of await (client.guilds.cache.find(g=>g.id == guildID)!).members.fetch()) {
         const hasVerifyRole = member.roles.cache.find(role=>role.id == newUserRoleID);
         dataToPush.push({
-            _id: member.user.id,
-            username: member.user.tag,
-            rulesConfirmed: hasVerifyRole ? (new Date()) : undefined
+            id: member.user.id,
+            tag: member.user.tag,
+            rulesconfirmedon: hasVerifyRole ? (new Date()) : undefined
         })
     }
-    await userDataModel.insertMany(dataToPush, {ordered: false});
+    await prisma.members.createMany({
+        data: dataToPush,
+        skipDuplicates: true,
+    });
 }
 
 
