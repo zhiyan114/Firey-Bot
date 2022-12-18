@@ -11,60 +11,21 @@ Data will remain in the database even if the user leaves the server.
 */
 
 import { GuildMember, User } from 'discord.js';
-import Mongoose from 'mongoose';
-import { isConnected } from '../utils/DatabaseManager';
+import { prisma } from '../utils/DatabaseManager';
 
-export type userDataType = {
-    _id: string;
-    username: string;
-    rulesConfirmed?: Date;
-    twitch?: {
-        ID: string,
-        username: string,
-        verified: boolean,
-    };
-
-}
-
-const userDataSchema = new Mongoose.Schema<userDataType>({
-    _id: {
-        type: String,
-        required: true,
-    },
-    username: {
-        type: String,
-        required: true,
-    },
-    rulesConfirmed: {
-        type: Date,
-        required: false,
-    },
-    twitch: {
-        ID: {
-            type: String,
-            required: false,
-        },
-        username: {
-            type: String,
-            required: false,
-        },
-        verified: {
-            type: Boolean,
-            required: false,
-        }
-    }
-}, {_id: false})
-
-export const userDataModel = Mongoose.model<userDataType>("userData",userDataSchema);
-const userExists = async (userID: string) => (await userDataModel.findOne({_id: userID})) != undefined;
 export const createUserData = async (user: User | GuildMember, isVerified?: Date) => {
-    if(!isConnected) return;
+    if(!prisma) return;
     if(user instanceof GuildMember) user = user.user;
     if(user.bot) return;
-    if(await userExists(user.id)) return;
-    await userDataModel.create({
-        _id: user.id,
-        username: user.tag,
-        rulesConfirmed: isVerified
-    })
+    try {
+        await prisma.members.create({
+            data: {
+                id: user.id,
+                tag: user.tag,
+                rulesconfirmedon: isVerified
+            }
+        })
+    } catch {
+        return;
+    }
 }
