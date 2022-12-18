@@ -4,7 +4,7 @@ import {init as sentryInit} from '@sentry/node';
 import "@sentry/tracing";
 import {botToken, guildID, twitch} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
-import Mongoose from 'mongoose';
+import { prisma } from './utils/DatabaseManager';
 import { twitchClient as tStreamClient } from './utils/twitchStream';
 import {ProfilingIntegration} from "@sentry/profiling-node";
 
@@ -21,7 +21,6 @@ if(process.env['SENTRY_DSN']) {
       return evnt;
     },
     tracesSampleRate: 0.2, // Only send 20% of the total transactions
-    //@ts-ignore Missing Type Definition: https://github.com/getsentry/sentry-javascript/pull/6310
     profilesSampleRate: 0.5,
   });
 }
@@ -50,7 +49,11 @@ client.on('ready', async () => {
 // Gracefully close setup
 const quitSignalHandler = () => {
   console.log("Closing Service...");
-  Mongoose.disconnect().then(()=>{
+  if(!prisma) {
+    console.log("Closed...");
+    process.exit(0);
+  }
+  prisma.$disconnect().then(()=>{
     console.log("Closed...");
     process.exit(0);
   })
