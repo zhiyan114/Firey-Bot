@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["extendedWhereUnique"]
 }
 
@@ -12,7 +12,7 @@ model economy {
   memberid         String   @id @db.VarChar(100)
   points           Int      @default(0)
   lastgrantedpoint DateTime @default(now()) @db.Timestamp(6)
-  members          members  @relation(fields: [memberid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_memberid")
+  members          members  @relation(fields: [memberid], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_memberid")
 }
 
 model members {
@@ -28,5 +28,5 @@ model twitch {
   memberid String  @unique @db.VarChar(100)
   username String
   verified Boolean @default(false)
-  members  members @relation(fields: [memberid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_memberid")
+  members  members @relation(fields: [memberid], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_memberid")
 }
