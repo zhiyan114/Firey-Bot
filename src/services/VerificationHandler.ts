@@ -10,6 +10,10 @@ import { createUserData } from '../DBUtils/UserDataManager';
 
 client.on('interactionCreate', async (interaction : Interaction) => {
     if(interaction.isButton() && interaction.customId === "RuleConfirm") {
+        if(interaction.user.bot) {
+            interaction.reply({content: "PRIVILEGE INSUFFICIENT", ephemeral: true});
+            return;
+        };
         const userRole = new RoleManager(interaction.member as GuildMember);
         if(await userRole.check(newUserRoleID)) {await interaction.reply({content: "You've already confirmed the rules.", ephemeral: true});return;};
         // Update the user's role and the database

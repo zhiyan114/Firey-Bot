@@ -27,6 +27,7 @@ const updateUserData = async ()=> {
     if(!prisma) return;
     const dataToPush: userDataType[] = [];
     for(const [_,member] of await (client.guilds.cache.find(g=>g.id == guildID)!).members.fetch()) {
+        if(member.user.bot) continue;
         const hasVerifyRole = member.roles.cache.find(role=>role.id == newUserRoleID);
         dataToPush.push({
             id: member.user.id,
