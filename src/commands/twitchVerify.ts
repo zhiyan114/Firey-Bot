@@ -32,7 +32,7 @@ const twitchLinkFunc = async (interaction : CommandInteraction) => {
     if(!userReq) {
         // No request for the user is found
         embed.setColor("#FF0000")
-        embed.setDescription("No verification request for this username has been found under your account's ID. Please try to relink it on twitch.")
+        embed.setDescription(`No verification request for this username has been found under your account's ID. Please go on Firey's twitch chat and run the command: \`!link ${interaction.user.id}\` to get started.`)
         return await interaction.followUp({embeds:[embed], ephemeral: true})
     }
     if(userReq.verified) {
