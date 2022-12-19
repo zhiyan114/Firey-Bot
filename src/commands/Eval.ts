@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
+import { ActivityType, CommandInteraction } from 'discord.js';
 import { guildID, newUserRoleID } from '../config';
 import { prisma } from '../utils/DatabaseManager';
 import {client} from '../index';
@@ -22,7 +22,8 @@ type userDataType = {
     tag: string,
     rulesconfirmedon: Date | undefined,
 }
-// This will add all the users that are in the server to the userData collections
+
+// Manually add all the missing users to the database
 const updateUserData = async ()=> {
     if(!prisma) return;
     const dataToPush: userDataType[] = [];
@@ -39,6 +40,17 @@ const updateUserData = async ()=> {
         data: dataToPush,
         skipDuplicates: true,
     });
+}
+
+// Manually reset the bot's status in-case it was removed from discord's backend
+const updateStatus = async () => {
+    client.user!.setPresence({
+        status: "dnd",
+        activities: [{
+            name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
+            type: ActivityType.Competing,
+        }]
+    })
 }
 
 
