@@ -3,8 +3,6 @@ import * as Sentry from '@sentry/node';
 import { welcomeChannelID, guildID } from '../config';
 import { client } from "../index"
 import { APIErrors } from '../utils/StatusCodes';
-import { prisma } from "../utils/DatabaseManager";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { createUserData } from "../DBUtils/UserDataManager";
 
 client.on('guildMemberAdd',async (member : GuildMember) => {
@@ -24,7 +22,7 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
         await member.send({embeds: [embed]});
     } catch(ex : unknown) {
         if(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)
-            channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`,embeds: [embed]});
+            channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`, embeds: [embed]});
         else Sentry.captureException(ex);
     }
     if(client.user) {

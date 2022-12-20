@@ -1,6 +1,4 @@
 import { prisma } from '../utils/DatabaseManager';
-import { LogType, sendLog } from '../utils/eventLogger';
-import { streamCli } from '../index';
 import { twitchCmdType } from './index';
 
 const VerifyFunc : twitchCmdType ={

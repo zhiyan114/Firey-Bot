@@ -1,4 +1,3 @@
-import { GuildMember, User } from 'discord.js';
 import { prisma } from '../utils/DatabaseManager';
 
 // Generate random amount of points
