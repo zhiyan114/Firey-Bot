@@ -3,6 +3,9 @@ import * as Sentry from '@sentry/node';
 import { welcomeChannelID, guildID } from '../config';
 import { client } from "../index"
 import { APIErrors } from '../utils/StatusCodes';
+import { prisma } from "../utils/DatabaseManager";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
+import { createUserData } from "../DBUtils/UserDataManager";
 
 client.on('guildMemberAdd',async (member : GuildMember) => {
     // Send message to channel 907121158376288307
@@ -24,19 +27,28 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
             channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`,embeds: [embed]});
         else Sentry.captureException(ex);
     }
-    client.user!.setPresence({
-        status: "dnd",
-        activities: [{
-          name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
-          type: ActivityType.Competing,
-        }]
-    })
+    if(client.user) {
+        client.user.setPresence({
+            status: "dnd",
+            activities: [{
+              name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
+              type: ActivityType.Competing,
+            }]
+        })
+    }
+    // Add the user to the database
+    await createUserData(member);
 });
 
 /* Do some member leave stuff, which is nothing. */
-
+/*
+    Privacy Users: The reason why the data isn't automatically deleted when user leaves if because when it deletes, all of the associated data will be deleted, 
+    including their total accumulated points. This will also be called when user gets kicked or templorary banned, which we dont want their points to be
+    deleted.
+*/
 client.on('guildMemberRemove', async()=>{
-    client.user!.setPresence({
+    if(!client.user) return;
+    client.user.setPresence({
         status: "dnd",
         activities: [{
           name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
