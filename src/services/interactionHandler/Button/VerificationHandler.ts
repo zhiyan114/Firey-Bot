@@ -1,4 +1,4 @@
-import { prisma } from "@prisma/client";
+import { prisma } from "../../../utils/DatabaseManager"
 import { ButtonInteraction, GuildMember } from "discord.js";
 import { userRoleManager as RoleManager } from '../../../utils/roleManager';
 import { newUserRoleID } from "../../../config";
