@@ -20,17 +20,8 @@ This bot is developed to serve a single server; thus, codes are not reusable wit
 # Configuration Guide
 File: config.ts
 
-## Environment Variable:
-* `CLIENTID` - This should be the Client/Application ID for the discord bot. This will only be used for slash command registration purpose.
-* `CLIENTSECRET` - THis should be the application oauth secret for the client
-* `BOTTOKEN` - This should be the authentication token for the discord bot. This token will be used for all API calls.
-* `WEBSERVER_FQDN` - Full Qualified Domain Name for the server
-* `WEBSERVER_HTTPS_CERTIFICATE` - (Optional) Certificate (.crt/.cer) for HTTPS
-* `WEBSERVER_HTTPS_KEY` - (Optional) Private key associated with the certificate
-* `WEBSERVER_PORT` - (Optional) Custom Port for the webserver (regardless if it http or https mode)
-* `SENTRY_DSN` - (Optional) Capture unhandled/handled errors
-* `MONGODB_CONN` - MongoDB Connection String
-* `TWITCH_TOKEN` - (Optional) Twitch Oauth token
+## Environment Variable
+For environment variable configurations, please refer to the `.env.example` file
 
 ## Standard Configuration:
 * `guildID` - The guild ID for the server that the bot will be running in. Yes, I can technically pull that ID out by getting a list of guilds that the bot is in and read the first array, but nah, I don't feel like doing that.
