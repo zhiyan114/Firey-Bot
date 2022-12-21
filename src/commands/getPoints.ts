@@ -2,9 +2,8 @@
 
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
-import { econModel } from '../DBUtils/EconomyManager';
 import { ICommand } from '../interface';
-import { isConnected } from '../utils/DatabaseManager';
+import { prisma } from '../utils/DatabaseManager';
 
 /* Command Builder */
 const GetPointsCmd = new SlashCommandBuilder()
@@ -19,9 +18,13 @@ const GetPointsCmd = new SlashCommandBuilder()
 /* Function Builder */
 const GetPointsFunc = async (interaction : CommandInteraction) => {
     const isEphmeral = interaction.options.get('ephemeral', false)?.value as boolean ?? true;
-    if(!isConnected()) return await interaction.reply({content: "Unfortunately the database is not connected, please report this issue.", ephemeral: true});
+    if(!prisma) return await interaction.reply({content: "Unfortunately the database is not connected, please report this issue.", ephemeral: true});
     await interaction.deferReply({ephemeral: isEphmeral});
-    const userEconData = await econModel.findOne({_id: interaction.user.id});
+    const userEconData = await prisma.economy.findUnique({
+        where: {
+            memberid: interaction.user.id,
+        }
+    });
     const embed = new EmbedBuilder();
     embed.setTitle(`Your Points`);
     embed.setColor("#00FFFF");

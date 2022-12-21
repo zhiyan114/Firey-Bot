@@ -1,38 +1,41 @@
 // Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
-import * as Sentry from '@sentry/node';
-import {botToken, guildID} from './config';
+import {init as sentryInit} from '@sentry/node';
+import "@sentry/tracing";
+import {botToken, guildID, twitch} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
-import Mongoose from 'mongoose';
-import YouTubeNotifier from './services/youtubeNotification';
-import ReactRole from './services/ReactRoleHandler';
+import { prisma } from './utils/DatabaseManager';
+import { twitchClient as tStreamClient } from './utils/twitchStream';
+import {ProfilingIntegration} from "@sentry/profiling-node";
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
-  sendLog(LogType.Info,"Sentry DSN Detected, Exception Logging will be enabled")
-  Sentry.init({
-    dsn: process.env['SENTRY_DSN']
+  sendLog(LogType.Info,"Sentry DSN Detected, Error and Performance Logging will be enabled")
+  sentryInit({
+    dsn: process.env['SENTRY_DSN'],
+    integrations: [
+      new ProfilingIntegration()
+    ],
+    beforeSend : (evnt) => { 
+      if(evnt.tags && evnt.tags['isEval']) return null;
+      return evnt;
+    },
+    tracesSampleRate: 0.2, // Only send 20% of the total transactions
+    profilesSampleRate: 0.5,
   });
 }
 
 /* Client Loader */
 export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessageReactions, Intents.GuildBans, Intents.GuildMembers, Intents.MessageContent, Intents.GuildMessages], partials: [Partials.Channel, Partials.GuildMember, Partials.User] });
-
+export const streamCli = new tStreamClient(twitch.channel);
 /* Internal Services */
-import './services/CmdHandler';
-import './services/VerificationHandler';
-import './services/UserJoinHandler';
-import './services/EconomyHandler';
-import './services/userDataHandler';
-import './services/TwitchHandler';
-
-
+import { ReactRole, YouTubeNotifier } from './services'
 
 client.on('ready', async () => {
   client.user!.setPresence({
     status: "dnd",
     activities: [{
-      name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
+      name: `with ${client.guilds.cache.find(g=>g.id===guildID)?.memberCount} cuties :3`,
       type: ActivityType.Competing,
     }]
   })
@@ -46,7 +49,11 @@ client.on('ready', async () => {
 // Gracefully close setup
 const quitSignalHandler = () => {
   console.log("Closing Service...");
-  Mongoose.disconnect().then(()=>{
+  if(!prisma) {
+    console.log("Closed...");
+    process.exit(0);
+  }
+  prisma.$disconnect().then(()=>{
     console.log("Closed...");
     process.exit(0);
   })

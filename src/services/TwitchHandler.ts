@@ -1,9 +1,9 @@
 import tmi from 'tmi.js';
 import { twitch } from '../config';
-import {econModel, grantPoints } from '../DBUtils/EconomyManager';
-import { userDataModel } from '../DBUtils/UserDataManager';
+import { grantPoints } from '../DBUtils/EconomyManager';
+import { prisma } from '../utils/DatabaseManager';
 import { LogType, sendLog } from '../utils/eventLogger';
-import { isStreaming, streamStatus, getStreamData } from '../utils/twitchStream'
+import { streamCli } from '../index';
 import {client as botClient} from '../index'
 import { EmbedBuilder, TextChannel } from 'discord.js';
 import { twitchCmdType } from '../CmdTwitch';
@@ -14,7 +14,7 @@ type stringObject = {
     [key: string]: string
 }
 
-const tmiClient = new tmi.Client({
+export const tmiClient = new tmi.Client({
     connection: {
         secure: true,
         reconnect: true,
@@ -40,7 +40,7 @@ interface ICommandList {
 const twitchCmdList : ICommandList  = {};
 const cmdDir = path.join(__dirname, '../', 'CmdTwitch');
 for(let file of fs.readdirSync(cmdDir)) {
-    if (file.endsWith('.js') && file != "index.js") {
+    if (file.endsWith('.js') && file !== "index.js") {
         const cmdModule : twitchCmdType = require(path.join(cmdDir, file)).default;
         if(!cmdModule) continue;
         if(twitchCmdList[cmdModule.name]) continue; // Command already configured
@@ -48,30 +48,37 @@ for(let file of fs.readdirSync(cmdDir)) {
     }
 }
 
-tmiClient.on('message', async (channel, tags, message, self)=>{
+tmiClient.on('message', async function(channel, tags, message, self){
     if(self) return;
+    if(!prisma) return;
     if(!tags['user-id'] || !tags['username']) return;
     // User is not on the temp AuthUsers list, check if they're verified or not (if the stream is started)
-    if(!authUsers[tags['user-id']] && isStreaming()) {
-        const userData = await userDataModel.findOne({
-            "twitch.ID": tags['user-id']
+    if(!authUsers[tags['user-id']]) {
+        const userData = await prisma.twitch.findUnique({
+            where: {
+                id: tags['user-id'],
+            }
         })
-        if(userData && userData.twitch && userData.twitch.verified) {
+        if(userData && userData.verified) {
             // User is on the database
-            authUsers[tags['user-id']] = userData._id;
-            if(tags['username'] != userData.twitch.username) {
+            authUsers[tags['user-id']] = userData.memberid;
+            if(tags['username'] !== userData.username) {
                 // User probably has a new username, update them.
-                await userDataModel.updateOne({_id: userData._id},{
-                    $set: {
-                        "twitch.username": tags['username']
+                await prisma.twitch.update({
+                    data: {
+                        username: tags["username"]
                     },
+                    where: {
+                        memberid: userData.memberid
+                    }
                 })
             }
         }
         if(!authUsers[tags['user-id']]) authUsers[tags['user-id']] = "-1";
     }
     // Check prefix to determine if this is a chat message or command
-    if(message.slice(0,1) == twitch.prefix) {
+    message = message.trim(); // Remove all the whitespace around the message
+    if(message.slice(0,1) === twitch.prefix) {
         const args = message.split(" ")
         // Get the command
         const cmdObj = twitchCmdList[args[0].slice(1,args[0].length).toLowerCase()];
@@ -89,11 +96,12 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
         })
     }
     // Check if the server is active before giving out the points
-    if(isStreaming()) {
+    if(streamCli.isStreaming) {
         // Don't award the points to the user until they verify their account on twitch
-        if(!authUsers[tags['user-id']] || authUsers[tags['user-id']] == "-1") return;
+        const DiscordID = authUsers[tags['user-id']];
+        if(!DiscordID || DiscordID === "-1") return;
         // Now that user has their ID cached, give them the reward
-        await grantPoints(authUsers[tags['user-id']]);
+        await grantPoints(DiscordID);
     }
     
 })
@@ -102,11 +110,14 @@ tmiClient.on('message', async (channel, tags, message, self)=>{
 let discordReminder: NodeJS.Timeout | null;
 
 const sendDiscordLink = async () => {
-    await tmiClient.say(twitch.channel,`A quick remindr that my discord server exists! You can join here: ${twitch.discordInvite}`);
-    if(isStreaming()) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
+    await tmiClient.say(twitch.channel,`A quick reminder that my discord server exists! You can join here: ${twitch.discordInvite}`);
+    if(streamCli.isStreaming) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
 }
 
-streamStatus.on('start',async (streamData: getStreamData)=>{
+let lastStream: Date;
+streamCli.on('start',async (streamData)=>{
+    // Check last stream time before sending out notification (Patch for Firey's consistant stream issue; causing massive pings).
+    if(lastStream && (new Date()).getTime() - lastStream.getTime() < 18000) return;
     // Twitch Stream Started
     authUsers = {};
     // Start the discord link notification timer if it haven't started yet
@@ -126,7 +137,7 @@ streamStatus.on('start',async (streamData: getStreamData)=>{
     await channel.send({content: `<@&${twitch.roleToPing}> Derg is streaming right now, come join!`, embeds: [embed]})
     
 })
-streamStatus.on('end',()=>{
+streamCli.on('end',()=>{
     // Twitch Stream Ended
     authUsers = {};
     // Clear the discord timer notification if channel stops streaming
@@ -134,6 +145,5 @@ streamStatus.on('end',()=>{
         clearTimeout(discordReminder);
         discordReminder = null;
     }
+    lastStream = new Date();
 })
-
-if(isStreaming()) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);

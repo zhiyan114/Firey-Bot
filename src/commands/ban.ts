@@ -26,7 +26,8 @@ const BanCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const BanFunc = async (interaction : CommandInteraction) => {
-    const targetMember = interaction.options.getMember('user') as GuildMember;
+    const targetMember = interaction.options.getMember('user') as GuildMember | undefined;
+    if(!targetMember) return await interaction.reply("Invalid User has been supplied");
     const reason = interaction.options.get('reason',true).value as string;
     const deleteMessages = interaction.options.get('delete',true).value as boolean;
     const embed = new EmbedBuilder()
@@ -34,14 +35,14 @@ const BanFunc = async (interaction : CommandInteraction) => {
         .setTitle('Banned')
         .setDescription(`You have been banned from ${interaction.guild!.name}!`)
         .setFields({name: "Reason", value: reason})
-        .setFooter({text: `Banned by ${interaction.user.username}#${interaction.user.discriminator}`})
+        .setFooter({text: `Banned by ${interaction.user.tag}`})
         .setTimestamp();
     await targetMember.send({embeds:[embed]});
-    await targetMember.ban({deleteMessageSeconds: deleteMessages ? 604800 : 0, reason: reason});
+    await targetMember.ban({deleteMessageSeconds: deleteMessages ? 604800 : 0, reason});
     await interaction.reply({content: 'User has been successfully banned!', ephemeral: true});
     await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **ban** command`, {
         target: targetMember.user.tag,
-        reason: reason,
+        reason,
         deleteMessages: deleteMessages.toString(),
     });
 }
