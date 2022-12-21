@@ -7,6 +7,8 @@ const VerifyFunc : twitchCmdType ={
         const discordID = data.args[1];
         if(!prisma) return;
         if(!data.user['user-id']) return;
+        const existingID = data.authUsers[data.user['user-id']];
+        if(existingID && existingID != "-1") return await data.client.say(data.channel,`@${data.user['display-name']} Your account has already been verified. Please contact zhiyan114 if you would like to relink it.`)
         if(!discordID[1]) return await data.client.say(data.channel, `@${data.user.username}, please make sure you supply your discord ID so that we can properly verify you!`);
         // Check if user input only contains number and has a valid length
         if(!/^\d+$/.test(discordID[1]) || discordID[1].length < 17) return await data.client.say(data.channel,`@${data.user.username}, you have provided an invalid discord ID.`);

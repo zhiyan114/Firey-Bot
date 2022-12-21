@@ -53,8 +53,8 @@ tmiClient.on('message', async function(channel, tags, message, self){
     if(!prisma) return;
     if(!tags['user-id'] || !tags['username']) return;
     // User is not on the temp AuthUsers list, check if they're verified or not (if the stream is started)
-    if(!authUsers[tags['user-id']] && streamCli.isStreaming) {
-        const userData = await prisma.twitch.findFirst({
+    if(!authUsers[tags['user-id']]) {
+        const userData = await prisma.twitch.findUnique({
             where: {
                 id: tags['user-id'],
             }
@@ -97,9 +97,10 @@ tmiClient.on('message', async function(channel, tags, message, self){
     // Check if the server is active before giving out the points
     if(streamCli.isStreaming) {
         // Don't award the points to the user until they verify their account on twitch
-        if(!authUsers[tags['user-id']] || authUsers[tags['user-id']] == "-1") return;
+        const DiscordID = authUsers[tags['user-id']];
+        if(!DiscordID || DiscordID == "-1") return;
         // Now that user has their ID cached, give them the reward
-        await grantPoints(authUsers[tags['user-id']]);
+        await grantPoints(DiscordID);
     }
     
 })
