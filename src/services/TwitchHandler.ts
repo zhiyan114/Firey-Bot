@@ -40,7 +40,7 @@ interface ICommandList {
 const twitchCmdList : ICommandList  = {};
 const cmdDir = path.join(__dirname, '../', 'CmdTwitch');
 for(let file of fs.readdirSync(cmdDir)) {
-    if (file.endsWith('.js') && file != "index.js") {
+    if (file.endsWith('.js') && file !== "index.js") {
         const cmdModule : twitchCmdType = require(path.join(cmdDir, file)).default;
         if(!cmdModule) continue;
         if(twitchCmdList[cmdModule.name]) continue; // Command already configured
@@ -62,7 +62,7 @@ tmiClient.on('message', async function(channel, tags, message, self){
         if(userData && userData.verified) {
             // User is on the database
             authUsers[tags['user-id']] = userData.memberid;
-            if(tags['username'] != userData.username) {
+            if(tags['username'] !== userData.username) {
                 // User probably has a new username, update them.
                 await prisma.twitch.update({
                     data: {
@@ -77,7 +77,8 @@ tmiClient.on('message', async function(channel, tags, message, self){
         if(!authUsers[tags['user-id']]) authUsers[tags['user-id']] = "-1";
     }
     // Check prefix to determine if this is a chat message or command
-    if(message.slice(0,1) == twitch.prefix) {
+    message = message.trim(); // Remove all the whitespace around the message
+    if(message.slice(0,1) === twitch.prefix) {
         const args = message.split(" ")
         // Get the command
         const cmdObj = twitchCmdList[args[0].slice(1,args[0].length).toLowerCase()];
@@ -98,7 +99,7 @@ tmiClient.on('message', async function(channel, tags, message, self){
     if(streamCli.isStreaming) {
         // Don't award the points to the user until they verify their account on twitch
         const DiscordID = authUsers[tags['user-id']];
-        if(!DiscordID || DiscordID == "-1") return;
+        if(!DiscordID || DiscordID === "-1") return;
         // Now that user has their ID cached, give them the reward
         await grantPoints(DiscordID);
     }

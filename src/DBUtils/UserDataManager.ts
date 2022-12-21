@@ -54,7 +54,7 @@ export const updateUserData = async(user: User | GuildMember, Data: DataType): P
         return true;
     } catch(ex) {
         // User Data not found
-        if(ex instanceof PrismaClientKnownRequestError && ex.code == "P2025") return false;
+        if(ex instanceof PrismaClientKnownRequestError && ex.code === "P2025") return false;
         captureException(ex);
         return false;
     }

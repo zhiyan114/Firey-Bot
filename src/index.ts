@@ -35,7 +35,7 @@ client.on('ready', async () => {
   client.user!.setPresence({
     status: "dnd",
     activities: [{
-      name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
+      name: `with ${client.guilds.cache.find(g=>g.id===guildID)?.memberCount} cuties :3`,
       type: ActivityType.Competing,
     }]
   })

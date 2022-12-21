@@ -11,7 +11,7 @@ client.on('userUpdate',async (oldUser, newUser)=>{
             tag: newUser.tag,
         })
         if(!userUpdated) {
-            const userHasVerifiedRole = (await client.guilds.cache.find(g=>g.id == guildID)?.members.fetch(newUser))?.roles.cache.find(role=>role.id == newUserRoleID);
+            const userHasVerifiedRole = (await client.guilds.cache.find(g=>g.id === guildID)?.members.fetch(newUser))?.roles.cache.find(role=>role.id === newUserRoleID);
             await createUserData(newUser, userHasVerifiedRole ? (new Date()) : undefined);
         }
     }

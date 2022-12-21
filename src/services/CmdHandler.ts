@@ -34,8 +34,8 @@ const hasPerm = (command: ICommand, user: GuildMember) => {
     // User perm check first
     const perm = command.permissions
     if(!perm) return true;
-    if(perm.users && perm.users.find(k=>k == user.user.id)) return true;
-    if(perm.roles && perm.roles.filter(r => user.roles.cache.find(ur=> ur.id == r)).length > 0) return true;
+    if(perm.users && perm.users.find(k=>k === user.user.id)) return true;
+    if(perm.roles && perm.roles.filter(r => user.roles.cache.find(ur=> ur.id === r)).length > 0) return true;
     return false;
 }
 

@@ -31,7 +31,7 @@ export default {
         roles: ["RoleID"],
         users: ["UserID"]
     },
-    function: (command)=>{
+    function: async (command)=>{
         
     },
     disabled: false,

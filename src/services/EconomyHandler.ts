@@ -11,6 +11,6 @@ client.on('messageCreate', async (message) => {
     // Prevent bot from participating
     if(message.author.bot) return;
     // Prevent users that aren't in guild chat from participating (such as bot's DM)
-    if(message.channel.type != ChannelType.GuildText && message.channel.type != ChannelType.GuildVoice) return;
+    if(message.channel.type !== ChannelType.GuildText && message.channel.type !== ChannelType.GuildVoice) return;
     await grantPoints(message.author.id);
 })

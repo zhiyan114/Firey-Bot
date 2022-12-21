@@ -1,6 +1,6 @@
 import './CmdHandler';
 import './EconomyHandler';
-import './VerificationHandler';
+import './interactionHandler/';
 import './UserJoinHandler';
 import './userDataHandler';
 import './TwitchHandler';

@@ -38,7 +38,7 @@ const KickFunc = async (interaction : CommandInteraction) => {
         .setFooter({text: `Kicked by ${interaction.user.tag}`})
         .setTimestamp();
     if(invite) {
-        const inviteLink = await (interaction.guild!.channels.cache.find(channel => channel.id == "907311644076564511") as TextChannel).createInvite({maxAge: 604800, maxUses: 1, reason: "Moderator attached invitation link for this kick action"});
+        const inviteLink = await (interaction.guild!.channels.cache.find(channel => channel.id === "907311644076564511") as TextChannel).createInvite({maxAge: 604800, maxUses: 1, reason: "Moderator attached invitation link for this kick action"});
         embed.addFields({name: "Invite Link", value: inviteLink.url});
     }
     await targetMember.send({embeds:[embed]});

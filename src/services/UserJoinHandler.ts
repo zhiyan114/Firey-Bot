@@ -29,7 +29,7 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
         client.user.setPresence({
             status: "dnd",
             activities: [{
-              name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
+              name: `with ${client.guilds.cache.find(g=>g.id===guildID)?.memberCount} cuties :3`,
               type: ActivityType.Competing,
             }]
         })
@@ -44,12 +44,12 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
     including their total accumulated points. This will also be called when user gets kicked or templorary banned, which we dont want their points to be
     deleted.
 */
-client.on('guildMemberRemove', async()=>{
+client.on('guildMemberRemove', ()=>{
     if(!client.user) return;
     client.user.setPresence({
         status: "dnd",
         activities: [{
-          name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
+          name: `with ${client.guilds.cache.find(g=>g.id===guildID)?.memberCount} cuties :3`,
           type: ActivityType.Competing,
         }]
     })

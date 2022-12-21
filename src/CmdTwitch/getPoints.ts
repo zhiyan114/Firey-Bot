@@ -7,7 +7,7 @@ const getPointsFunc : twitchCmdType ={
     func: async (data) => {
         if(!prisma) return;
         if(!data.user['user-id']) return;
-        if(data.authUsers[data.user['user-id']] == "-1") return data.client.say(data.channel,`@${data.user.username}, your account is not linked yet. Do that first then try again.`);
+        if(data.authUsers[data.user['user-id']] === "-1") return data.client.say(data.channel,`@${data.user.username}, your account is not linked yet. Do that first then try again.`);
         let discordUserID = data.authUsers[data.user['user-id']];
         // Fetch the points
         const econData = await prisma.economy.findUnique({
