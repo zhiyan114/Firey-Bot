@@ -2,6 +2,7 @@ import { ChannelType } from 'discord.js';
 import { client } from '../index';
 import { prisma } from '../utils/DatabaseManager';
 import { grantPoints } from '../DBUtils/EconomyManager';
+import { noPointsChannel } from '../config';
 
 
 // Grant currency based on chats
@@ -10,7 +11,10 @@ client.on('messageCreate', async (message) => {
     if(!prisma) return;
     // Prevent bot from participating
     if(message.author.bot) return;
-    // Prevent users that aren't in guild chat from participating (such as bot's DM)
-    if(message.channel.type !== ChannelType.GuildText && message.channel.type !== ChannelType.GuildVoice) return;
+    // Prevent DM from being awarded points
+    if(message.channel.type == ChannelType.DM) return;
+    // Prevent points from being awarded to blacklisted channels
+    if(noPointsChannel.find((c)=> c === message.channel.id)) return;
+    // Grant the user the points
     await grantPoints(message.author.id);
 })

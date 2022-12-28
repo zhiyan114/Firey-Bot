@@ -44,3 +44,4 @@ For environment variable configurations, please refer to the `.env.example` file
     * `roleToPing` - The role ID to ping when stream starts
     * `discordInvite` - Discord server invite link (keeping the link consistent)
     * `reminderInterval` - Interval to send a reminder for the discord server (in ms)
+* `noPointsChannel` - An list of channels that the points will not be awarded to

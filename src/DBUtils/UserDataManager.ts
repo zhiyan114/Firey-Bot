@@ -28,7 +28,7 @@ export const createUserData = async (user: User | GuildMember, isVerified?: Date
             }
         })
     } catch(ex) {
-        if(ex instanceof PrismaClientKnownRequestError) return;
+        if(ex instanceof PrismaClientKnownRequestError && ex.code === "P2002") return;
         captureException(ex)
     }
 }
