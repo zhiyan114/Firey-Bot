@@ -15,6 +15,6 @@ client.on('messageCreate', async (message) => {
     if(message.channel.type == ChannelType.DM) return;
     // Prevent points from being awarded to blacklisted channels
     if(noPointsChannel.find((c)=> c === message.channel.id)) return;
-    
+    // Grant the user the points
     await grantPoints(message.author.id);
 })
