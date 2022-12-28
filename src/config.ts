@@ -66,3 +66,7 @@ export const twitch = {
     discordInvite: "https://discord.gg/Rz3tct2PpJ",
     reminderInterval: 1800000, // 30 minutes
 }
+// List of channels to not grant points on (Channel ID)
+export const noPointsChannel = [
+    "907121158376288307"
+]

@@ -1,3 +1,5 @@
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { captureException } from '@sentry/node';
 import { prisma } from '../utils/DatabaseManager';
 
 // Generate random amount of points
@@ -9,13 +11,19 @@ export const getRewardPoints = (min?: number, max?: number) => {
 
 export const createEconData = async (userID: string, initalPoint?: number) => {
     if(!prisma) return;
-    await prisma.economy.create({
-        data: {
-            memberid: userID,
-            points: initalPoint,
-            lastgrantedpoint: new Date(),
-        }
-    })
+    try {
+        await prisma.economy.create({
+            data: {
+                memberid: userID,
+                points: initalPoint,
+                lastgrantedpoint: new Date(),
+            }
+        })
+    } catch(ex) {
+        // user is probably not registered to the database by userJoinHandler yet
+        if(ex instanceof PrismaClientKnownRequestError && ex.code == "P2003") return;
+        captureException(ex);
+    }
 }
 type grantPointsOption = {
     points?: number;

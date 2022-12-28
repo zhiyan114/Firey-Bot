@@ -2,7 +2,7 @@ import './CmdHandler';
 import './EconomyHandler';
 import './interactionHandler/';
 import './UserJoinHandler';
-import './userDataHandler';
+import './userUpdateHandler';
 import './TwitchHandler';
 import YouTubeNotifier from './youtubeNotification';
 import ReactRole from './ReactRoleHandler';
