@@ -26,6 +26,6 @@ CREATE TABLE public.modlog (
     action TEXT NOT NULL,
     reason TEXT,
     timestamp timestamptz NOT NULL DEFAULT NOW(),
-    CONSTRAINT FK_memberID FOREIGN KEY(memberID) REFERENCES public.members(id),
-    CONSTRAINT FK_moderatorID FOREIGN KEY(moderatorID) REFERENCES public.members(id)
+    CONSTRAINT FK_memberID FOREIGN KEY(memberID) REFERENCES public.members(id) ON DELETE CASCADE,
+    CONSTRAINT FK_moderatorID FOREIGN KEY(moderatorID) REFERENCES public.members(id) ON DELETE CASCADE
 );
