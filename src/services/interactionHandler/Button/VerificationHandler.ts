@@ -13,7 +13,7 @@ export default async function VerificationHandler(interaction: ButtonInteraction
         await interaction.reply({content: "The database is unavailable, please contact zhiyan114 about this.", ephemeral: true})
         return;
     }
-    if(!(new MemberManager(interaction.member as GuildMember)).verify())
+    if(!(await new MemberManager(interaction.member as GuildMember).verify()))
         return await interaction.reply({content: "You've already confirmed the rules.", ephemeral: true});
 
     // Thank the user for the confirmation
