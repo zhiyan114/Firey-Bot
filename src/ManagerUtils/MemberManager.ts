@@ -29,7 +29,7 @@ export class MemberManager {
     */
     public async verify() {
         // check if the user already has the verification role
-        if(this.member.roles.cache.find(role=>role.id === newUserRoleID)) return false;
+        if(this.member.roles.cache.has(newUserRoleID)) return false;
         // User does not, update the user
         await this.member.roles.add(newUserRoleID);
         const updatedUser = await updateUserData(this.member.user, {rulesconfirmedon: new Date()});

@@ -6,7 +6,7 @@ import { MemberManager } from "../../../ManagerUtils/MemberManager";
 export default async function VerificationHandler(interaction: ButtonInteraction) {
     // Rule Confirmation Button
     if(interaction.user.bot) {
-        interaction.reply({content: "PRIVILEGE INSUFFICIENT", ephemeral: true});
+        await interaction.reply({content: "PRIVILEGE INSUFFICIENT", ephemeral: true});
         return;
     };
     if(!prisma) {
