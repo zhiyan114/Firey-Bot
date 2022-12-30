@@ -31,6 +31,7 @@ const KickFunc = async (interaction : CommandInteraction) => {
     let reason = interaction.options.get('reason',true).value as string;
     const invite = interaction.options.get('invite',true).value as boolean;
     const member = new MemberManager(targetMember);
+    await interaction.deferReply({ephemeral: true});
     const kickField = [
         {
             name: "Reason",
@@ -59,7 +60,7 @@ const KickFunc = async (interaction : CommandInteraction) => {
         color: "#FFFF00"
     })
     await member.kick(interaction.member as GuildMember, reason);
-    await interaction.reply({content: 'User has been successfully kicked!', ephemeral: true});
+    await interaction.followUp({content: 'User has been successfully kicked!', ephemeral: true});
 }
 
 export default {

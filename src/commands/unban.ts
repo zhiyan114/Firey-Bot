@@ -29,14 +29,15 @@ export default {
         const reason = interaction.options.get('reason', false);
         if(!banList) return await interaction.reply({content: "Command must be executed in a guild", ephemeral: true}); // Command is only registered in the main guild anyway so this shouldn't be seen anyway
         if(!targetUser) return await interaction.reply({content: "Invalid User/User's ID", ephemeral: true});
+        await interaction.deferReply({ephemeral: true});
         try {
             const author = new MemberManager(interaction.member as GuildMember);
             await author.unbanTarget(targetUser, reason?.value?.toString());
-            await interaction.reply({content: "Successfully unbanned the user", ephemeral: true})
+            await interaction.followUp({content: "Successfully unbanned the user", ephemeral: true})
         } catch(ex: unknown) {
             if(ex instanceof DiscordAPIError) {
-                if(ex.code === APIErrors.UNKNOWN_USER) return await interaction.reply({content: "Invalid User/User's ID", ephemeral: true});
-                if(ex.code === APIErrors.UNKNOWN_BAN) return await interaction.reply({content: "User does not exist in the ban list", ephemeral: true});
+                if(ex.code === APIErrors.UNKNOWN_USER) return await interaction.followUp({content: "Invalid User/User's ID", ephemeral: true});
+                if(ex.code === APIErrors.UNKNOWN_BAN) return await interaction.followUp({content: "User does not exist in the ban list", ephemeral: true});
             }
             captureException(ex);
         }

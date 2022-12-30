@@ -32,6 +32,7 @@ const BanFunc = async (interaction : CommandInteraction) => {
     const reason = interaction.options.get('reason',true).value as string;
     const deleteMessages = interaction.options.get('delete',true).value as boolean;
     const target = new MemberManager(targetMember);
+    await interaction.deferReply({ephemeral: true});
     await target.sendMessage({
         title: "Banned",
         color: "#ff0000",
@@ -48,7 +49,7 @@ const BanFunc = async (interaction : CommandInteraction) => {
         ]
     })
     await target.ban(interaction.member as GuildMember, reason, deleteMessages);
-    await interaction.reply({content: 'User has been successfully banned!', ephemeral: true});
+    await interaction.followUp({content: 'User has been successfully banned!', ephemeral: true});
 }
 
 export default {

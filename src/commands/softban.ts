@@ -31,6 +31,7 @@ export default {
         const reason = interaction.options.get('reason', true).value as string;
         const invite = interaction.options.get('invite', true).value as boolean;
         const target = new MemberManager(targetMember as GuildMember);
+        await interaction.deferReply({ephemeral: true});
         const sbanfield = [
             {
                 name: "Reason",
@@ -55,7 +56,7 @@ export default {
             fields: sbanfield
         })
         await target.softBan(interaction.member as GuildMember, reason);
-        await interaction.reply({content: 'User has been successfully softban!', ephemeral: true});
+        await interaction.followUp({content: 'User has been successfully softban!', ephemeral: true});
     },
     disabled: false,
 } as ICommand;
