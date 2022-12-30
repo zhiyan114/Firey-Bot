@@ -2,7 +2,7 @@ import { EmbedBuilder, GuildMember, TextChannel, DiscordAPIError, ActivityType }
 import * as Sentry from '@sentry/node';
 import { welcomeChannelID, guildID } from '../config';
 import { client } from "../index"
-import { APIErrors } from '../utils/StatusCodes';
+import { APIErrors } from '../utils/discordErrorCode';
 import { createUserData } from "../DBUtils/UserDataManager";
 
 client.on('guildMemberAdd',async (member : GuildMember) => {

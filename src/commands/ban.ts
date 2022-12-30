@@ -3,6 +3,7 @@ import { CommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
 import { sendLog, LogType } from '../utils/eventLogger';
 import { adminRoleID }  from '../config';
 import { ICommand } from '../interface';
+import { MemberManager } from '../ManagerUtils/MemberManager';
 
 /* Command Builder */
 const BanCmd = new SlashCommandBuilder()
@@ -30,21 +31,24 @@ const BanFunc = async (interaction : CommandInteraction) => {
     if(!targetMember) return await interaction.reply("Invalid User has been supplied");
     const reason = interaction.options.get('reason',true).value as string;
     const deleteMessages = interaction.options.get('delete',true).value as boolean;
-    const embed = new EmbedBuilder()
-        .setColor('#ff0000')
-        .setTitle('Banned')
-        .setDescription(`You have been banned from ${interaction.guild!.name}!`)
-        .setFields({name: "Reason", value: reason})
-        .setFooter({text: `Banned by ${interaction.user.tag}`})
-        .setTimestamp();
-    await targetMember.send({embeds:[embed]});
-    await targetMember.ban({deleteMessageSeconds: deleteMessages ? 604800 : 0, reason});
+    const target = new MemberManager(targetMember);
+    await target.sendMessage({
+        title: "Banned",
+        color: "#ff0000",
+        message: `You have been banned from ${interaction.guild!.name}!`,
+        fields: [
+            {
+                name: "Reason",
+                value: reason
+            },
+            {
+                name: "Banned By",
+                value: interaction.user.tag
+            }
+        ]
+    })
+    await target.ban(interaction.member as GuildMember, reason, deleteMessages);
     await interaction.reply({content: 'User has been successfully banned!', ephemeral: true});
-    await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **ban** command`, {
-        target: targetMember.user.tag,
-        reason,
-        deleteMessages: deleteMessages.toString(),
-    });
 }
 
 export default {
