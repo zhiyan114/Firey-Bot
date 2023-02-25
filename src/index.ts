@@ -1,12 +1,11 @@
 // Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
 import {init as sentryInit} from '@sentry/node';
-import "@sentry/tracing";
 import {botToken, guildID, twitch} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
 import { prisma } from './utils/DatabaseManager';
 import { twitchClient as tStreamClient } from './utils/twitchStream';
-import {ProfilingIntegration} from "@sentry/profiling-node";
+import { redis as rClient } from './utils/DatabaseManager';
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
@@ -14,14 +13,11 @@ if(process.env['SENTRY_DSN']) {
   sentryInit({
     dsn: process.env['SENTRY_DSN'],
     integrations: [
-      new ProfilingIntegration()
     ],
     beforeSend : (evnt) => { 
       if(evnt.tags && evnt.tags['isEval']) return null;
       return evnt;
     },
-    tracesSampleRate: 0.2, // Only send 20% of the total transactions
-    profilesSampleRate: 0.5,
   });
 }
 
@@ -47,16 +43,14 @@ client.on('ready', async () => {
 });
 
 // Gracefully close setup
-const quitSignalHandler = () => {
+const quitSignalHandler = async () => {
   console.log("Closing Service...");
-  if(!prisma) {
-    console.log("Closed...");
-    process.exit(0);
-  }
-  prisma.$disconnect().then(()=>{
-    console.log("Closed...");
-    process.exit(0);
-  })
+  // Close Prisma ORM Connections
+  if(prisma) await prisma.$disconnect();
+  // Close Redis Connections
+  if(rClient.isOpen) await rClient.disconnect();
+  console.log("Closed...");
+  process.exit(0);
 }
 process.on('SIGINT', quitSignalHandler)
 process.on('SIGTERM', quitSignalHandler)
