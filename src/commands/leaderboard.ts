@@ -26,7 +26,7 @@ const leaderboardFunc = async (interaction : CommandInteraction) => {
     let dataCount  = 0;
     for(const EconData of topTenEconData) {
         dataCount += 1;
-        FormattedBoard += `${dataCount}. \`<@${EconData.id}\`> - **${EconData.points}**\n\n`
+        FormattedBoard += `${dataCount}. <@${EconData.id}> - **${EconData.points}**\n\n`
     }
     // Remove the last 2 newline (or do nothing if there is nothing to show)
     if(FormattedBoard.length >= 2) FormattedBoard = FormattedBoard.substring(0,FormattedBoard.length-2);
