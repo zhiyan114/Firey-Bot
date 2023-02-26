@@ -9,10 +9,7 @@ import { EmbedBuilder, TextChannel } from 'discord.js';
 import { twitchCmdType } from '../CmdTwitch';
 import path from 'path';
 import fs from 'fs';
-
-type stringObject = {
-    [key: string]: string
-}
+import { clearTwitchCache, twitchUser } from '../ManagerUtils/TwitchUser';
 
 export const tmiClient = new tmi.Client({
     connection: {
@@ -29,9 +26,6 @@ export const tmiClient = new tmi.Client({
 tmiClient.connect().then(()=>{
     sendLog(LogType.Info, "Twitch Bot Connected!")
 })
-
-// list of twitch users that haven't link to their discord channel. This is to prevent unnecessary database call everytime when user chats
-let authUsers: stringObject = {}
 
 /* Load all the internal commands */
 interface ICommandList {
@@ -52,29 +46,19 @@ tmiClient.on('message', async function(channel, tags, message, self){
     if(self) return;
     if(!prisma) return;
     if(!tags['user-id'] || !tags['username']) return;
-    // User is not on the temp AuthUsers list, check if they're verified or not (if the stream is started)
-    if(!authUsers[tags['user-id']]) {
-        const userData = await prisma.twitch.findUnique({
-            where: {
-                id: tags['user-id'],
-            }
-        })
-        if(userData && userData.verified) {
-            // User is on the database
-            authUsers[tags['user-id']] = userData.memberid;
-            if(tags['username'] !== userData.username) {
-                // User probably has a new username, update them.
-                await prisma.twitch.update({
-                    data: {
-                        username: tags["username"]
-                    },
-                    where: {
-                        memberid: userData.memberid
-                    }
-                })
-            }
+    const tUser = new twitchUser(tags['user-id']);
+    const userData = await tUser.getCacheData();
+    // Check if the user exists and is verified before performing username check
+    if(userData && userData.verified) {
+        if(tags['username'] !== userData.username) {
+            await tUser.updateDataCache({
+                username: tags['username']
+            });
+            await tUser.updateUser({
+                method: "update",
+                username: tags['username'],
+            });
         }
-        if(!authUsers[tags['user-id']]) authUsers[tags['user-id']] = "-1";
     }
     // Check prefix to determine if this is a chat message or command
     message = message.trim(); // Remove all the whitespace around the message
@@ -92,16 +76,14 @@ tmiClient.on('message', async function(channel, tags, message, self){
             self,
             client: tmiClient,
             args,
-            authUsers
         })
     }
     // Check if the server is active before giving out the points
     if(streamCli.isStreaming) {
         // Don't award the points to the user until they verify their account on twitch
-        const DiscordID = authUsers[tags['user-id']];
-        if(!DiscordID || DiscordID === "-1") return;
+        if(!userData || !userData.memberid) return;
         // Now that user has their ID cached, give them the reward
-        await grantPoints(DiscordID);
+        await grantPoints(userData.memberid);
     }
     
 })
@@ -119,7 +101,7 @@ streamCli.on('start',async (streamData)=>{
     // Check last stream time before sending out notification (Patch for Firey's consistant stream issue; causing massive pings).
     if(lastStream && (new Date()).getTime() - lastStream.getTime() < 18000) return;
     // Twitch Stream Started
-    authUsers = {};
+    await clearTwitchCache();
     // Start the discord link notification timer if it haven't started yet
     if(!discordReminder) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
     // Notify all the users in the server that his stream started
@@ -137,9 +119,9 @@ streamCli.on('start',async (streamData)=>{
     await channel.send({content: `<@&${twitch.roleToPing}> Derg is streaming right now, come join!`, embeds: [embed]})
     
 })
-streamCli.on('end',()=>{
+streamCli.on('end', async()=>{
     // Twitch Stream Ended
-    authUsers = {};
+    await clearTwitchCache();
     // Clear the discord timer notification if channel stops streaming
     if(discordReminder) {
         clearTimeout(discordReminder);

@@ -1,4 +1,5 @@
 import { ChatUserstate, Client } from "tmi.js";
+import { twitchUser } from "../ManagerUtils/TwitchUser";
 export type stringObject = {
     [key: string]: string
 }
@@ -9,7 +10,6 @@ export type tmiTypes = {
     self: boolean;
     client: Client;
     args: string[];
-    authUsers: stringObject;
 }
 export type twitchCmdType = {
     name: string; // Command Name
