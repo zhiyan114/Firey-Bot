@@ -5,7 +5,6 @@ export type updateData = {
     method: "add",
     memberid: string,
     username: string,
-    verified?: boolean,
 } | {
     method: "update",
     memberid?: string,
@@ -19,16 +18,17 @@ type userData = {
     verified: boolean,
 }
 type cacheData = {
-    memberid?: string;
+    memberid?: string,
     username?: string,
+    verified?: boolean,
 }
-// userid is for user's twitch ID; this class is used to manage twitch bot's cache system, replacing the current memory-based cache system.
+// userid is for user's twitch ID; this class is used to manage twitch bot's redis cache system, replacing the current memory-based cache system.
 export class twitchUser {
-    userid: string;
-    cachekey: string;
+    private userid: string;
+    private cachekey: string;
     constructor(userid: string) {
         this.userid = userid;
-        this.cachekey = `userdata:${this.userid}`
+        this.cachekey = `twitchuserdata:${this.userid}`
     }
     /**
      * Retrieve the user data
@@ -40,6 +40,7 @@ export class twitchUser {
         if(Object.keys(data).length > 0) return {
             memberid: data.memberid,
             username: data.username,
+            verified: data.verified ? data.verified === "true" : undefined,
         };
         // Data doesn't exist in redis, Update the cache
         const dbData = await this.getUserFromDB();
@@ -59,12 +60,15 @@ export class twitchUser {
     public async updateDataCache(newData: {
         memberid?: string,
         username?: string,
+        verified?: boolean,
     } | cacheData): Promise<void> {
         // Clear out all the undefined and null objects
-        if(!newData.memberid) delete newData.memberid;
-        if(!newData.username) delete newData.username;
+        const filteredData: {[key: string]: string} = {}
+        if(newData.memberid) filteredData['memberid'] = newData.memberid;
+        if(newData.username) filteredData['username'] = newData.username;
+        if(newData.verified) filteredData['verified'] = newData.verified.toString();
         // Update the cache   
-        await redis.hSet(this.cachekey, newData)
+        await redis.hSet(this.cachekey, filteredData)
         return;
     }
     /**
@@ -81,7 +85,7 @@ export class twitchUser {
     }
     /**
      * Add or Update user data from the database
-     * @param status
+     * @param data
      * @returns {boolean} The result of the operation. False means unsuccessful, while true means successful
      */
     public async updateUser(data: updateData): Promise<boolean> {
@@ -126,6 +130,6 @@ export class twitchUser {
 /**
  * This function clears all the cache that is created by this class
  */
-export const clearCache = () => {
-    // NOT IMPLEMENTED
+export const clearTwitchCache = async () => {
+    await redis.del(await redis.keys("twitchuserdata:*"))
 }
