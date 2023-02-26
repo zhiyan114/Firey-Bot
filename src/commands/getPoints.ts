@@ -20,9 +20,9 @@ const GetPointsFunc = async (interaction : CommandInteraction) => {
     const isEphmeral = interaction.options.get('ephemeral', false)?.value as boolean ?? true;
     if(!prisma) return await interaction.reply({content: "Unfortunately the database is not connected, please report this issue.", ephemeral: true});
     await interaction.deferReply({ephemeral: isEphmeral});
-    const userEconData = await prisma.economy.findUnique({
+    const userEconData = await prisma.members.findUnique({
         where: {
-            memberid: interaction.user.id,
+            id: interaction.user.id,
         }
     });
     const embed = new EmbedBuilder();

@@ -1,9 +1,12 @@
--- Inital SQL Table Creation
--- On delete cascade is used in-case a user request a data removal
+-- Inital SQL Table Creation v2
+-- Combined economy column to members table
+
 CREATE TABLE public.members (
     id VARCHAR(100) NOT NULL,
     tag TEXT NOT NULL,
     rulesConfirmedOn timestamptz,
+    points integer NOT NULL DEFAULT 0,
+    lastGrantedPoint timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY ("id")
 );
 CREATE TABLE public.twitch (
@@ -11,12 +14,6 @@ CREATE TABLE public.twitch (
     memberID VARCHAR(100) UNIQUE NOT NULL,
     username TEXT NOT NULL,
     verified boolean NOT NULL DEFAULT false,
-    CONSTRAINT FK_memberID FOREIGN KEY(memberID) REFERENCES public.members(id) ON DELETE CASCADE
-);
-CREATE TABLE public.economy (
-    memberID VARCHAR(100) PRIMARY KEY,
-    points integer NOT NULL DEFAULT 0,
-    lastGrantedPoint timestamp NOT NULL DEFAULT NOW(),
     CONSTRAINT FK_memberID FOREIGN KEY(memberID) REFERENCES public.members(id) ON DELETE CASCADE
 );
 CREATE TABLE public.modlog (

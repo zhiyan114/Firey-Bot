@@ -11,9 +11,9 @@ const getPointsFunc : twitchCmdType ={
         const tUserData = await new TwitchUser(data.user['user-id']).getCacheData();
         if(!(tUserData?.memberid) || tUserData.memberid === "-1") return data.client.say(data.channel,`@${data.user.username}, your account is not linked yet. Do that first then try again.`);
         // Fetch the points
-        const econData = await prisma.economy.findUnique({
+        const econData = await prisma.members.findUnique({
             where: {
-                memberid: tUserData.memberid,
+                id: tUserData.memberid,
             }
         })
         if(!econData) return await data.client.say(data.channel,`${data.user.username}, you have 0 points!`);

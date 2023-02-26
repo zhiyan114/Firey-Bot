@@ -13,23 +13,20 @@ const leaderboardCmd = new SlashCommandBuilder()
 const leaderboardFunc = async (interaction : CommandInteraction) => {
     if(!prisma) return await interaction.reply({content: "Unfortunately the database is not connected, please report this issue.", ephemeral: true});
     await interaction.deferReply();
-    const topTenEconData = await prisma.economy.findMany({
+    const topTenEconData = await prisma.members.findMany({
         orderBy: [
             {
                 points: 'desc'
             }
         ],
-        take: 10,
-        include: {
-            members: true
-        }
+        take: 10
     })
     let FormattedBoard = "";
     // Format all the data into a proper markup to display
     let dataCount  = 0;
     for(const EconData of topTenEconData) {
         dataCount += 1;
-        FormattedBoard += `${dataCount}. \`${EconData.members.tag}\` - **${EconData.points}**\n\n`
+        FormattedBoard += `${dataCount}. \`<@${EconData.id}\`> - **${EconData.points}**\n\n`
     }
     // Remove the last 2 newline (or do nothing if there is nothing to show)
     if(FormattedBoard.length >= 2) FormattedBoard = FormattedBoard.substring(0,FormattedBoard.length-2);

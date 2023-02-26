@@ -9,22 +9,6 @@ export const getRewardPoints = (min?: number, max?: number) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export const createEconData = async (userID: string, initalPoint?: number) => {
-    if(!prisma) return;
-    try {
-        await prisma.economy.create({
-            data: {
-                memberid: userID,
-                points: initalPoint,
-                lastgrantedpoint: new Date(),
-            }
-        })
-    } catch(ex) {
-        // user is probably not registered to the database by userJoinHandler yet
-        if(ex instanceof PrismaClientKnownRequestError && ex.code == "P2003") return;
-        captureException(ex);
-    }
-}
 type grantPointsOption = {
     points?: number;
     ignoreCooldown?: boolean;
@@ -35,24 +19,20 @@ export const grantPoints = async (userID: string, options?: grantPointsOption) =
     if(!options) options = {};
     if(!options.points) options.points = getRewardPoints();
     // Find the member first
-    const econData = await prisma.economy.findUnique({
+    const econData = await prisma.members.findUnique({
         where: {
-            memberid: userID
+            id: userID
         }
     })
-    if(!econData) {
-        if(options.noNewEntry) return false;
-        await createEconData(userID, options.points);
-        return true;
-    }
+    if(!econData) return false;
     if(!options.ignoreCooldown && econData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000) return false; // 1 minute cooldown
-    await prisma.economy.update({
+    await prisma.members.update({
         data: {
             lastgrantedpoint: new Date(),
             points: {increment: options.points}
         },
         where: {
-            memberid: userID
+            id: userID
         }
     })
     // User exist and points are granted
