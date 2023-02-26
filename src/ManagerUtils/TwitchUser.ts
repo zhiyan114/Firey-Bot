@@ -54,9 +54,10 @@ export class twitchUser {
             await this.updateDataCache(guestUserData);
             return guestUserData
         };
-        const finalData = {
+        const finalData: cacheData = {
             memberid: dbData.memberid,
             username: dbData.username,
+            verified: dbData.verified
         }
         await this.updateDataCache(finalData);
         return finalData;
