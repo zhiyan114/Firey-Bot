@@ -31,20 +31,29 @@ export class twitchUser {
         this.cachekey = `twitchuserdata:${this.userid}`
     }
     /**
-     * Retrieve the user data
+     * Standard way of retrieving twitch user data
      * @returns 
      */
     public async getCacheData(): Promise<cacheData | null> {
-        // Pull data from redis
-        const data = await redis.hGetAll(this.cachekey)
-        if(Object.keys(data).length > 0) return {
-            memberid: data.memberid,
-            username: data.username,
-            verified: data.verified ? data.verified === "true" : undefined,
-        };
+        // Check if the record already exist in redis
+        if(await this.cacheExists()) {
+            // Pull it up and use it
+            const data = await redis.hGetAll(this.cachekey)
+            return {
+                memberid: data.memberid,
+                username: data.username,
+                verified: data.verified ? data.verified === "true" : undefined,
+            };
+        }
         // Data doesn't exist in redis, Update the cache
         const dbData = await this.getUserFromDB();
-        if(!dbData) return null;
+        if(!dbData) {
+            const guestUserData = {
+                memberid: "-1",
+            }
+            await this.updateDataCache(guestUserData);
+            return guestUserData
+        };
         const finalData = {
             memberid: dbData.memberid,
             username: dbData.username,
@@ -52,6 +61,13 @@ export class twitchUser {
         await this.updateDataCache(finalData);
         return finalData;
 
+    }
+    /**
+     * Checks if there is already a cache record for this user
+     * @returns {boolean} return true if exist, otherwise false
+     */
+    public async cacheExists(): Promise<boolean> {
+        return await redis.exists(this.cachekey) > 0;
     }
     /**
      * Update user's cache data
@@ -74,7 +90,7 @@ export class twitchUser {
         return;
     }
     /**
-     * Pull ID directly from PostgreSQL Database. This is used by getDiscordID when redis didn't already have the record
+     * Pull user data directly from PostgreSQL Database. Should only be used if the record does not already exist in cache.
      * @returns {undefined | string} the userID in the database
      */
     private async getUserFromDB(): Promise<null | userData> {
