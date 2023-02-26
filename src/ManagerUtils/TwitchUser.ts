@@ -69,6 +69,8 @@ export class twitchUser {
         if(newData.verified) filteredData['verified'] = newData.verified.toString();
         // Update the cache   
         await redis.hSet(this.cachekey, filteredData)
+        // set redis expire key in 3 hours
+        await redis.expireAt(this.cachekey, Math.floor(Date.now() / 1000) + 10800, "GT")
         return;
     }
     /**
