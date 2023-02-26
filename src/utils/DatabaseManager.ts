@@ -7,8 +7,8 @@ import { createClient } from "redis";
 let prisma: PrismaClient | undefined;
 try {
   prisma = new PrismaClient();
-  console.log("Database Connected...");
-  sendLog(LogType.Info,"Database Connection Established");
+  console.log("Prisma Connected...");
+  sendLog(LogType.Info,"Prisma Connection Established");
 } catch(ex) {
   if(ex instanceof PrismaClientKnownRequestError) sendLog(LogType.Error, `Database Connection Error: ${ex.code} occurred`);
   else {
@@ -25,6 +25,9 @@ redis.on('error', err => {
     sendLog(LogType.Error, "Redis Client Thrown Exception");
 })
 
-redis.connect()
+redis.connect().then(()=>{
+  console.log("Redis Connected")
+  sendLog(LogType.Info,"Redis Connection Established");
+})
 
 export {prisma, redis}
