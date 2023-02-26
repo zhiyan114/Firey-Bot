@@ -2,7 +2,7 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, GuildMember, TextChannel } from 'discord.js';
 import { adminRoleID, welcomeChannelID }  from '../config';
 import { ICommand } from '../interface';
-import { MemberManager } from '../ManagerUtils/MemberManager';
+import { DiscordMember } from '../ManagerUtils/DiscordMember';
 /* Command Builder */
 const KickCmd = new SlashCommandBuilder()
     .setName('kick')
@@ -30,7 +30,7 @@ const KickFunc = async (interaction : CommandInteraction) => {
     if(!targetMember) return await interaction.reply("Invalid User has been supplied");
     let reason = interaction.options.get('reason',true).value as string;
     const invite = interaction.options.get('invite',true).value as boolean;
-    const member = new MemberManager(targetMember);
+    const member = new DiscordMember(targetMember);
     await interaction.deferReply({ephemeral: true});
     const kickField = [
         {

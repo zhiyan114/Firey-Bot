@@ -1,9 +1,8 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
-import { sendLog, LogType } from '../utils/eventLogger';
 import { adminRoleID }  from '../config';
 import { ICommand } from '../interface';
-import { MemberManager } from '../ManagerUtils/MemberManager';
+import { DiscordMember } from '../ManagerUtils/DiscordMember';
 
 /* Command Builder */
 const BanCmd = new SlashCommandBuilder()
@@ -31,7 +30,7 @@ const BanFunc = async (interaction : CommandInteraction) => {
     if(!targetMember) return await interaction.reply("Invalid User has been supplied");
     const reason = interaction.options.get('reason',true).value as string;
     const deleteMessages = interaction.options.get('delete',true).value as boolean;
-    const target = new MemberManager(targetMember);
+    const target = new DiscordMember(targetMember);
     await interaction.deferReply({ephemeral: true});
     await target.sendMessage({
         title: "Banned",

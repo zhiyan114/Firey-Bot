@@ -1,7 +1,7 @@
 import { GuildMember, SlashCommandBuilder, TextChannel } from "discord.js";
 import { adminRoleID, welcomeChannelID } from "../config";
 import { ICommand } from "../interface";
-import { MemberManager } from "../ManagerUtils/MemberManager";
+import { DiscordMember } from "../ManagerUtils/DiscordMember";
 
 export default {
     command: new SlashCommandBuilder()
@@ -30,7 +30,7 @@ export default {
     if(!targetMember) return await interaction.reply("Invalid User has been supplied");
         const reason = interaction.options.get('reason', true).value as string;
         const invite = interaction.options.get('invite', true).value as boolean;
-        const target = new MemberManager(targetMember as GuildMember);
+        const target = new DiscordMember(targetMember as GuildMember);
         await interaction.deferReply({ephemeral: true});
         const sbanfield = [
             {

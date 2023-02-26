@@ -9,7 +9,7 @@ import { EmbedBuilder, TextChannel } from 'discord.js';
 import { twitchCmdType } from '../CmdTwitch';
 import path from 'path';
 import fs from 'fs';
-import { clearTwitchCache, twitchUser } from '../ManagerUtils/TwitchUser';
+import { clearTwitchCache, TwitchUser } from '../ManagerUtils/TwitchUser';
 
 export const tmiClient = new tmi.Client({
     connection: {
@@ -46,7 +46,7 @@ tmiClient.on('message', async function(channel, tags, message, self){
     if(self) return;
     if(!prisma) return;
     if(!tags['user-id'] || !tags['username']) return;
-    const tUser = new twitchUser(tags['user-id']);
+    const tUser = new TwitchUser(tags['user-id']);
     const userData = await tUser.getCacheData();
     // Check if the user exists and is verified before performing username check
     if(userData && userData.verified) {

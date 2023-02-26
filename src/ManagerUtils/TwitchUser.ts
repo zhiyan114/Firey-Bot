@@ -23,7 +23,7 @@ type cacheData = {
     verified?: boolean,
 }
 // userid is for user's twitch ID; this class is used to manage twitch bot's redis cache system, replacing the current memory-based cache system.
-export class twitchUser {
+export class TwitchUser {
     private userid: string;
     private cachekey: string;
     constructor(userid: string) {
@@ -72,13 +72,13 @@ export class twitchUser {
     }
     /**
      * Update user's cache data
-     * @param newData
+     * @param newData cacheData but all fields are optional
      */
     public async updateDataCache(newData: {
         memberid?: string,
         username?: string,
         verified?: boolean,
-    } | cacheData): Promise<void> {
+    }): Promise<void> {
         // Clear out all the undefined and null objects
         const filteredData: {[key: string]: string} = {}
         if(newData.memberid) filteredData['memberid'] = newData.memberid;
@@ -104,7 +104,7 @@ export class twitchUser {
     }
     /**
      * Add or Update user data from the database
-     * @param data
+     * @param data The data to either add the user or update the user
      * @returns {boolean} The result of the operation. False means unsuccessful, while true means successful
      */
     public async updateUser(data: updateData): Promise<boolean> {

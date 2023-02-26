@@ -1,5 +1,4 @@
 import { ChatUserstate, Client } from "tmi.js";
-import { twitchUser } from "../ManagerUtils/TwitchUser";
 export type stringObject = {
     [key: string]: string
 }

@@ -1,4 +1,4 @@
-import { APIEmbedField, ColorResolvable, DiscordAPIError, EmbedBuilder, GuildMember, MessageCreateOptions, Role, TextChannel, User } from "discord.js";
+import { APIEmbedField, ColorResolvable, DiscordAPIError, EmbedBuilder, GuildMember, User } from "discord.js";
 import { client } from "../index";
 import { adminRoleID, guildID, newUserRoleID } from "../config";
 import { LogType, sendLog } from "../utils/eventLogger";
@@ -14,7 +14,7 @@ type embedMessageType = {
     fields?: APIEmbedField[]
 }
 
-export class MemberManager {
+export class DiscordMember {
     private member: GuildMember;
     /**
     * This class is used to manage discord members
@@ -65,8 +65,8 @@ export class MemberManager {
     * @param includeInvite whether to include a one time invite for the user to join back
     * @returns The user that got kicked
     */
-    public async kick(author: GuildMember | MemberManager, reason?: string) {
-        if(author instanceof MemberManager) author = author.member;
+    public async kick(author: GuildMember | DiscordMember, reason?: string) {
+        if(author instanceof DiscordMember) author = author.member;
         if(!this.member.kickable) return;
         // Kick them
         await this.member.kick(reason);
@@ -81,8 +81,8 @@ export class MemberManager {
     * @param purge Delete all the recent messages from the member
     * @returns The user that got banned
     */
-    public async ban(author: GuildMember | MemberManager, reason?: string, purgeMessage?: boolean) {
-        if(author instanceof MemberManager) author = author.member;
+    public async ban(author: GuildMember | DiscordMember, reason?: string, purgeMessage?: boolean) {
+        if(author instanceof DiscordMember) author = author.member;
         if(!this.member.bannable) return;
         await this.member.ban({
             reason,
@@ -98,8 +98,8 @@ export class MemberManager {
     * @param reason the reason to soft ban the user
     * @returns The user that got soft banned
     */
-    public async softBan(author: GuildMember | MemberManager, reason?: string) {
-        if(author instanceof MemberManager) author = author.member;
+    public async softBan(author: GuildMember | DiscordMember, reason?: string) {
+        if(author instanceof DiscordMember) author = author.member;
         if(!this.member.bannable) return;
         await this.member.ban({
             reason,

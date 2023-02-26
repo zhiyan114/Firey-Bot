@@ -1,4 +1,4 @@
-import { twitchUser } from '../ManagerUtils/TwitchUser';
+import { TwitchUser } from '../ManagerUtils/TwitchUser';
 import { prisma } from '../utils/DatabaseManager';
 import { twitchCmdType } from './index';
 
@@ -9,7 +9,7 @@ const VerifyFunc : twitchCmdType ={
         if(!prisma) return;
         if(!data.user['user-id']) return;
         if(!data.user.username) return;
-        const tUser = new twitchUser(data.user['user-id'])
+        const tUser = new TwitchUser(data.user['user-id'])
         const uData = await tUser.getCacheData();
         // Check to see if the user is already verified
         if(uData && uData.verified) return await data.client.say(data.channel,`@${data.user['display-name']} Your account has already been verified. Please contact zhiyan114 if you would like to relink it.`)

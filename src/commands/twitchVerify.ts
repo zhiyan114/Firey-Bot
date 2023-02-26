@@ -1,8 +1,8 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
-import { prisma, redis } from '../utils/DatabaseManager';
+import { prisma } from '../utils/DatabaseManager';
 import { ICommand } from '../interface';
-import { twitchUser } from '../ManagerUtils/TwitchUser';
+import { TwitchUser } from '../ManagerUtils/TwitchUser';
 
 /* Command Builder */
 const twitchLinkCmd = new SlashCommandBuilder()
@@ -54,7 +54,7 @@ const twitchLinkFunc = async (interaction : CommandInteraction) => {
     });
     embed.setColor("#00FF00")
     embed.setDescription("Your twitch account has been successfully verified, please contact zhiyan114 if you need it changed in the future.")
-    const tUser = new twitchUser(userReq.id);
+    const tUser = new TwitchUser(userReq.id);
     if(await tUser.cacheExists()) {
         // There is already a cache record in redis, update it.
         tUser.updateDataCache({

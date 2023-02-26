@@ -1,4 +1,4 @@
-import { twitchUser } from '../ManagerUtils/TwitchUser';
+import { TwitchUser } from '../ManagerUtils/TwitchUser';
 import { prisma } from '../utils/DatabaseManager';
 import { twitchCmdType } from './index';
 
@@ -8,7 +8,7 @@ const getPointsFunc : twitchCmdType ={
     func: async (data) => {
         if(!prisma) return;
         if(!data.user['user-id']) return;
-        const tUserData = await new twitchUser(data.user['user-id']).getCacheData();
+        const tUserData = await new TwitchUser(data.user['user-id']).getCacheData();
         if(!(tUserData?.memberid) || tUserData.memberid === "-1") return data.client.say(data.channel,`@${data.user.username}, your account is not linked yet. Do that first then try again.`);
         // Fetch the points
         const econData = await prisma.economy.findUnique({
