@@ -71,7 +71,7 @@ export class DiscordMember {
         // Kick them
         await this.member.kick(reason);
         // Add to logs
-        await this.actionLog("kick", author.user, `**${this.member.user.tag}** has been kicked by **${author.user.tag}**`, reason)
+        await this.actionLog("kick", author.user, `<@${this.member.user.id}> has been kicked by <@${author.user.id}>`, reason)
         return this.member.user;
     }
     /**
@@ -88,7 +88,7 @@ export class DiscordMember {
             reason,
             deleteMessageSeconds: purgeMessage ? 604800 : undefined
         })
-        await this.actionLog("ban", author.user, `**${this.member.user.tag}** has been banned by **${author.user.tag}**`, reason, {
+        await this.actionLog("ban", author.user, `<@${this.member.user.id}> has been banned by <@${author.user.id}>`, reason, {
             deleteMessages: purgeMessage?.toString() ?? "false"
         })
     }
@@ -108,7 +108,7 @@ export class DiscordMember {
         if(reason) reason += " (Soft Ban)"
         else reason = "Soft Ban";
         await author.guild.bans.remove(this.member.user.id, reason)
-        await this.actionLog("softban", author.user, `**${this.member.user.tag}** has been softbanned by **${author.user.tag}**`, reason)
+        await this.actionLog("softban", author.user, `<@${this.member.user.id}> has been softbanned by <@${author.user.id}>`, reason)
         return this.member.user;
     }
     /**
@@ -121,7 +121,7 @@ export class DiscordMember {
         // Check for user's privilege
         if(!this.member.roles.cache.find(role=> role.id === adminRoleID)) return;
         const resultUser = await this.member.guild.bans.remove(target);
-        this.actionLog("unban", this.member.user, `**${target.tag}** has been unbanned by ${this.member.user.tag}**`, reason)
+        this.actionLog("unban", this.member.user, `<@${target.id}> has been unbanned by <@${this.member.user.id}>`, reason)
         return resultUser;
     }
     /**
