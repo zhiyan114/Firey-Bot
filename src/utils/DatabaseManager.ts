@@ -28,6 +28,9 @@ redis.on('error', err => {
 redis.connect().then(()=>{
   console.log("Redis Connected")
   sendLog(LogType.Info,"Redis Connection Established");
+}).catch(ex=>{
+  sendLog(LogType.Error, `Unknown Redis Error Occured`)
+  captureException(ex);
 })
 
 export {prisma, redis}
