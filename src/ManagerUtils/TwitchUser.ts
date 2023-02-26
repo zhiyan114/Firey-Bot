@@ -70,7 +70,7 @@ export class twitchUser {
         // Update the cache   
         await redis.hSet(this.cachekey, filteredData)
         // set redis expire key in 3 hours
-        await redis.expireAt(this.cachekey, Math.floor(Date.now() / 1000) + 10800, "GT")
+        await redis.expire(this.cachekey, 10800)
         return;
     }
     /**
