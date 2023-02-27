@@ -61,7 +61,6 @@ export class TwitchUser {
         }
         await this.updateDataCache(finalData);
         return finalData;
-
     }
     /**
      * Checks if there is already a cache record for this user
