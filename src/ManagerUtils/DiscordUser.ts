@@ -5,6 +5,7 @@ import { APIErrors } from "../utils/discordErrorCode";
 import { captureException } from "@sentry/node";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { members } from "@prisma/client";
+import { client } from "..";
 
 type embedMessageType = {
     title: string;
@@ -30,6 +31,9 @@ type cacheData = {
 
 
 /* Standard User Class */
+
+export const getUser = async(id: string) => await client.users.fetch(id);
+
 export class DiscordUser {
     private user: User;
     private cachekey: string;
@@ -42,7 +46,7 @@ export class DiscordUser {
         if(user.bot) throw Error("The discord user cannot be a bot");
         this.user = user;
         this.cachekey = `discorduser:${user.id}`;
-        this.economy = new UserEconomy(this, this.cachekey);
+        this.economy = new UserEconomy(user.id);
     }
     /**
     * Check if the user has confirm the rules or not
@@ -203,13 +207,44 @@ export class DiscordUser {
         });
     }
 }
-
 /* Standard Econonmy Class */
+type grantPointsOption = {
+    points?: number;
+    ignoreCooldown?: boolean;
+}
+
 class UserEconomy {
-    private user: DiscordUser;
-    private cacheKey: string;
-    constructor(user: DiscordUser, cacheKey: string) {
-        this.user = user;
-        this.cacheKey = cacheKey;
+    private userid: string;
+    constructor(userid: string) {
+        this.userid = userid;
+    }
+    public rngRewardPoints(min?: number, max?: number) {
+        min = Math.ceil(min ?? 5)
+        max = Math.floor(max ?? 10);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    public async grantPoints(options?: grantPointsOption) {
+        if(!prisma) return false;
+        if(!options) options = {};
+        if(!options.points) options.points = this.rngRewardPoints();
+        // Find the member first
+        const econData = await prisma.members.findUnique({
+            where: {
+                id: this.userid
+            }
+        })
+        if(!econData) return false;
+        if(!options.ignoreCooldown && econData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000) return false; // 1 minute cooldown
+        await prisma.members.update({
+            data: {
+                lastgrantedpoint: new Date(),
+                points: {increment: options.points}
+            },
+            where: {
+                id: this.userid
+            }
+        })
+        // User exist and points are granted
+        return true;
     }
 }

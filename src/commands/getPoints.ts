@@ -3,6 +3,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { ICommand } from '../interface';
+import { DiscordUser } from '../ManagerUtils/DiscordUser';
 import { prisma } from '../utils/DatabaseManager';
 
 /* Command Builder */
@@ -20,16 +21,12 @@ const GetPointsFunc = async (interaction : CommandInteraction) => {
     const isEphmeral = interaction.options.get('ephemeral', false)?.value as boolean ?? true;
     if(!prisma) return await interaction.reply({content: "Unfortunately the database is not connected, please report this issue.", ephemeral: true});
     await interaction.deferReply({ephemeral: isEphmeral});
-    const userEconData = await prisma.members.findUnique({
-        where: {
-            id: interaction.user.id,
-        }
-    });
+    const userData = await new DiscordUser(interaction.user).getCacheData();
     const embed = new EmbedBuilder();
     embed.setTitle(`Your Points`);
     embed.setColor("#00FFFF");
     // User haven't chatted yet, response with just 0 points.
-    embed.setDescription(userEconData?.points.toString() ?? "0 (chat to get your first points)");
+    embed.setDescription(userData?.points?.toString() ?? "0 (chat to get your first points)");
     embed.setAuthor({name: interaction.user.tag, iconURL: interaction.user.avatarURL() ?? interaction.user.defaultAvatarURL});
     embed.setTimestamp();
     await interaction.followUp({embeds:[embed], ephemeral: isEphmeral});

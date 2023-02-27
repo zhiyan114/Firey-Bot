@@ -1,6 +1,5 @@
 import tmi from 'tmi.js';
 import { twitch } from '../config';
-import { grantPoints } from '../DBUtils/EconomyManager';
 import { prisma } from '../utils/DatabaseManager';
 import { LogType, sendLog } from '../utils/eventLogger';
 import { streamCli } from '../index';
@@ -10,6 +9,7 @@ import { twitchCmdType } from '../CmdTwitch';
 import path from 'path';
 import fs from 'fs';
 import { clearTwitchCache, TwitchUser } from '../ManagerUtils/TwitchUser';
+import { DiscordUser, getUser } from '../ManagerUtils/DiscordUser';
 
 export const tmiClient = new tmi.Client({
     connection: {
@@ -83,7 +83,7 @@ tmiClient.on('message', async function(channel, tags, message, self){
         // Don't award the points to the user until they verify their account on twitch
         if(!(userData?.memberid) || userData.memberid === "-1") return;
         // Now that user has their ID cached, give them the reward
-        await grantPoints(userData.memberid);
+        await (new DiscordUser(await getUser(userData.memberid))).economy.grantPoints();
     }
     
 })
