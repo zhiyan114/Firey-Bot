@@ -46,7 +46,7 @@ export class DiscordUser {
         if(user.bot) throw Error("The discord user cannot be a bot");
         this.user = user;
         this.cachekey = `discorduser:${user.id}`;
-        this.economy = new UserEconomy(user.id);
+        this.economy = new UserEconomy(this, user.id);
     }
     /**
     * Check if the user has confirm the rules or not
@@ -215,7 +215,9 @@ type grantPointsOption = {
 
 class UserEconomy {
     private userid: string;
-    constructor(userid: string) {
+    private user: DiscordUser
+    constructor(user: DiscordUser, userid: string) {
+        this.user = user;
         this.userid = userid;
     }
     public rngRewardPoints(min?: number, max?: number) {
@@ -228,14 +230,10 @@ class UserEconomy {
         if(!options) options = {};
         if(!options.points) options.points = this.rngRewardPoints();
         // Find the member first
-        const econData = await prisma.members.findUnique({
-            where: {
-                id: this.userid
-            }
-        })
-        if(!econData) return false;
-        if(!options.ignoreCooldown && econData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000) return false; // 1 minute cooldown
-        await prisma.members.update({
+        const userData = await this.user.getCacheData();
+        if(!userData) return false;
+        if(!options.ignoreCooldown && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false; // 1 minute cooldown
+        const newData = await prisma.members.update({
             data: {
                 lastgrantedpoint: new Date(),
                 points: {increment: options.points}
@@ -243,6 +241,10 @@ class UserEconomy {
             where: {
                 id: this.userid
             }
+        })
+        await this.user.updateCacheData({
+            points: newData.points,
+            lastgrantedpoint: newData.lastgrantedpoint
         })
         // User exist and points are granted
         return true;
