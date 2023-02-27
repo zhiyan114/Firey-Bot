@@ -14,10 +14,11 @@ export default async function VerificationHandler(interaction: ButtonInteraction
         await interaction.reply({content: "The database is unavailable, please contact zhiyan114 about this.", ephemeral: true})
         return;
     }
-    if((interaction.member as GuildMember).roles.cache.has(newUserRoleID))
+    const user = new DiscordUser(interaction.user)
+    if((interaction.member as GuildMember).roles.cache.has(newUserRoleID) && await user.isVerified())
         return await interaction.reply({content: "You've already confirmed the rules.", ephemeral: true});
     // Update the rule confirmation date
-    await (new DiscordUser(interaction.user)).updateUserData({
+    await user.updateUserData({
         method: "update",
         rulesconfirmedon: new Date()
     })
