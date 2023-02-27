@@ -75,7 +75,7 @@ export class DiscordUser {
             const data = await redis.hGetAll(this.cachekey)
             return {
                 rulesconfirmedon: data.rulesconfirmedon ? new Date(data.rulesconfirmedon) : undefined,
-                points: data.username ? Number(data.username) : undefined,
+                points: data.points ? Number(data.points) : undefined,
                 lastgrantedpoint: data.lastgrantedpoint ? new Date(data.lastgrantedpoint) : undefined,
             };
         }
