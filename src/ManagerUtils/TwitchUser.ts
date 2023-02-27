@@ -32,9 +32,9 @@ export class TwitchUser {
     }
     /**
      * Standard way of retrieving twitch user data
-     * @returns 
+     * @returns Cache Data (memberid of -1 if account linking has not been started)
      */
-    public async getCacheData(): Promise<cacheData | null> {
+    public async getCacheData(): Promise<cacheData> {
         // Check if the record already exist in redis
         if(await this.cacheExists()) {
             // Pull it up and use it
@@ -91,7 +91,7 @@ export class TwitchUser {
     }
     /**
      * Pull user data directly from PostgreSQL Database. Should only be used if the record does not already exist in cache.
-     * @returns {undefined | string} the userID in the database
+     * @returns {null | string} the userID in the database
      */
     private async getUserFromDB(): Promise<null | userData> {
         if(!prisma) return null;
