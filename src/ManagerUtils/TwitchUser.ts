@@ -42,7 +42,7 @@ export class TwitchUser {
             return {
                 memberid: data.memberid,
                 username: data.username,
-                verified: data.verified ? data.verified === "true" : undefined,
+                verified: (data.verified != undefined) ? data.verified === "true" : undefined,
             };
         }
         // Data doesn't exist in redis, Update the cache
@@ -109,29 +109,29 @@ export class TwitchUser {
     public async updateUser(data: updateData): Promise<boolean> {
         if(!prisma) return false;
         try {
-            if(data.method == "add") {
-                // Add the user data
-                await prisma.twitch.create({
-                    data: {
-                        id: this.userid,
-                        memberid: data.memberid,
-                        username: data.username,
-                    }
-                })
-            }
-            if(data.method == "update") {
-                await prisma.twitch.update({
-                    data: {
-                        memberid: data.memberid,
-                        username: data.username,
-                        verified: data.verified,
-                    },
-                    where: {
-                        id: this.userid
-                    }
-                })
-                return true;
-            }
+            // Add the user data
+            if(data.method == "add") await prisma.twitch.create({
+                data: {
+                    id: this.userid,
+                    memberid: data.memberid,
+                    username: data.username,
+                }
+            })
+            if(data.method == "update") await prisma.twitch.update({
+                data: {
+                    memberid: data.memberid,
+                    username: data.username,
+                    verified: data.verified,
+                },
+                where: {
+                    id: this.userid
+                }
+            })
+            await this.updateDataCache({
+                memberid: data.memberid,
+                username: data.username,
+                verified: data.method == "update" ? data.verified : undefined
+            })
             return true;
         } catch(ex) {
             // Record already existed (if add failure) or Record does not exist (if update failure)
