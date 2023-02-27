@@ -244,10 +244,11 @@ class UserEconomy {
     public async grantPoints(options?: grantPointsOption) {
         if(!prisma) return false;
         const points = options?.points ?? this.rngRewardPoints();
-        // Find the member first
+        // Get the user data
         const userData = await this.user.getCacheData();
         if(!userData) return false;
         if(!(options?.ignoreCooldown) && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false; // 1 minute cooldown
+        // User exist and condition passes, grant the user the points
         const newData = await prisma.members.update({
             data: {
                 lastgrantedpoint: new Date(),
@@ -261,7 +262,31 @@ class UserEconomy {
             points: newData.points,
             lastgrantedpoint: newData.lastgrantedpoint
         })
-        // User exist and points are granted
+        return true;
+    }
+    /**
+     * Deduct certain amount of points from the user
+     * @param points The total amount of points to deduct
+     * @param allowNegative If this operation allows the user to have negative amount of points
+     * @returns {boolean} if the operation was successful or not
+     */
+    public async deductPoints(points: number, allowNegative?: boolean) {
+        if(!prisma) return false;
+        const cacheData = await this.user.getCacheData()
+        // Check if user has enough points
+        if(allowNegative && (!(cacheData?.points) || cacheData.points < points)) return false;
+        // User has enough, deduct it
+        const newData = await prisma.members.update({
+            data: {
+                points: {decrement: points}
+            },
+            where: {
+                id: this.userid,
+            }
+        })
+        await this.user.updateCacheData({
+            points: newData.points
+        })
         return true;
     }
 }
