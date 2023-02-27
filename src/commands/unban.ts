@@ -3,7 +3,7 @@ import { DiscordAPIError, GuildMember, SlashCommandBuilder } from "discord.js";
 import { adminRoleID } from "../config";
 import { ICommand } from "../interface";
 import { APIErrors } from "../utils/discordErrorCode";
-import { DiscordMember } from "../ManagerUtils/DiscordMember";
+import { DiscordUser } from "../ManagerUtils/DiscordUser";
 
 export default {
     command: new SlashCommandBuilder()
@@ -31,8 +31,9 @@ export default {
         if(!targetUser) return await interaction.reply({content: "Invalid User/User's ID", ephemeral: true});
         await interaction.deferReply({ephemeral: true});
         try {
-            const author = new DiscordMember(interaction.member as GuildMember);
-            await author.unbanTarget(targetUser, reason?.value?.toString());
+            const targetUserObj = new DiscordUser(targetUser);
+            await interaction.guild?.bans.remove(targetUser, reason?.value?.toString());
+            await targetUserObj.actionLog("unban", new DiscordUser(interaction.user), `<@${targetUser.id}> has been unbanned by <@${interaction.user.id}>`, reason?.value?.toString())
             await interaction.followUp({content: "Successfully unbanned the user", ephemeral: true})
         } catch(ex: unknown) {
             if(ex instanceof DiscordAPIError) {

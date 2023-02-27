@@ -1,7 +1,7 @@
 import { GuildMember, SlashCommandBuilder, TextChannel } from "discord.js";
 import { adminRoleID, welcomeChannelID } from "../config";
 import { ICommand } from "../interface";
-import { DiscordMember } from "../ManagerUtils/DiscordMember";
+import { DiscordUser } from "../ManagerUtils/DiscordUser";
 
 export default {
     command: new SlashCommandBuilder()
@@ -26,11 +26,11 @@ export default {
         roles: [adminRoleID]
     },
     function: async (interaction)=>{
-        const targetMember = interaction.options.getMember('user') as GuildMember | undefined;
-    if(!targetMember) return await interaction.reply("Invalid User has been supplied");
+        const targetMember = interaction.options.getMember('user') as GuildMember | null;
+        if(!targetMember) return await interaction.reply("Invalid User has been supplied");
         const reason = interaction.options.get('reason', true).value as string;
         const invite = interaction.options.get('invite', true).value as boolean;
-        const target = new DiscordMember(targetMember as GuildMember);
+        const targetUser = new DiscordUser(targetMember.user);
         await interaction.deferReply({ephemeral: true});
         const sbanfield = [
             {
@@ -49,13 +49,18 @@ export default {
                 value: inviteLink.url,
             })
         }
-        await target.sendMessage({
+        await targetUser.sendMessage({
             title: "softban",
             message: `You have been softban from ${interaction.guild!.name}!${invite ? " A re-invite link has been attached to this softban (expires in 1 week)." : ""}`,
             color: "#FFA500",
             fields: sbanfield
         })
-        await target.softBan(interaction.member as GuildMember, reason);
+        await targetMember.ban({
+            reason,
+            deleteMessageSeconds: 604800
+        });
+        await interaction.guild?.bans.remove(targetMember.user, "Softban purposes");
+        await targetUser.actionLog("softban", new DiscordUser(interaction.user), `<@${targetMember.id}> has been softban by <@${interaction.user.id}>`, reason)
         await interaction.followUp({content: 'User has been successfully softban!', ephemeral: true});
     },
     disabled: false,
