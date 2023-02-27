@@ -39,7 +39,7 @@ export class DiscordUser {
     private cachekey: string;
     public economy: UserEconomy;
     /**
-    * This class is used to manage discord members
+    * This class is used to manage discord users
     * @param user The discord user object or userid
     */
     constructor(user: User) {
@@ -213,6 +213,11 @@ type grantPointsOption = {
     ignoreCooldown?: boolean;
 }
 
+/**
+ * This class is initialized internally by DiscordUser to manage member's economy data 
+ * @param userid the user ID that will be used to manage the data with
+ * @param user the user object that will help the class function, specifically, access and manage cache data
+ */
 class UserEconomy {
     private userid: string;
     private user: DiscordUser
@@ -220,23 +225,33 @@ class UserEconomy {
         this.user = user;
         this.userid = userid;
     }
+    /**
+     * Generate a random amount of points between a range
+     * @param min Minimum points to generate
+     * @param max Maximum points to generate
+     * @returns {number} the result of the RNG value
+     */
     public rngRewardPoints(min?: number, max?: number) {
         min = Math.ceil(min ?? 5)
         max = Math.floor(max ?? 10);
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
+    /**
+     * Grant the user certain amount of points
+     * @param options Customize the way points are granted
+     * @returns {boolean} whether the points has been successfully granted or not
+     */
     public async grantPoints(options?: grantPointsOption) {
         if(!prisma) return false;
-        if(!options) options = {};
-        if(!options.points) options.points = this.rngRewardPoints();
+        const points = options?.points ?? this.rngRewardPoints();
         // Find the member first
         const userData = await this.user.getCacheData();
         if(!userData) return false;
-        if(!options.ignoreCooldown && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false; // 1 minute cooldown
+        if(!(options?.ignoreCooldown) && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false; // 1 minute cooldown
         const newData = await prisma.members.update({
             data: {
                 lastgrantedpoint: new Date(),
-                points: {increment: options.points}
+                points: {increment: points}
             },
             where: {
                 id: this.userid
