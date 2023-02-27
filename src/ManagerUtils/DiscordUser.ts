@@ -4,6 +4,7 @@ import { prisma, redis } from "../utils/DatabaseManager";
 import { APIErrors } from "../utils/discordErrorCode";
 import { captureException } from "@sentry/node";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
+import { members } from "@prisma/client";
 
 type embedMessageType = {
     title: string;
@@ -116,18 +117,20 @@ export class DiscordUser {
     /**
      * Add or update the user in the database directly
      * @param data The operation data
+     * @returns {boolean} whether the operation was successful or not
      */
     public async updateUserData(data: updateUserData) {
         if(!prisma) return;
+        let newData: members | undefined;
         try {
-            if(data.method == "create") return await prisma.members.create({
+            if(data.method == "create") newData = await prisma.members.create({
                 data: {
                     id: this.user.id,
                     tag: this.user.tag,
                     rulesconfirmedon: data.rulesconfirmedon,
                 }
             })
-            if(data.method == "update") return await prisma.members.update({
+            if(data.method == "update") newData = await prisma.members.update({
                 data: {
                     tag: data.tag,
                     rulesconfirmedon: data.rulesconfirmedon,
@@ -136,9 +139,17 @@ export class DiscordUser {
                     id: this.user.id
                 }
             })
+            if(newData) await this.updateCacheData({
+                rulesconfirmedon: newData.rulesconfirmedon ?? undefined,
+                points: newData.points,
+                lastgrantedpoint: newData.lastgrantedpoint
+            })
+            return true;
         } catch(ex) {
-            if(ex instanceof PrismaClientKnownRequestError && ex.code === "P2002") return;
+            if(ex instanceof PrismaClientKnownRequestError && ex.code === "P2002") return false;
+            if(ex instanceof PrismaClientKnownRequestError && ex.code === "P2022") return false;
             captureException(ex)
+            return false;
         }
     }
     /**

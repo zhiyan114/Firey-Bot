@@ -1,9 +1,9 @@
 import { EmbedBuilder, GuildMember, TextChannel, DiscordAPIError, ActivityType } from "discord.js";
 import * as Sentry from '@sentry/node';
-import { welcomeChannelID, guildID } from '../config';
+import { welcomeChannelID, guildID, newUserRoleID } from '../config';
 import { client } from "../index"
 import { APIErrors } from '../utils/discordErrorCode';
-import { createUserData } from "../DBUtils/UserDataManager";
+import { DiscordUser } from "../ManagerUtils/DiscordUser";
 
 client.on('guildMemberAdd',async (member : GuildMember) => {
     // Send message to channel 907121158376288307
@@ -35,8 +35,29 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
         })
     }
     // Add the user to the database
-    await createUserData(member);
+    await (new DiscordUser(member.user)).updateUserData({
+        method: "create"
+    })
 });
+
+/* Do some stuff when user's profile updates */
+client.on('userUpdate',async (oldUser, newUser)=>{
+    if(newUser.bot) return;
+    const user = new DiscordUser(newUser)
+    if(oldUser.tag != newUser.tag) {
+        const userUpdated = await user.updateUserData({
+            method: "update",
+            tag: newUser.tag
+        })
+        if(!userUpdated) {
+            const userHasVerifiedRole = (await client.guilds.cache.find(g=>g.id === guildID)?.members.fetch(newUser))?.roles.cache.find(role=>role.id === newUserRoleID);
+            await user.updateUserData({
+                method: "create",
+                rulesconfirmedon: userHasVerifiedRole ? new Date() : undefined
+            })
+        }
+    }
+})
 
 /* Do some member leave stuff, which is nothing. */
 /*

@@ -1,8 +1,7 @@
 import './CmdHandler';
 import './EconomyHandler';
 import './interactionHandler/';
-import './UserJoinHandler';
-import './userUpdateHandler';
+import './UserHandler';
 import './TwitchHandler';
 import YouTubeNotifier from './youtubeNotification';
 import ReactRole from './ReactRoleHandler';
