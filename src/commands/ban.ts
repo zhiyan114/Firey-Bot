@@ -1,8 +1,8 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
-import { sendLog, LogType } from '../utils/eventLogger';
+import { CommandInteraction, GuildMember } from 'discord.js';
 import { adminRoleID }  from '../config';
 import { ICommand } from '../interface';
+import { DiscordUser } from '../ManagerUtils/DiscordUser';
 
 /* Command Builder */
 const BanCmd = new SlashCommandBuilder()
@@ -30,21 +30,29 @@ const BanFunc = async (interaction : CommandInteraction) => {
     if(!targetMember) return await interaction.reply("Invalid User has been supplied");
     const reason = interaction.options.get('reason',true).value as string;
     const deleteMessages = interaction.options.get('delete',true).value as boolean;
-    const embed = new EmbedBuilder()
-        .setColor('#ff0000')
-        .setTitle('Banned')
-        .setDescription(`You have been banned from ${interaction.guild!.name}!`)
-        .setFields({name: "Reason", value: reason})
-        .setFooter({text: `Banned by ${interaction.user.tag}`})
-        .setTimestamp();
-    await targetMember.send({embeds:[embed]});
-    await targetMember.ban({deleteMessageSeconds: deleteMessages ? 604800 : 0, reason});
-    await interaction.reply({content: 'User has been successfully banned!', ephemeral: true});
-    await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **ban** command`, {
-        target: targetMember.user.tag,
+    const targetUser = new DiscordUser(targetMember.user);
+    await interaction.deferReply({ephemeral: true});
+    await targetUser.sendMessage({
+        title: "Banned",
+        color: "#ff0000",
+        message: `You have been banned from ${interaction.guild!.name}!`,
+        fields: [
+            {
+                name: "Reason",
+                value: reason
+            },
+            {
+                name: "Banned By",
+                value: interaction.user.tag
+            }
+        ]
+    })
+    await targetMember.ban({
         reason,
-        deleteMessages: deleteMessages.toString(),
+        deleteMessageSeconds: deleteMessages ? 604800 : undefined
     });
+    await targetUser.actionLog("ban", new DiscordUser(interaction.user), `<@${targetMember.id}> has been banned by <@${interaction.user.id}>`, reason)
+    await interaction.followUp({content: 'User has been successfully banned!', ephemeral: true});
 }
 
 export default {

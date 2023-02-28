@@ -9,7 +9,6 @@ export type tmiTypes = {
     self: boolean;
     client: Client;
     args: string[];
-    authUsers: stringObject;
 }
 export type twitchCmdType = {
     name: string; // Command Name
