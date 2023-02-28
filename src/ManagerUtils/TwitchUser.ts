@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { captureException } from '@sentry/node';
 import { redis, prisma } from '../utils/DatabaseManager';
 export type updateData = {
@@ -80,9 +80,9 @@ export class TwitchUser {
     }): Promise<void> {
         // Clear out all the undefined and null objects
         const filteredData: {[key: string]: string} = {}
-        if(newData.memberid) filteredData['memberid'] = newData.memberid;
-        if(newData.username) filteredData['username'] = newData.username;
-        if(newData.verified) filteredData['verified'] = newData.verified.toString();
+        if(newData.memberid != undefined) filteredData['memberid'] = newData.memberid;
+        if(newData.username != undefined) filteredData['username'] = newData.username;
+        if(newData.verified != undefined) filteredData['verified'] = newData.verified.toString();
         // Update the cache   
         await redis.hSet(this.cachekey, filteredData)
         // set redis expire key in 3 hours
@@ -135,11 +135,15 @@ export class TwitchUser {
             return true;
         } catch(ex) {
             // Record already existed (if add failure) or Record does not exist (if update failure)
-            if(ex instanceof Prisma.PrismaClientKnownRequestError)
-                if(['P2002', 'P2022'].find(v => v === (ex as Prisma.PrismaClientKnownRequestError).code))
+            if(ex instanceof PrismaClientKnownRequestError)
+                if(['P2002', 'P2001'].find(v => v === (ex as PrismaClientKnownRequestError).code))
                     return false;
             // Some other errors, log it to sentry
-            captureException(ex);
+            captureException(ex,{
+                tags: {
+                    code: (ex instanceof PrismaClientKnownRequestError) ? ex.code : undefined
+                }
+            })
             return false;
         }
     }
@@ -149,5 +153,18 @@ export class TwitchUser {
  * This function clears all the cache that is created by this class
  */
 export const clearTwitchCache = async () => {
-    await redis.del(await redis.keys("twitchuserdata:*"))
+    while(true) {
+        let oldCursor = 0;
+        // get all the values
+        const {cursor,keys} = await redis.scan(oldCursor,{
+            MATCH: "discorduser:*",
+            COUNT: 100,
+        })
+        // Delete or Unlink all the items
+        for(const key of keys) await redis.unlink(key);
+        // scan has been completed
+        if(cursor === 0) break;
+        // scan not completed, assign the new cursor
+        oldCursor = cursor;
+    }
 }

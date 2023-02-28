@@ -98,9 +98,9 @@ export class DiscordUser {
     public async updateCacheData(newData: cacheData) {
         // Clear out all the undefined and null objects
         const filteredData: {[key: string]: string} = {}
-        if(newData.rulesconfirmedon) filteredData['rulesconfirmedon'] = newData.rulesconfirmedon.toString();
-        if(newData.points) filteredData['points'] = newData.points.toString();
-        if(newData.lastgrantedpoint) filteredData['lastgrantedpoint'] = newData.lastgrantedpoint.toString();
+        if(newData.rulesconfirmedon != undefined) filteredData['rulesconfirmedon'] = newData.rulesconfirmedon.toString();
+        if(newData.points != undefined) filteredData['points'] = newData.points.toString();
+        if(newData.lastgrantedpoint != undefined) filteredData['lastgrantedpoint'] = newData.lastgrantedpoint.toString();
         // Update the cache   
         await redis.hSet(this.cachekey, filteredData)
         // set redis expire key in 5 hours
@@ -151,8 +151,12 @@ export class DiscordUser {
             return true;
         } catch(ex) {
             if(ex instanceof PrismaClientKnownRequestError && ex.code === "P2002") return false;
-            if(ex instanceof PrismaClientKnownRequestError && ex.code === "P2022") return false;
-            captureException(ex)
+            if(ex instanceof PrismaClientKnownRequestError && ex.code === "P2001") return false;
+            captureException(ex,{
+                tags: {
+                    code: (ex instanceof PrismaClientKnownRequestError) ? ex.code : undefined
+                }
+            })
             return false;
         }
     }
