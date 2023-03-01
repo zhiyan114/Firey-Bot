@@ -15,9 +15,11 @@ export default async function VerificationHandler(interaction: ButtonInteraction
         return;
     }
     const user = new DiscordUser(interaction.user)
-    if((interaction.member as GuildMember).roles.cache.has(newUserRoleID) && await user.isVerified())
+    const member = interaction.member as GuildMember;
+    if(member.roles.cache.has(newUserRoleID) && await user.isVerified())
         return await interaction.reply({content: "You've already confirmed the rules.", ephemeral: true});
     // Update the rule confirmation date
+    await member.roles.add(newUserRoleID, "Confirmation Role");
     await user.updateUserData({
         method: "update",
         rulesconfirmedon: new Date()
