@@ -3,8 +3,7 @@ import { LogType, sendLog } from "../utils/eventLogger";
 import { prisma, redis } from "../utils/DatabaseManager";
 import { APIErrors } from "../utils/discordErrorCode";
 import { captureException } from "@sentry/node";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
-import { members } from "@prisma/client";
+import { members, Prisma } from "@prisma/client";
 import { client } from "..";
 
 type embedMessageType = {
@@ -125,8 +124,8 @@ export class DiscordUser {
      */
     public async updateUserData(data: updateUserData) {
         if(!prisma) return;
-        let newData: members | undefined;
         try {
+            let newData: members | undefined;
             if(data.method == "create") newData = await prisma.members.create({
                 data: {
                     id: this.user.id,
@@ -150,11 +149,11 @@ export class DiscordUser {
             })
             return true;
         } catch(ex) {
-            if(ex instanceof PrismaClientKnownRequestError && ex.code === "P2002") return false;
-            if(ex instanceof PrismaClientKnownRequestError && ex.code === "P2001") return false;
+            if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002") return false;
+            if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2001") return false;
             captureException(ex,{
                 tags: {
-                    code: (ex instanceof PrismaClientKnownRequestError) ? ex.code : undefined
+                    code: (ex instanceof Prisma.PrismaClientKnownRequestError) ? ex.code : undefined
                 }
             })
             return false;

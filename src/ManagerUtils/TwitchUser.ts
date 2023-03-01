@@ -1,4 +1,4 @@
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { Prisma } from '@prisma/client';
 import { captureException } from '@sentry/node';
 import { redis, prisma } from '../utils/DatabaseManager';
 export type updateData = {
@@ -135,13 +135,13 @@ export class TwitchUser {
             return true;
         } catch(ex) {
             // Record already existed (if add failure) or Record does not exist (if update failure)
-            if(ex instanceof PrismaClientKnownRequestError)
-                if(['P2002', 'P2001'].find(v => v === (ex as PrismaClientKnownRequestError).code))
+            if(ex instanceof Prisma.PrismaClientKnownRequestError)
+                if(['P2002', 'P2001'].find(v => v === (ex as Prisma.PrismaClientKnownRequestError).code))
                     return false;
             // Some other errors, log it to sentry
             captureException(ex,{
                 tags: {
-                    code: (ex instanceof PrismaClientKnownRequestError) ? ex.code : undefined
+                    code: (ex instanceof Prisma.PrismaClientKnownRequestError) ? ex.code : undefined
                 }
             })
             return false;

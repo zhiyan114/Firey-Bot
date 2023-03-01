@@ -26,5 +26,5 @@ export default async function VerificationHandler(interaction: ButtonInteraction
     })
     // Thank the user for the confirmation
     await interaction.reply({content: "Thank you for confirming the rules.", ephemeral: true});
-    await sendLog(LogType.Interaction, `${interaction.user.tag} confirmed the rules.`);
+    await sendLog(LogType.Interaction, `<@${interaction.user.id}> confirmed the rules.`);
 }

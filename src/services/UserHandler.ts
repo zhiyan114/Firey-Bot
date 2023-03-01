@@ -35,8 +35,14 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
         })
     }
     // Add the user to the database
-    await (new DiscordUser(member.user)).updateUserData({
+    const user = new DiscordUser(member.user);
+    const addSuccess = await user.updateUserData({
         method: "create"
+    });
+    // Update the user data if the user already existed
+    if (!addSuccess) await user.updateUserData({
+        method: "update",
+        tag: member.user.tag,
     })
 });
 
