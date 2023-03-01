@@ -6,6 +6,7 @@ import {client} from '../index';
 import { ICommand } from '../interface';
 import { tmiClient } from '../services/TwitchHandler';
 import { withScope as sentryScope } from '@sentry/node';
+import { members } from '@prisma/client';
 /* Command Builder */
 const EvalCmd = new SlashCommandBuilder()
     .setName('eval')
@@ -24,7 +25,7 @@ type userDataType = {
 }
 
 // Manually add all the missing users to the database
-const updateUserData = async ()=> {
+const createUserData = async ()=> {
     if(!prisma) return;
     const dataToPush: userDataType[] = [];
     for(const [_,member] of await (client.guilds.cache.find(g=>g.id == guildID)!).members.fetch()) {
@@ -40,6 +41,26 @@ const updateUserData = async ()=> {
         data: dataToPush,
         skipDuplicates: true,
     });
+}
+// Manually update all the out-of-date users to the database
+const updateUserData = async() => {
+    if(!prisma) return;
+    for(const [_,member] of await (client.guilds.cache.find(g=>g.id == guildID)!).members.fetch()) {
+        if(member.user.bot) continue;
+        const allwait: Promise<members>[] = [];
+        allwait.push(prisma.members.update({
+            data: {
+                tag: member.user.tag,
+            },
+            where: {
+                id: member.id,
+                NOT: {
+                    tag: member.user.tag,
+                }
+            }
+        }))
+        await Promise.all(allwait);
+    }
 }
 
 // Manually reset the bot's status in-case it was removed from discord's backend
