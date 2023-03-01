@@ -50,7 +50,7 @@ const updateUserData = async() => {
         if(member.user.bot) continue;
         allwait.push((async()=>{
             try {
-                return prisma.members.update({
+                return await prisma.members.update({
                     data: {
                         tag: member.user.tag,
                     },
