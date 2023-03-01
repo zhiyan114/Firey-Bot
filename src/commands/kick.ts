@@ -28,7 +28,7 @@ const KickFunc = async (interaction : CommandInteraction) => {
     /* Get the supplied information */
     const targetMember = interaction.options.getMember('user') as GuildMember | undefined;
     if(!targetMember) return await interaction.reply("Invalid User has been supplied");
-    let reason = interaction.options.get('reason',true).value as string;
+    const reason = interaction.options.get('reason',true).value as string;
     const invite = interaction.options.get('invite',true).value as boolean;
     const targetUser = new DiscordUser(targetMember.user);
     await interaction.deferReply({ephemeral: true});

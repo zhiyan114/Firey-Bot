@@ -26,6 +26,7 @@ const BanCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const BanFunc = async (interaction : CommandInteraction) => {
+    if(!interaction.guild) return await interaction.reply("Interaction must be executed in a server")
     const targetMember = interaction.options.getMember('user') as GuildMember | undefined;
     if(!targetMember) return await interaction.reply("Invalid User has been supplied");
     const reason = interaction.options.get('reason',true).value as string;
@@ -35,7 +36,7 @@ const BanFunc = async (interaction : CommandInteraction) => {
     await targetUser.sendMessage({
         title: "Banned",
         color: "#ff0000",
-        message: `You have been banned from ${interaction.guild!.name}!`,
+        message: `You have been banned from ${interaction.guild.name}!`,
         fields: [
             {
                 name: "Reason",

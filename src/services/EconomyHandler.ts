@@ -12,7 +12,7 @@ client.on('messageCreate', async (message) => {
     // Prevent bot from participating
     if(message.author.bot) return;
     // Prevent DM from being awarded points
-    if(message.channel.type == ChannelType.DM) return;
+    if(message.channel.type === ChannelType.DM) return;
     // Prevent points from being awarded to blacklisted channels
     if(noPointsChannel.find((c)=> c === message.channel.id)) return;
     // Grant the user the points

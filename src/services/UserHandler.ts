@@ -50,7 +50,7 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
 client.on('userUpdate',async (oldUser, newUser)=>{
     if(newUser.bot) return;
     const user = new DiscordUser(newUser)
-    if(oldUser.tag != newUser.tag) {
+    if(oldUser.tag !== newUser.tag) {
         const userUpdated = await user.updateUserData({
             method: "update",
             tag: newUser.tag

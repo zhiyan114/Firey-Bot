@@ -21,8 +21,8 @@ const redis = createClient({
 });
 
 redis.on('error', err => {
-    captureException(err);
-    sendLog(LogType.Error, "Redis Client Thrown Exception");
+  captureException(err);
+  sendLog(LogType.Error, "Redis Client Thrown Exception");
 })
 
 redis.connect().then(()=>{

@@ -11,7 +11,7 @@ const getPointsFunc : twitchCmdType ={
         if(!prisma) return;
         if(!data.user['user-id']) return;
         const tUserData = await new TwitchUser(data.user['user-id']).getCacheData();
-        if(!(tUserData?.memberid) || tUserData.memberid === "-1" || !tUserData.verified) return data.client.say(data.channel,`@${data.user.username}, your account is not linked yet. Do that first then try again.`);
+        if(!(tUserData?.memberid) || tUserData.memberid === "-1" || !tUserData.verified) return await data.client.say(data.channel,`@${data.user.username}, your account is not linked yet. Do that first then try again.`);
         // Fetch the points
         const econData = await (new DiscordUser(await client.users.fetch(tUserData.memberid))).getCacheData();
         if(!econData) return await data.client.say(data.channel,`${data.user.username}, you have 0 points!`);

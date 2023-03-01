@@ -26,6 +26,7 @@ export default {
         roles: [adminRoleID]
     },
     function: async (interaction)=>{
+        if(!interaction.guild) return await interaction.reply("Interaction must be executed in a server")
         const targetMember = interaction.options.getMember('user') as GuildMember | null;
         if(!targetMember) return await interaction.reply("Invalid User has been supplied");
         const reason = interaction.options.get('reason', true).value as string;
@@ -51,7 +52,7 @@ export default {
         }
         await targetUser.sendMessage({
             title: "softban",
-            message: `You have been softban from ${interaction.guild!.name}!${invite ? " A re-invite link has been attached to this softban (expires in 1 week)." : ""}`,
+            message: `You have been softban from ${interaction.guild.name}!${invite ? " A re-invite link has been attached to this softban (expires in 1 week)." : ""}`,
             color: "#FFA500",
             fields: sbanfield
         })

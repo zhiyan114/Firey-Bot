@@ -42,7 +42,7 @@ export class TwitchUser {
             return {
                 memberid: data.memberid,
                 username: data.username,
-                verified: (data.verified != undefined) ? data.verified === "true" : undefined,
+                verified: (data.verified !== undefined) ? data.verified === "true" : undefined,
             };
         }
         // Data doesn't exist in redis, Update the cache
@@ -80,9 +80,9 @@ export class TwitchUser {
     }): Promise<void> {
         // Clear out all the undefined and null objects
         const filteredData: {[key: string]: string} = {}
-        if(newData.memberid != undefined) filteredData['memberid'] = newData.memberid;
-        if(newData.username != undefined) filteredData['username'] = newData.username;
-        if(newData.verified != undefined) filteredData['verified'] = newData.verified.toString();
+        if(newData.memberid !== undefined) filteredData['memberid'] = newData.memberid;
+        if(newData.username !== undefined) filteredData['username'] = newData.username;
+        if(newData.verified !== undefined) filteredData['verified'] = newData.verified.toString();
         // Update the cache   
         await redis.hSet(this.cachekey, filteredData)
         // set redis expire key in 3 hours
@@ -110,14 +110,14 @@ export class TwitchUser {
         if(!prisma) return false;
         try {
             // Add the user data
-            if(data.method == "add") await prisma.twitch.create({
+            if(data.method === "add") await prisma.twitch.create({
                 data: {
                     id: this.userid,
                     memberid: data.memberid,
                     username: data.username,
                 }
             })
-            if(data.method == "update") await prisma.twitch.update({
+            if(data.method === "update") await prisma.twitch.update({
                 data: {
                     memberid: data.memberid,
                     username: data.username,
@@ -130,7 +130,7 @@ export class TwitchUser {
             await this.updateDataCache({
                 memberid: data.memberid,
                 username: data.username,
-                verified: data.method == "update" ? data.verified : undefined
+                verified: data.method === "update" ? data.verified : undefined
             })
             return true;
         } catch(ex) {

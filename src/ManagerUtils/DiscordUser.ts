@@ -97,9 +97,9 @@ export class DiscordUser {
     public async updateCacheData(newData: cacheData) {
         // Clear out all the undefined and null objects
         const filteredData: {[key: string]: string} = {}
-        if(newData.rulesconfirmedon != undefined) filteredData['rulesconfirmedon'] = newData.rulesconfirmedon.toString();
-        if(newData.points != undefined) filteredData['points'] = newData.points.toString();
-        if(newData.lastgrantedpoint != undefined) filteredData['lastgrantedpoint'] = newData.lastgrantedpoint.toString();
+        if(newData.rulesconfirmedon !== undefined) filteredData['rulesconfirmedon'] = newData.rulesconfirmedon.toString();
+        if(newData.points !== undefined) filteredData['points'] = newData.points.toString();
+        if(newData.lastgrantedpoint !== undefined) filteredData['lastgrantedpoint'] = newData.lastgrantedpoint.toString();
         // Update the cache   
         await redis.hSet(this.cachekey, filteredData)
         // set redis expire key in 5 hours
@@ -126,14 +126,14 @@ export class DiscordUser {
         if(!prisma) return;
         try {
             let newData: members | undefined;
-            if(data.method == "create") newData = await prisma.members.create({
+            if(data.method === "create") newData = await prisma.members.create({
                 data: {
                     id: this.user.id,
                     tag: this.user.tag,
                     rulesconfirmedon: data.rulesconfirmedon,
                 }
             })
-            if(data.method == "update") newData = await prisma.members.update({
+            if(data.method === "update") newData = await prisma.members.update({
                 data: {
                     tag: data.tag,
                     rulesconfirmedon: data.rulesconfirmedon,
@@ -182,7 +182,7 @@ export class DiscordUser {
             await this.user.send({embeds:[embed]});
             return true;
         } catch(ex) {
-            if(!(ex instanceof DiscordAPIError && ex.code == APIErrors.CANNOT_MESSAGE_USER)) captureException(ex);
+            if(!(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)) captureException(ex);
             return false;
         }
     }
