@@ -1,7 +1,7 @@
-import { EmbedBuilder, GuildMember, SlashCommandBuilder, TextChannel } from "discord.js";
-import { adminRoleID } from "../config";
+import { GuildMember, SlashCommandBuilder, TextChannel } from "discord.js";
+import { adminRoleID, welcomeChannelID } from "../config";
 import { ICommand } from "../interface";
-import { LogType, sendLog } from "../utils/eventLogger";
+import { DiscordUser } from "../ManagerUtils/DiscordUser";
 
 export default {
     command: new SlashCommandBuilder()
@@ -26,30 +26,43 @@ export default {
         roles: [adminRoleID]
     },
     function: async (interaction)=>{
-        const targetMember = interaction.options.getMember('user') as GuildMember | undefined;
-    if(!targetMember) return await interaction.reply("Invalid User has been supplied");
+        if(!interaction.guild) return await interaction.reply("Interaction must be executed in a server")
+        const targetMember = interaction.options.getMember('user') as GuildMember | null;
+        if(!targetMember) return await interaction.reply("Invalid User has been supplied");
         const reason = interaction.options.get('reason', true).value as string;
         const invite = interaction.options.get('invite', true).value as boolean;
-        const embed = new EmbedBuilder()
-            .setColor('#FFA500')
-            .setTitle('softban')
-            .setDescription(`You have been softban from ${interaction.guild!.name}!${invite ? " A re-invite link has been attached to this softban (expires in 1 week)." : ""}`)
-            .addFields({name: "Reason", value: reason})
-            .setFooter({text: `softban by ${interaction.user.tag}`})
-            .setTimestamp();
+        const targetUser = new DiscordUser(targetMember.user);
+        await interaction.deferReply({ephemeral: true});
+        const sbanfield = [
+            {
+                name: "Reason",
+                value: reason,
+            },
+            {
+                name: "Soft Banned By",
+                value: interaction.user.tag,
+            }
+        ]
         if(invite) {
-            const inviteLink = await (interaction.guild!.channels.cache.find(channel => channel.id === "907311644076564511") as TextChannel).createInvite({maxAge: 604800, maxUses: 1, reason: "Moderator attached invitation link for this softban action"});
-            embed.addFields({name: "Invite Link", value: inviteLink.url});
+            const inviteLink = await (interaction.guild?.channels.cache.find(channel => channel.id === welcomeChannelID) as TextChannel).createInvite({maxAge: 604800, maxUses: 1, reason: "Moderator attached invitation link for this softban action"});
+            sbanfield.push({
+                name: "Invite Link",
+                value: inviteLink.url,
+            })
         }
-        await targetMember.send({embeds:[embed]});
-        await targetMember.ban({deleteMessageSeconds: 604800, reason: reason});
-        await interaction.guild?.bans.remove(interaction.options.getUser('user', true), "Softban Action");
-        await interaction.reply({content: 'User has been successfully softban!', ephemeral: true});
-        await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **softban** command`, {
-            target: targetMember.user.tag,
+        await targetUser.sendMessage({
+            title: "softban",
+            message: `You have been softban from ${interaction.guild.name}!${invite ? " A re-invite link has been attached to this softban (expires in 1 week)." : ""}`,
+            color: "#FFA500",
+            fields: sbanfield
+        })
+        await targetMember.ban({
             reason,
-            includeInvite: invite.toString(),
+            deleteMessageSeconds: 604800
         });
+        await interaction.guild?.bans.remove(targetMember.user, "Softban purposes");
+        await targetUser.actionLog("softban", new DiscordUser(interaction.user), `<@${targetMember.id}> has been softban by <@${interaction.user.id}>`, reason)
+        await interaction.followUp({content: 'User has been successfully softban!', ephemeral: true});
     },
     disabled: false,
 } as ICommand;

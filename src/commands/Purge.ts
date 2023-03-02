@@ -15,13 +15,14 @@ const PurgeCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const PurgeFunc = async (interaction : CommandInteraction) => {
+    if(!interaction.channel) return await interaction.reply("Interaction must be executed in a server")
     const amount = interaction.options.get('amount',true).value as number;
     if(amount <= 0 || amount > 100) return await interaction.reply({content: 'Invalid amount!', ephemeral: true});
     //const messages = await interaction.channel.messages.fetch({limit: amount});
     await interaction.deferReply({ ephemeral: true })
     await (interaction.channel as BaseGuildTextChannel).bulkDelete(amount);
     await interaction.followUp({content: `Successfully purged ${amount} messages!`, ephemeral: true});
-    if(interaction.channel!.id !== logChannelID) await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **purge** command`, {
+    if(interaction.channel.id !== logChannelID) await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **purge** command`, {
         channelName: (interaction.channel as TextChannel).name,
         amount: amount.toString()
     });

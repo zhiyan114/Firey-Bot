@@ -66,7 +66,7 @@ export class twitchClient extends events.EventEmitter {
                     "Authorization": `Bearer ${this.token}`,
                 }
             });
-            if(serverResponse.status != 200) {
+            if(serverResponse.status !== 200) {
                 this.errLogged = true;
                 sendLog(LogType.Warning, `Twitch API is responding with ${serverResponse.status} with message \`${JSON.stringify(serverResponse.data)}\``);
                 return;

@@ -1,9 +1,9 @@
 import { captureException } from "@sentry/node";
-import { DiscordAPIError, SlashCommandBuilder } from "discord.js";
+import { DiscordAPIError, GuildMember, SlashCommandBuilder } from "discord.js";
 import { adminRoleID } from "../config";
 import { ICommand } from "../interface";
-import { LogType, sendLog } from "../utils/eventLogger";
-import { APIErrors } from "../utils/StatusCodes";
+import { APIErrors } from "../utils/discordErrorCode";
+import { DiscordUser } from "../ManagerUtils/DiscordUser";
 
 export default {
     command: new SlashCommandBuilder()
@@ -29,16 +29,16 @@ export default {
         const reason = interaction.options.get('reason', false);
         if(!banList) return await interaction.reply({content: "Command must be executed in a guild", ephemeral: true}); // Command is only registered in the main guild anyway so this shouldn't be seen anyway
         if(!targetUser) return await interaction.reply({content: "Invalid User/User's ID", ephemeral: true});
+        await interaction.deferReply({ephemeral: true});
         try {
-            await banList.remove(targetUser, reason?.value?.toString());
-            await sendLog(LogType.Interaction, `${interaction.user.tag} has executed **unban** command`, {
-                target: targetUser.tag,
-                reason: (reason?.value?.toString()) ?? "[Not Provided]",
-            });
+            const targetUserObj = new DiscordUser(targetUser);
+            await interaction.guild?.bans.remove(targetUser, reason?.value?.toString());
+            await targetUserObj.actionLog("unban", new DiscordUser(interaction.user), `<@${targetUser.id}> has been unbanned by <@${interaction.user.id}>`, reason?.value?.toString())
+            await interaction.followUp({content: "Successfully unbanned the user", ephemeral: true})
         } catch(ex: unknown) {
             if(ex instanceof DiscordAPIError) {
-                if(ex.code === APIErrors.UNKNOWN_USER) return await interaction.reply({content: "Invalid User/User's ID", ephemeral: true});
-                if(ex.code === APIErrors.UNKNOWN_BAN) return await interaction.reply({content: "User does not exist in the ban list", ephemeral: true});
+                if(ex.code === APIErrors.UNKNOWN_USER) return await interaction.followUp({content: "Invalid User/User's ID", ephemeral: true});
+                if(ex.code === APIErrors.UNKNOWN_BAN) return await interaction.followUp({content: "User does not exist in the ban list", ephemeral: true});
             }
             captureException(ex);
         }

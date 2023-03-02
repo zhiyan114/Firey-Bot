@@ -9,7 +9,7 @@ export enum LogType {
     Error
 }
 export interface LogMetadata {
-    [key: string]: string;
+    [key: string]: string | undefined;
 }
 
 interface pendingLogs {
@@ -56,7 +56,8 @@ export async function sendLog(type: LogType, message: string, extraMetadata?: Lo
         .setColor(getEmbedColor(type));
     // Add extra metadata
     if(typeof extraMetadata !== "undefined" && extraMetadata !== null) {
-        for(const [name, value] of Object.entries(extraMetadata)) embed.addFields({name, value});
+        for(const [name, value] of Object.entries(extraMetadata))
+            if(value) embed.addFields({name, value});
     }
     // Setup footer
     embed.setTimestamp();
