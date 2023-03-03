@@ -321,7 +321,7 @@ class UserEconomy {
             // Check to see if the message contains links
             !text.match(/https?:\/\/[^\s]+/g),
         ];
-        if(isEligible.find(e=>e === false)) {
+        if(isEligible.find(e=>e === false) !== undefined) {
             // The user is not eligible and will have a delay before another eligibility check
             await this.user.updateCacheData({
                 lastgrantedpoint: new Date()
