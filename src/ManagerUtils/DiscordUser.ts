@@ -29,7 +29,6 @@ type cacheData = {
 }
 
 
-/* Standard User Class */
 
 export const getUser = async(id: string) => await client.users.fetch(id);
 
@@ -210,11 +209,8 @@ export class DiscordUser {
         });
     }
 }
-/* Standard Econonmy Class */
-type grantPointsOption = {
-    points?: number;
-    ignoreCooldown?: boolean;
-}
+
+
 
 /**
  * This class is initialized internally by DiscordUser to manage member's economy data 
@@ -232,25 +228,21 @@ class UserEconomy {
      * Generate a random amount of points between a range
      * @param min Minimum points to generate
      * @param max Maximum points to generate
-     * @returns {number} the result of the RNG value
+     * @returns the result of the RNG value
      */
-    public rngRewardPoints(min?: number, max?: number) {
-        min = Math.ceil(min ?? 5)
-        max = Math.floor(max ?? 10);
+    public rngRewardPoints(min: number, max: number) {
+        min = Math.ceil(min)
+        max = Math.floor(max);
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
     /**
      * Grant the user certain amount of points
      * @param options Customize the way points are granted
-     * @returns {boolean} whether the points has been successfully granted or not
+     * @param updateTimestampOnly Whether to only update the timestamp of the granted points or not (useful for auto-granting point system to deter spammers)
+     * @returns whether the points has been successfully granted or not
      */
-    public async grantPoints(options?: grantPointsOption) {
+    public async grantPoints(points: number) {
         if(!prisma) return false;
-        const points = options?.points ?? this.rngRewardPoints();
-        // Get the user data
-        const userData = await this.user.getCacheData();
-        if(!userData) return false;
-        if(!(options?.ignoreCooldown) && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false; // 1 minute cooldown
         // User exist and condition passes, grant the user the points
         const newData = await prisma.members.update({
             data: {
@@ -271,13 +263,13 @@ class UserEconomy {
      * Deduct certain amount of points from the user
      * @param points The total amount of points to deduct
      * @param allowNegative If this operation allows the user to have negative amount of points
-     * @returns {boolean} if the operation was successful or not
+     * @returns if the operation was successful or not
      */
     public async deductPoints(points: number, allowNegative?: boolean) {
         if(!prisma) return false;
         const cacheData = await this.user.getCacheData()
         // Check if user has enough points
-        if(allowNegative && (!(cacheData?.points) || cacheData.points < points)) return false;
+        if(!allowNegative && (!(cacheData?.points) || cacheData.points < points)) return false;
         // User has enough, deduct it
         const newData = await prisma.members.update({
             data: {
@@ -290,6 +282,47 @@ class UserEconomy {
         await this.user.updateCacheData({
             points: newData.points
         })
+        return true;
+    }
+    /**
+     * Internal Algorithm that automatically reward the user with points when they chat
+     * @param text The text message that the user sent (this text will be used to determine the reward's eligibility)
+     * @param ignoreCooldown Whether to ignore the cooldown or not
+     * @returns whether the user has been successfully rewarded or not
+     */
+    public async chatRewardPoints(text: string, ignoreCooldown?: boolean) {
+        // Get the user data
+        const userData = await this.user.getCacheData();
+        if(!userData) return false;
+        // 1 minute cooldown unless ignored
+        if(!ignoreCooldown && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false;
+        /*
+        Algorithm to check for the eligibility of the reward (welp, can't have a secure eligibility algorithm without it being obscurity)
+        At least it can be somewhat effective I guess. I could also remove comment to make it slightly more difficult to read, but not worth it.
+        */
+        const isEligible: boolean[] = [
+            // Check for the message length
+            text.length > 10,
+            // Check to see if the message only contains numbers (you can have text with numbers, but not only numbers)
+            !text.match(/^[0-9]+$/g),
+            // Check to see if the message contains only special characters (this unfortunately includes foreign language)
+            !text.match(/^[^a-zA-Z0-9]+$/g),
+            // Check to see if the message only contains discord emotes
+            !text.match(/^(:[a-zA-Z0-9_]+: ?)+$/g),
+            // Check message to see if there is any large repeating characters
+            !text.match(/(.)\1{3,}/g),
+            // Check to see if the message contains links
+            !text.match(/https?:\/\/[^\s]+/g),
+        ];
+        if(isEligible.find(e=>e === false)) {
+            // The user is not eligible and will have a delay before another eligibility check
+            await this.user.updateCacheData({
+                lastgrantedpoint: new Date()
+            })
+            return false;
+        }
+        // Grant the point
+        await this.grantPoints(this.rngRewardPoints(5,10));
         return true;
     }
 }

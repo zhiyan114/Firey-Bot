@@ -16,5 +16,5 @@ client.on('messageCreate', async (message) => {
     // Prevent points from being awarded to blacklisted channels
     if(noPointsChannel.find((c)=> c === message.channel.id)) return;
     // Grant the user the points
-    await (new DiscordUser(message.author)).economy.grantPoints();
+    await (new DiscordUser(message.author)).economy.chatRewardPoints(message.content);
 })
