@@ -30,7 +30,7 @@
   },
   "name": "firey-bot",
   "description": "This bot is developed to serve a single server; thus, codes are not reusable without modification.",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "main": "index.js",
   "repository": {
     "type": "git",
