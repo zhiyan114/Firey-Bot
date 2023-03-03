@@ -52,7 +52,12 @@ const BanFunc = async (interaction : CommandInteraction) => {
         reason,
         deleteMessageSeconds: deleteMessages ? 604800 : undefined
     });
-    await targetUser.actionLog("ban", new DiscordUser(interaction.user), `<@${targetMember.id}> has been banned by <@${interaction.user.id}>`, reason)
+    await (new DiscordUser(interaction.user)).actionLog({
+        actionName: "ban",
+        target: targetUser,
+        message: `<@${targetMember.id}> has been banned by <@${interaction.user.id}>`,
+        reason
+    })
     await interaction.followUp({content: 'User has been successfully banned!', ephemeral: true});
 }
 

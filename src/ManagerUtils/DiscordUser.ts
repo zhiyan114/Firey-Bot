@@ -27,6 +27,13 @@ type cacheData = {
     points?: number,
     lastgrantedpoint?: Date
 }
+type ActionLogOpt = {
+    actionName: string;
+    target?: DiscordUser;
+    message: string;
+    reason?: string;
+    metadata?: {[key:string]: string}
+}
 
 
 
@@ -194,18 +201,18 @@ export class DiscordUser {
     * @param reason The reason for the action
     * @param metadata Additional data to be added for sendLog
     */
-    public async actionLog(actionName: string, author: DiscordUser, message: string, reason?: string, metadata?: {[key:string]: string | undefined}) {
+    public async actionLog(opt: ActionLogOpt) {
         await prisma?.modlog.create({
             data: {
-                memberid: this.user.id,
-                moderatorid: author.user.id,
-                action: actionName,
-                reason: reason,
+                targetid: opt.target?.user.id,
+                moderatorid: this.user.id,
+                action: opt.actionName,
+                reason: opt.reason,
             }
         })
-        await sendLog(LogType.Interaction, message, {
-            reason,
-            ...metadata
+        await sendLog(LogType.Interaction, opt.message, {
+            reason: opt.reason,
+            ...opt.metadata
         });
     }
 }
