@@ -37,7 +37,7 @@ const PurgeFunc = async (interaction : CommandInteraction) => {
         message: `<@${interaction.user.id}> has executed **purge** command`,
         reason,
         metadata: {
-            channelName: (interaction.channel as TextChannel).name,
+            channel: `<#${(interaction.channel as TextChannel).id}>`,
             amount: amount.toString()
         }
     });

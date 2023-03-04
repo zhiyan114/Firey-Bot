@@ -6,6 +6,8 @@ import { APIErrors } from '../utils/discordErrorCode';
 import { DiscordUser } from "../ManagerUtils/DiscordUser";
 
 client.on('guildMemberAdd',async (member : GuildMember) => {
+    // ignore if user is a bot
+    if(member.user.bot) return;
     // Send message to channel 907121158376288307
     const channel = await client.channels.fetch(welcomeChannelID) as TextChannel;
     const embed2 = new EmbedBuilder()

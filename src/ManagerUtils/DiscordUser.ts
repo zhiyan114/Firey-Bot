@@ -309,7 +309,7 @@ class UserEconomy {
         */
         const isEligible: boolean[] = [
             // Check for the message length
-            text.length > 10,
+            text.length > 5,
             // Check to see if the message only contains numbers (you can have text with numbers, but not only numbers)
             !text.match(/^[0-9]+$/g),
             // Check to see if the message contains only special characters (this unfortunately includes foreign language)
