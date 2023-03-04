@@ -208,6 +208,7 @@ export class DiscordUser {
                 moderatorid: this.user.id,
                 action: opt.actionName,
                 reason: opt.reason,
+                metadata: opt.metadata
             }
         })
         await sendLog(LogType.Interaction, opt.message, {

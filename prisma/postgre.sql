@@ -23,6 +23,7 @@ CREATE TABLE public.modlog (
     action TEXT NOT NULL,
     reason TEXT,
     timestamp timestamptz NOT NULL DEFAULT NOW(),
+    metadata JSON,
     CONSTRAINT FK_targetID FOREIGN KEY(targetID) REFERENCES public.members(id) ON DELETE CASCADE,
     CONSTRAINT FK_moderatorID FOREIGN KEY(moderatorID) REFERENCES public.members(id) ON DELETE CASCADE
 );
