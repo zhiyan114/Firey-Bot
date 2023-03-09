@@ -1,4 +1,8 @@
-// Internal Library to detect twitch stream status
+/*
+ * Name: twitchStream.ts
+ * Desc: Internal Library to detect twitch stream status
+ * Author: zhiyan114
+ */
 import { captureException } from '@sentry/node';
 import axios, { Axios } from 'axios';
 import events from 'events';

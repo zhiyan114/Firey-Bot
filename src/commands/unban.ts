@@ -33,7 +33,12 @@ export default {
         try {
             const targetUserObj = new DiscordUser(targetUser);
             await interaction.guild?.bans.remove(targetUser, reason?.value?.toString());
-            await targetUserObj.actionLog("unban", new DiscordUser(interaction.user), `<@${targetUser.id}> has been unbanned by <@${interaction.user.id}>`, reason?.value?.toString())
+            await (new DiscordUser(interaction.user)).actionLog({
+                actionName: "unban",
+                target: targetUserObj,
+                message: `<@${targetUser.id}> has been unbanned by <@${interaction.user.id}>`,
+                reason: reason?.value?.toString()
+            });
             await interaction.followUp({content: "Successfully unbanned the user", ephemeral: true})
         } catch(ex: unknown) {
             if(ex instanceof DiscordAPIError) {

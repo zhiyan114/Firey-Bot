@@ -81,9 +81,10 @@ tmiClient.on('message', async function(channel, tags, message, self){
     // Check if the server is active before giving out the points
     if(streamCli.isStreaming) {
         // Don't award the points to the user until they verify their account on twitch
-        if(!(userData?.memberid) || userData.memberid === "-1") return;
+        const discordUser = await tUser.getDiscordUser();
+        if(!(userData?.memberid) || userData.memberid === "-1" || !discordUser) return;
         // Now that user has their ID cached, give them the reward
-        await (new DiscordUser(await getUser(userData.memberid))).economy.grantPoints();
+        await discordUser.economy.chatRewardPoints(message);
     }
     
 })

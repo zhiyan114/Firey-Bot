@@ -1,6 +1,6 @@
 import { CommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { ICommand } from "../interface";
-import { prisma } from "../utils/DatabaseManager";
+import { prisma, redis } from "../utils/DatabaseManager";
 
 function dbDescription(createQ?: number, selectQ?: number, updateQ?: number, deleteQ?: number) {
     return `
@@ -9,6 +9,13 @@ function dbDescription(createQ?: number, selectQ?: number, updateQ?: number, del
     Update Query: ${updateQ ? updateQ+"ms" : ":arrows_counterclockwise:"}
     Delete Query: ${deleteQ ? deleteQ+"ms" : ":arrows_counterclockwise:"}
     Total Roundtrip: ${createQ && selectQ && updateQ && deleteQ ? (createQ+selectQ+updateQ+deleteQ).toString()+"ms" : ":arrows_counterclockwise:"}
+    `
+}
+function redisDesc(createK?: number, readK?: number, deleteK?: number) {
+    return `
+    Create Key: ${createK ? createK+"ms" : ":arrows_counterclockwise:"}
+    Read Key: ${readK ? readK+"ms" : ":arrows_counterclockwise:"}
+    Delete Key: ${deleteK ? deleteK+"ms" : ":arrows_counterclockwise:"}
     `
 }
 
@@ -21,8 +28,12 @@ export default {
             .setDescription("Select the service to test")
             .setRequired(true)
             .addChoices({
-                name: "Database",
+                name: "Postgres",
                 value: 1
+            })
+            .addChoices({
+                name: "Redis",
+                value: 2
             })
     ),
     permissions: {
@@ -36,12 +47,12 @@ export default {
             .setFooter({text: "Service Testing ToolKit"});
         switch(debugOpt) {
             case 1: {
-                // Database Test (just run some operation and return the roundtrip time)
-                embed.setTitle("Database Testing")
+                // Postgres Test (just run some operation and return the roundtrip time)
+                embed.setTitle("Postgres Testing")
                     .setColor("#00FFFF");
                 if(!prisma) {
                     embed.setColor("#FF0000")
-                        .setDescription("Database unavailable")
+                        .setDescription("Postgres unavailable")
                     await interaction.followUp({embeds:[embed], ephemeral: true});
                     return;
                 }
@@ -92,6 +103,38 @@ export default {
                 })
                 deleteQTime = (new Date()).getTime() - deleteQTime;
                 embed.setDescription(dbDescription(createQTime, selectQTime, updateQTime, deleteQTime))
+                await interaction.editReply({embeds:[embed]});
+                return;
+            }
+            case 2: {
+                // Redis Test (just run some operation and return the roundtrip time)
+                const testKey = "testKey:TestingKey"
+                embed.setTitle("Redis Testing")
+                    .setColor("#00FFFF");
+                if(!redis) {
+                    embed.setColor("#FF0000")
+                        .setDescription("Redis unavailable")
+                    await interaction.followUp({embeds:[embed], ephemeral: true});
+                    return;
+                }
+                await interaction.followUp({embeds:[embed], ephemeral: true});
+                // Test Create Key
+                let createKTime = (new Date()).getTime();
+                await redis.SET(testKey, "SampleKey");
+                createKTime = (new Date()).getTime() - createKTime;
+                embed.setDescription(redisDesc(createKTime))
+                await interaction.editReply({embeds:[embed]});
+                // Test Read Key
+                let ReadKTime = (new Date()).getTime();
+                await redis.SET(testKey, "SampleKey");
+                ReadKTime = (new Date()).getTime() - ReadKTime;
+                embed.setDescription(redisDesc(createKTime, ReadKTime))
+                await interaction.editReply({embeds:[embed]});
+                // Test Delete Key
+                let deleteKTime = (new Date()).getTime();
+                await redis.UNLINK(testKey);
+                deleteKTime = (new Date()).getTime() - deleteKTime;
+                embed.setDescription(redisDesc(createKTime, ReadKTime, deleteKTime))
                 await interaction.editReply({embeds:[embed]});
                 return;
             }

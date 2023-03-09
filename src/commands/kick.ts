@@ -60,7 +60,12 @@ const KickFunc = async (interaction : CommandInteraction) => {
         color: "#FFFF00"
     })
     await targetMember.kick(reason);
-    await targetUser.actionLog("kick", new DiscordUser(interaction.user), `<@${targetMember.id}> has been kicked by <@${interaction.user.id}>`, reason)
+    await (new DiscordUser(interaction.user)).actionLog({
+        actionName: "kick",
+        target: targetUser,
+        message: `<@${targetMember.id}> has been kicked by <@${interaction.user.id}>`,
+        reason
+    })
     await interaction.followUp({content: 'User has been successfully kicked!', ephemeral: true});
 }
 

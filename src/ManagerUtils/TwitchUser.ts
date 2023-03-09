@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { captureException } from '@sentry/node';
 import { redis, prisma } from '../utils/DatabaseManager';
+import { DiscordUser, getUser } from './DiscordUser';
 export type updateData = {
     method: "add",
     memberid: string,
@@ -146,6 +147,11 @@ export class TwitchUser {
             })
             return false;
         }
+    }
+    public async getDiscordUser(): Promise<DiscordUser | undefined> {
+        const data = await this.getCacheData();
+        if(!data.memberid || data.memberid === "-1") return;
+        return new DiscordUser(await getUser(data.memberid));
     }
 }
 

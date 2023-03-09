@@ -4,15 +4,15 @@ import { welcomeChannelID, guildID, newUserRoleID } from '../config';
 import { client } from "../index"
 import { APIErrors } from '../utils/discordErrorCode';
 import { DiscordUser } from "../ManagerUtils/DiscordUser";
+import { BannerPic } from "../utils/bannerGen";
 
 client.on('guildMemberAdd',async (member : GuildMember) => {
+    // ignore if user is a bot
+    if(member.user.bot) return;
     // Send message to channel 907121158376288307
     const channel = await client.channels.fetch(welcomeChannelID) as TextChannel;
-    const embed2 = new EmbedBuilder()
-        .setTitle("New Member")
-        .setDescription(`**${member.user.username}#${member.user.discriminator}** has joined the server!`)
-        .setColor("#00FFFF")
-    await channel.send({embeds: [embed2]});
+    const bannerBuffer = await (new BannerPic()).generate(member.user.tag, member.user.displayAvatarURL({size: 512}))
+    await channel.send({files: [bannerBuffer]});
     // Send the message to the user
     const embed = new EmbedBuilder()
         .setTitle("Welcome to the server!")

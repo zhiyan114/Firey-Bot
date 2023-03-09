@@ -61,7 +61,12 @@ export default {
             deleteMessageSeconds: 604800
         });
         await interaction.guild?.bans.remove(targetMember.user, "Softban purposes");
-        await targetUser.actionLog("softban", new DiscordUser(interaction.user), `<@${targetMember.id}> has been softban by <@${interaction.user.id}>`, reason)
+        await (new DiscordUser(interaction.user)).actionLog({
+            actionName: "unban",
+            target: targetUser,
+            message: `<@${targetMember.id}> has been softban by <@${interaction.user.id}>`,
+            reason
+        });
         await interaction.followUp({content: 'User has been successfully softban!', ephemeral: true});
     },
     disabled: false,
