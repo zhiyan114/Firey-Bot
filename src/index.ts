@@ -25,7 +25,7 @@ if(process.env['SENTRY_DSN']) {
 export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessageReactions, Intents.GuildModeration, Intents.GuildMembers, Intents.MessageContent, Intents.GuildMessages, Intents.GuildPresences], partials: [Partials.Channel, Partials.GuildMember, Partials.User] });
 export const streamCli = new tStreamClient(twitch.channel);
 /* Internal Services */
-import { ReactRole, YouTubeNotifier } from './services'
+import { loadClientModule } from './services'
 
 client.on('ready', async () => {
   client.user!.setPresence({
@@ -36,8 +36,7 @@ client.on('ready', async () => {
     }]
   })
   await initailizeLogger(client);
-  await ReactRole(client);
-  YouTubeNotifier(client);
+  await loadClientModule(client);
   await sendLog(LogType.Info, "Discord.js client has been initialized!");
   console.log(`Logged in as ${client.user!.tag}!`);
 });
