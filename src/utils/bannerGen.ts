@@ -65,13 +65,13 @@ export class BannerPic {
     * @param name The user's display tag
     */
     private setText(ctx: CanvasRenderingContext2D, name: string) {
-        ctx.font = "30px sans-serif";
+        ctx.font = "30px fonts-noto, sans-serif";
         ctx.fillStyle = "white";
         ctx.textAlign = "center";
         ctx.shadowColor = "black";
         ctx.shadowBlur = 10;
         ctx.fillText(name, this.canvas.width/2, this.canvas.height/3 + 110);
-        ctx.font = "22px sans-serif, segoe-ui-emoji";
+        ctx.font = "22px fonts-noto, sans-serif, segoe-ui-emoji";
         ctx.fillText("Welcome to Firey's server! I hope you enjoy your stay here (σ`・∀・)σ", this.canvas.width/2, this.canvas.height/3 + 150);
     }
     /**
