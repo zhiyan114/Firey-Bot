@@ -63,6 +63,7 @@ export class BannerPic {
     * @param name The user's display tag
     */
      private setText(ctx: CanvasRenderingContext2D, name: string) {
+        // Use fonts-noto on linux system and sans-serif on windows for character display compatibility
         ctx.font = "30px fonts-noto, sans-serif";
         ctx.fillStyle = "white";
         ctx.textAlign = "center";
@@ -83,8 +84,8 @@ export class BannerPic {
         ctx.beginPath()
         ctx.arc(this.canvas.width/2, this.canvas.height/3, radius, 0, 2*Math.PI, true);
         ctx.closePath();
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = "black";
+        ctx.lineWidth = 10;
+        ctx.strokeStyle = "white";
         ctx.stroke();
         ctx.clip();
         // Calculate position data
@@ -92,8 +93,11 @@ export class BannerPic {
         const aspect = pfp.height / pfp.width;
         const hsx = radius*Math.max(1.0/aspect, 1);
         const hsy = radius*Math.min(aspect, 1.0);
+        // Fill in the background (so pfp doesn't look like it's colliding with the border)
+        ctx.fillStyle = "black";
+        ctx.fillRect(this.canvas.width/2 - hsx,this.canvas.height/3 - hsy, hsx*2, hsy*2);
         // Draw in the profile picture
-        ctx.drawImage(pfp, this.canvas.width/2 - hsx,this.canvas.height/3 -hsy, hsx*2, hsy*2);
+        ctx.drawImage(pfp, this.canvas.width/2 - hsx,this.canvas.height/3 - hsy, hsx*2, hsy*2);
     }
     /**
     * Download an image from a URL and convert it to a Buffer in PNG format
@@ -104,14 +108,10 @@ export class BannerPic {
         return new Promise<Buffer>(async(res,rej)=>{
             https.get(url, async(resp)=>{
                 const data: Buffer[] = []
-                resp.on('data', (chunk)=>{
-                    data.push(chunk);
-                })
-                resp.on('end',async ()=>{
-                    // Conversion is necessary since discord uses webp as their default format which Node-Canvas doesn't support
-                    res(await sharp(Buffer.concat(data)).toFormat('png').toBuffer())
-                })
-                resp.on('error',(err)=>rej(err));
+                resp.on('data',(chunk)=> data.push(chunk))
+                // Conversion is necessary since discord uses webp as their default format which Node-Canvas doesn't support
+                resp.on('end',async()=> res(await sharp(Buffer.concat(data)).toFormat('png').toBuffer()))
+                resp.on('error',(err)=> rej(err));
             })
         })
     }
