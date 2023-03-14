@@ -13,7 +13,7 @@ import sharp from 'sharp';
 export class BannerPic {
     private canvas: Canvas;
     constructor() {
-        this.canvas = createCanvas(800, 400)
+        this.canvas = createCanvas(900, 400)
     }
     /**
     * Generate the banner
