@@ -12,7 +12,7 @@
     "express": "^4.18.1",
     "redis": "^4.6.5",
     "rimraf": "^4.1.2",
-    "sharp": "^0.31.3",
+    "sharp": "^0.32.0",
     "tmi.js": "^1.8.5",
     "utf-8-validate": "^6.0.3",
     "ws": "^8.6.0",
@@ -29,7 +29,7 @@
     "@types/tmi.js": "^1.8.2",
     "@types/xml2js": "^0.4.11",
     "prisma": "^4.7.1",
-    "typescript": "^4.6.3"
+    "typescript": "^5.0.3"
   },
   "name": "firey-bot",
   "description": "This bot is developed to serve a single server; thus, codes are not reusable without modification.",
