@@ -3,7 +3,7 @@ import { LogType, sendLog } from "./eventLogger";
 import { captureException } from '@sentry/node'
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { createClient } from "redis";
-import { connect, Connection } from "amqplib";
+import amqplib, { connect, Connection } from "amqplib";
 
 // Handle Prisma Connections
 let prisma: PrismaClient | undefined;
@@ -40,12 +40,11 @@ redis.connect().then(()=>{
 // Handle amqplib connection. I know it's not a database.
 let amqpConn: undefined | Connection;
 
-if(process.env['AMQP_CONN'])
-  connect(process.env['AMQP_CONN']).then(conn => amqpConn = conn);
 const getAmqpConn = async () => {
   if(amqpConn) return amqpConn;
   if(!process.env['AMQP_CONN']) return;
   amqpConn = await connect(process.env['AMQP_CONN']);
+  sendLog(LogType.Info, "AMQP Server Connected")
   return amqpConn;
 }
 const getAmqpConnSync = () => amqpConn;
