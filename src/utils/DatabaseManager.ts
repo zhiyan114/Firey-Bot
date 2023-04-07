@@ -3,7 +3,9 @@ import { LogType, sendLog } from "./eventLogger";
 import { captureException } from '@sentry/node'
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { createClient } from "redis";
+import { connect, Connection } from "amqplib";
 
+// Handle Prisma Connections
 let prisma: PrismaClient | undefined;
 try {
   prisma = new PrismaClient();
@@ -16,6 +18,8 @@ try {
     captureException(ex);
   }
 }
+
+// Handle Redis Connection
 const redis = createClient({
   url: process.env['REDIS_CONN']
 });
@@ -33,4 +37,18 @@ redis.connect().then(()=>{
   captureException(ex);
 })
 
-export {prisma, redis}
+// Handle amqplib connection. I know it's not a database.
+let amqpConn: undefined | Connection;
+
+if(process.env['AMQP_CONN'])
+  connect(process.env['AMQP_CONN']).then(conn => amqpConn = conn);
+const getAmqpConn = async () => {
+  if(amqpConn) return amqpConn;
+  if(!process.env['AMQP_CONN']) return;
+  amqpConn = await connect(process.env['AMQP_CONN']);
+  return amqpConn;
+}
+const getAmqpConnSync = () => amqpConn;
+
+// Export all the component
+export {prisma, redis, getAmqpConn, getAmqpConnSync}
