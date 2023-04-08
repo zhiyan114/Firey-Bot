@@ -3,7 +3,7 @@ import { LogType, sendLog } from "./eventLogger";
 import { captureException } from '@sentry/node'
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { createClient } from "redis";
-import amqplib, { connect, Connection } from "amqplib";
+import { connect, Connection } from "amqplib";
 
 // Handle Prisma Connections
 let prisma: PrismaClient | undefined;

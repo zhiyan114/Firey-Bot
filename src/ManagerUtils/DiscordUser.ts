@@ -96,7 +96,7 @@ export class DiscordUser {
         return finalData;
     }
     /**
-     * Update the current cache with new data
+     * Update the current cache with new data (use updateUserData instead)
      * @param newData The cache data to supply
      *
      */
@@ -126,7 +126,7 @@ export class DiscordUser {
     /**
      * Add or update the user in the database directly
      * @param data The operation data
-     * @returns {boolean} whether the operation was successful or not
+     * @returns whether the operation was successful or not
      */
     public async updateUserData(data: updateUserData) {
         if(!prisma) return;
@@ -270,14 +270,17 @@ class UserEconomy {
     /**
      * Deduct certain amount of points from the user
      * @param points The total amount of points to deduct
-     * @param allowNegative If this operation allows the user to have negative amount of points
+     * @param allowNegative If this operation allows the user to have negative amount of points (default false).
+     * @param allowNegative Set this to `true` if you implemented custom balance check to avoid the extra `getCacheData` call
      * @returns if the operation was successful or not
      */
     public async deductPoints(points: number, allowNegative?: boolean) {
         if(!prisma) return false;
-        const cacheData = await this.user.getCacheData()
-        // Check if user has enough points
-        if(!allowNegative && (!(cacheData?.points) || cacheData.points < points)) return false;
+        // Check if user are allowed to have negative balance
+        if(!allowNegative) {
+            const cacheData = await this.user.getCacheData()
+            if (!(cacheData?.points) || cacheData.points < points) return false;
+        }
         // User has enough, deduct it
         const newData = await prisma.members.update({
             data: {

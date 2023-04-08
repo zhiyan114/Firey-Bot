@@ -52,6 +52,13 @@ type queueResponse = {
     interactID: string,
     reason: string; // User Display Error
 }
+type queueRequest = {
+    userID: string,
+    interactID: string,
+    mediaLink: string,
+    language: string,
+    translate: boolean,
+}
 // Save the user file to a disk for ffprobe to process
 const saveToDisk = (url: string): Promise<string> => {
     return new Promise<string>(async(res,rej)=>{
@@ -100,7 +107,7 @@ getAmqpConn().then(k=>{
                 // Check if the interaction exist, otherwise send the rejection to the user's DM instead
                 if(!iCommand) {
                     await (await client.users.fetch(queueItem.userID)).send({
-                        content: "Due to some backend issues, we're not able to follow-up the interaction. Instead, sending it to your DM instead.",
+                        content: "Due to some backend issues, we're not able to follow-up the interaction. Instead, sending it to your DM.",
                         embeds:[failEmbed]
                     })
                     return ch.ack(msg);
@@ -126,7 +133,7 @@ getAmqpConn().then(k=>{
             }
             // interactionCommand no longer exist, probably because the bot crashed while it tries to process it. Send it to the user's DM instead.
             await (await client.users.fetch(queueItem.userID)).send({
-                content: "Due to some backend issues, we're not able to follow-up the interaction. Instead, sending it to your DM instead.",
+                content: "Due to some backend issues, we're not able to follow-up the interaction. Instead, sending it to your DM.",
                 embeds:[successEmbed]
             })
             return ch.ack(msg)
@@ -173,17 +180,26 @@ export default {
         // Will not support other audio format to keep things simple
         if(!['mp3','ogg'].find(f=>audioInfo.format.format_name === f))
             return embed.setColor("#0FF0000").setDescription("Invalid Audio Format, only mp3 and ogg is supported");
-        /* Audio length to price prediction (based on 25 characters/second).
-            This check is to ensure the user has sufficient funds before processing the audio as we don't know how many letters are in the audio and
-            it would be a waste of computation power if the user declines the pricing after it has been processed. If the prediction does underestimate, the user
-            will accumulate a negative balance.
-        */
+        // Try to subtract the user's points balance and decline if not enough balance
         const user = new DiscordUser(command.user);
-        if(!audioInfo.format.duration || audioInfo.format.duration*25 > ((await user.getCacheData())?.points ?? 0)) return embed.setColor("#FF0000")
-            .setDescription(`You may not have enough points for this processing. Please have a total of ${(audioInfo.format.duration ?? -0.04)*25} points before trying again.`)
-        // Assuming the checks are all passing, send the processing request to the queue
-        // @TODO: FINISH THIS QUEUE SYSTEM AND PYTHON SCRIPT THAT HANDLES THE PROCESSING
-        
+        // 75 points/min + 25 points/min if translation enabled. Duration are in seconds. Correct the price if this is the incorrect unit.
+        let price = 75/60
+        if(translate) price += 25/60;
+        if(!audioInfo.format.duration || !(await user.economy.deductPoints(audioInfo.format.duration*price))) return embed.setColor("#FF0000")
+        .setDescription(`You may not have enough points for this processing. Please have a total of ${(audioInfo.format.duration ?? -0.04)*25} points before trying again.`);
+        // All the checks are all passing, send a queue request
+        const channel = (await (await getAmqpConn())?.createChannel());
+        if(!channel) return;
+        await channel.assertQueue(sendQName);
+        const packedContent = JSON.stringify({
+            userID: command.user.id,
+            interactID: command.id,
+            mediaLink: file.url,
+            language,
+            translate,
+        } as queueRequest)
+        channel.sendToQueue(sendQName,Buffer.from(packedContent))
+        await channel?.close();
     },
     disabled: process.env['AMQP_CONN'] ?? false,
 } as ICommand;
