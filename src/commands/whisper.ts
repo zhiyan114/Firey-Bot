@@ -158,7 +158,7 @@ export default {
     )
     .addStringOption(opt=>
         opt.setName("language")
-        .setDescription("Process the audio in a specific language, otherwise auto (25 points/minute). Using it to translate language other than English will not be guaranteed.")
+        .setDescription("Process/translate the audio in a specific language, otherwise auto (25 points/minute)")
         .setRequired(false)
         .addChoices(...languageOpt)
     ),
