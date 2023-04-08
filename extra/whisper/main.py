@@ -53,6 +53,7 @@ def SaveFileToDisk(url: str) -> str:
 # success: True
 # userID: string
 # interactID: string
+# cost: number
 # result: string
 # processTime: number
 # } |
@@ -60,7 +61,7 @@ def SaveFileToDisk(url: str) -> str:
 # success: False
 # userID: string
 # interactID: string
-# refund: number
+# cost: number
 # reason: string
 # }
 
@@ -75,7 +76,7 @@ def callback(ch, method, properties, body):
             "success": False,
             "userID": data["userID"],
             "interactID": data["interactID"],
-            "refund": data["cost"],
+            "cost": data["cost"],
             "reason": "Failed to download file"
         }))
     print(data["interactID"]+": File downloaded")
@@ -90,6 +91,7 @@ def callback(ch, method, properties, body):
         "success": True,
         "userID": data["userID"],
         "interactID": data["interactID"],
+        "cost": data["cost"],
         "result": result['text'],
         "processTime": end-start
     }))

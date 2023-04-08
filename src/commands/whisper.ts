@@ -44,13 +44,14 @@ type queueResponse = {
     success: true,
     userID: string,
     interactID: string,
+    cost: number,
     result: string,
     processTime: number, // Process time in millisecond
 } | {
     success: false,
     userID: string,
     interactID: string,
-    refund: number,
+    cost: number,
     reason: string; // User Display Error
 }
 type queueRequest = {
@@ -87,7 +88,7 @@ getAmqpConn().then(k=>{
             if(!queueItem.success) {
                 // Refund the user first
                 const user = new DiscordUser(fetchUser)
-                await user.economy.grantPoints(queueItem.refund);
+                await user.economy.grantPoints(queueItem.cost);
                 // Setup the embed message
                 const failEmbed = getBaselineEmbed().setColor("#FF0000")
                     .setDescription(`ML Server Rejected Your Request: ${queueItem.reason}`)
@@ -109,6 +110,7 @@ getAmqpConn().then(k=>{
             const successEmbed = getBaselineEmbed()
                 .setColor("#00FF00")
                 .setDescription(queueItem.result)
+                .addFields({name: "Price", value:`${queueItem.cost} points`})
                 .addFields({name: "Processing Time", value: `${queueItem.processTime.toString()}s`})
             if(iCommand) {
                 // Follow up with the user via interaction follow-up
@@ -186,8 +188,8 @@ export default {
             const conn = await getAmqpConn();
             if(!conn) return;
             sendChannel = await conn.createChannel();
+            await sendChannel.assertQueue(sendQName, {durable: true});
         }
-        await sendChannel.assertQueue(sendQName, {durable: true});
         const packedContent = JSON.stringify({
             userID: command.user.id,
             interactID: command.id,
