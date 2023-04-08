@@ -24,13 +24,12 @@ def strtobool (val):
 
 
 pikaCred = pika.PlainCredentials(os.environ.get('AMQP_USER', 'guest'), os.environ.get('AMQP_PASS', 'guest'))
-pikaSSL = strtobool(os.environ.get('AMQP_SSL', 'false'))
 sslContext = ssl.create_default_context()
 pikaParams = pika.ConnectionParameters(
-    os.environ.get('AMQP_HOST', 'localhost'),
-    int(os.environ.get('AMQP_PORT', 5672)),
-    os.environ.get("AMQP_VHOST", "/"),
-    pikaCred,
+    host=os.environ.get('AMQP_HOST', 'localhost'),
+    port=int(os.environ.get('AMQP_PORT', 5672)),
+    virtual_host=os.environ.get("AMQP_VHOST", "/"),
+    credentials=pikaCred,
     ssl_options=pika.SSLOptions(sslContext) if strtobool(os.environ.get("AMQP_TLS", "false")) else None,
     heartbeat=60
 )
@@ -38,14 +37,14 @@ pikaParams = pika.ConnectionParameters(
 
 
 
-def sendToQueue(message: bytes |str):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(pikaParams))
+def sendToQueue(message):
+    connection = pika.BlockingConnection(pikaParams)
     channel = connection.channel()
     channel.queue_declare(queue=sendQName)
     channel.basic_publish(exchange='', routing_key=sendQName, body=message)
     connection.close()
 def receiveFromQueue(callback):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(pikaParams))
+    connection = pika.BlockingConnection(pikaParams)
     channel = connection.channel()
     channel.queue_declare(queue=receiveQName)
     channel.basic_consume(queue=receiveQName, on_message_callback=callback, auto_ack=False) # Acknowledge the message after processing

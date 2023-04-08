@@ -1,7 +1,3 @@
-
-
-
-
 import inference
 import queueHandler
 import json
@@ -10,10 +6,6 @@ import os
 import uuid
 import time
 import shutil
-
-sampleFile = "C:\\Users\\zhiyan114\\Desktop\\whisperSample\\untitled.mp3"
-sampleLongFile = "C:\\Users\\zhiyan114\\Desktop\\whisperSample\\Long.mp3"
-sampleCnFile = "C:\\Users\\zhiyan114\\Desktop\\whisperSample\\cn.mp3"
 
 def SaveFileToDisk(url: str) -> str:
     # Get the file name
