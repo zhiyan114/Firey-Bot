@@ -6,6 +6,14 @@ import os
 import uuid
 import time
 import shutil
+import sentry_sdk
+
+sentryData = os.environ.get("SENTRY_DSN", None)
+if(sentryData is not None):
+    sentry_sdk.init(
+    dsn=sentryData,
+    traces_sample_rate=0
+    )
 
 def SaveFileToDisk(url: str) -> str:
     # Get the file name
@@ -74,6 +82,7 @@ def callback(ch, method, properties, body):
     start = time.time()
     result = inference.convert(fileName, data["language"])
     end = time.time()
+    os.remove(fileName)
     print(data["interactID"]+": Processed in "+str(end-start)+" seconds")
     # Send the result back
     queueHandler.sendToQueue(json.dumps({
@@ -83,8 +92,6 @@ def callback(ch, method, properties, body):
         "result": result.text,
         "processTime": end-start
     }))
-    # Delete the file
-    os.remove(fileName)
     print(data["interactID"]+": File deleted")
     # Acknowledge the message
     ch.basic_ack(delivery_tag = method.delivery_tag)

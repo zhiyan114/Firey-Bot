@@ -202,6 +202,7 @@ export default {
         } as queueRequest)
         channel.sendToQueue(sendQName,Buffer.from(packedContent))
         await channel?.close();
+        await command.deferReply();
     },
     disabled: !(process.env['AMQP_CONN'] ?? false),
 } as ICommand;
