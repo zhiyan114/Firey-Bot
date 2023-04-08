@@ -1,0 +1,2 @@
+# Extra Utility/Services
+Source Codes that are here are run seperately from the main bot due to performance a issue or requires a different approach to achieve certain tasks. Communication are done via Message Broker.
