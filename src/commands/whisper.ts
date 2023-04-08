@@ -170,6 +170,7 @@ export default {
         
         const file = command.options.get("file", true).attachment;
         const language = command.options.get('language', false)?.value as string | undefined;
+        await command.deferReply();
         // Setup Embed
         const embed = getBaselineEmbed();
         // Save the file to disk and load it into ffprobe
@@ -180,16 +181,17 @@ export default {
         // Validate the file format.
         // Will not support other audio format to keep things simple
         if(!['mp3','ogg'].find(f=>audioInfo.format.format_name === f))
-            return embed.setColor("#0FF0000").setDescription("Invalid Audio Format, only mp3 and ogg is supported");
+            return await command.followUp({embeds:[embed.setColor("#0FF0000").setDescription("Invalid Audio Format, only mp3 and ogg is supported")]})
         // Try to subtract the user's points balance and decline if not enough balance
         const user = new DiscordUser(command.user);
         // 75 points/min + 25 points/min if translation enabled. Duration are in seconds. Correct the price if this is the incorrect unit.
         let price = 75/60
         if(language) price += 25/60;
         if(command.user.id !== "233955058604179457") // Developer Access to perform extensive testing
-            if(!audioInfo.format.duration || !(await user.economy.deductPoints(audioInfo.format.duration*price))) return embed.setColor("#FF0000")
-                .setDescription(`You may not have enough points for this processing. Please have a total of ${(audioInfo.format.duration ?? -0.04)*25} points before trying again.`);
+            if(!audioInfo.format.duration || !(await user.economy.deductPoints(audioInfo.format.duration*price))) return await command.followUp({embeds:[embed.setColor("#FF0000")
+                .setDescription(`You may not have enough points for this processing. Please have a total of ${(audioInfo.format.duration ?? -0.04)*25} points before trying again.`)]});
         // All the checks are all passing, send a queue request
+        
         const channel = (await (await getAmqpConn())?.createChannel());
         if(!channel) return;
         await channel.assertQueue(sendQName, {durable: true});
@@ -202,7 +204,6 @@ export default {
         } as queueRequest)
         channel.sendToQueue(sendQName,Buffer.from(packedContent))
         await channel?.close();
-        await command.deferReply();
     },
     disabled: !(process.env['AMQP_CONN'] ?? false),
 } as ICommand;

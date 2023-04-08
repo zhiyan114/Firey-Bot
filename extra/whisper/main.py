@@ -64,7 +64,7 @@ def SaveFileToDisk(url: str) -> str:
 # }
 
 def callback(ch, method, properties, body):
-    data = json.loads(inference.convert(body.decode("utf-8")))
+    data = json.loads(body.decode("utf-8"))
     print(data["interactID"]+": Processing for user "+data["userID"]+" with interactID "+"...")
     # Download the audio file and start processing it
     fileName = SaveFileToDisk(data["mediaLink"])
