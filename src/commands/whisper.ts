@@ -1,13 +1,11 @@
 import { CommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { ICommand } from "../interface";
 import { getAmqpConn } from "../utils/DatabaseManager";
-import { FfprobeData, ffprobe } from 'fluent-ffmpeg';
-import https from 'https';
 import { randomUUID } from "crypto";
-import { createWriteStream } from 'fs';
 import { DiscordUser } from "../ManagerUtils/DiscordUser";
 import { client } from "..";
 import { unlink } from "fs/promises";
+import { ffProbeAsync, saveToDisk } from "../utils/Asyncify";
 
 // More language are available here: https://github.com/openai/whisper#available-models-and-languages
 // Make PR if you want to add your language here
@@ -61,26 +59,6 @@ type queueRequest = {
     mediaLink: string,
     language: string | undefined,
 }
-// Save the user file to a disk for ffprobe to process
-const saveToDisk = (url: string): Promise<string> => {
-    return new Promise<string>(async(res,rej)=>{
-        https.get(url, async(resp)=>{
-            const fileName = randomUUID();
-            const fStream = createWriteStream(fileName)
-            resp.pipe(fStream);
-            fStream.on('finish',()=> res(fileName))
-            fStream.on('error',(err)=> rej(err))
-            resp.on('error',(err)=> rej(err));
-        })
-    })
-};
-// Make ffprobe async function
-const ffProbeAsync = (file: string) => new Promise<FfprobeData>(async(res,rej)=>
-    ffprobe(file,(err,data)=>{
-        if(err) return rej(err);
-        res(data);
-    })
-)
 
 const getBaselineEmbed = () => new EmbedBuilder()
 .setTitle("Whisper")
@@ -122,17 +100,17 @@ getAmqpConn().then(k=>{
                 // Clean up then follow-up with the error
                 const cmdIndex = queuedList.findIndex((cmd)=>cmd === iCommand);
                 if(cmdIndex !== -1) queuedList.splice(cmdIndex, 1);
-                await iCommand.followUp({embeds:[failEmbed]})
+                await iCommand.followUp({embeds:[failEmbed], ephemeral: true})
                 return ch.ack(msg);
             }
             // Service seems to be accepted, setup the embed
             const successEmbed = getBaselineEmbed()
                 .setColor("#00FF00")
                 .setDescription(queueItem.result)
-                .addFields({name: "Processing Time", value: queueItem.processTime.toString()})
+                .addFields({name: "Processing Time", value: `${queueItem.processTime.toString()}s`})
             if(iCommand) {
                 // Follow up with the user via interaction follow-up
-                await iCommand.followUp({embeds: [successEmbed]})
+                await iCommand.followUp({embeds: [successEmbed], ephemeral: true})
                 // Delete the interact object from the queueList and finalize it
                 const cmdIndex = queuedList.findIndex((cmd)=>cmd === iCommand);
                 if(cmdIndex !== -1) queuedList.splice(cmdIndex, 1);
@@ -170,18 +148,28 @@ export default {
         
         const file = command.options.get("file", true).attachment;
         const language = command.options.get('language', false)?.value as string | undefined;
-        await command.deferReply();
+        await command.deferReply({ephemeral: true});
         // Setup Embed
         const embed = getBaselineEmbed();
         // Save the file to disk and load it into ffprobe
         if(!file?.url) return;
-        const fName = await saveToDisk(file.url);
-        const audioInfo = await ffProbeAsync(fName)
-        await unlink(fName);
+        const audioInfo = await (async()=>{
+            const fName = randomUUID();
+            try {
+                await saveToDisk(file.url, fName);
+                return await ffProbeAsync(fName);
+            } catch(ex) {
+                return;
+            } finally {
+                await unlink(fName);
+            }
+        })();
+        if(!audioInfo) return await command.followUp({embeds:[embed.setColor("#FF0000")
+        .setDescription(`The file you supplied is an invalid media file.`)], ephemeral: true});
         // Validate the file format.
         // Will not support other audio format to keep things simple
         if(!['mp3','ogg'].find(f=>audioInfo.format.format_name === f))
-            return await command.followUp({embeds:[embed.setColor("#0FF0000").setDescription("Invalid Audio Format, only mp3 and ogg is supported")]})
+            return await command.followUp({embeds:[embed.setColor("#0FF0000").setDescription("Invalid Audio Format, only mp3 and ogg is supported")], ephemeral: true})
         // Try to subtract the user's points balance and decline if not enough balance
         const user = new DiscordUser(command.user);
         // 75 points/min + 25 points/min if translation enabled. Duration are in seconds. Correct the price if this is the incorrect unit.
@@ -189,9 +177,9 @@ export default {
         if(language) price += 25/60;
         if(command.user.id !== "233955058604179457") // Developer Access to perform extensive testing
             if(!audioInfo.format.duration || !(await user.economy.deductPoints(audioInfo.format.duration*price))) return await command.followUp({embeds:[embed.setColor("#FF0000")
-                .setDescription(`You may not have enough points for this processing. Please have a total of ${(audioInfo.format.duration ?? -0.04)*25} points before trying again.`)]});
+                .setDescription(`You do not have enough points for this processing. Please have a total of ${(audioInfo.format.duration ?? -0.04)*25} points before trying again.`)], ephemeral: true});
         // All the checks are all passing, send a queue request
-        
+        queuedList.push(command);
         const channel = (await (await getAmqpConn())?.createChannel());
         if(!channel) return;
         await channel.assertQueue(sendQName, {durable: true});

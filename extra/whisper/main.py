@@ -65,7 +65,7 @@ def SaveFileToDisk(url: str) -> str:
 
 def callback(ch, method, properties, body):
     data = json.loads(body.decode("utf-8"))
-    print(data["interactID"]+": Processing for user "+data["userID"]+" with interactID "+"...")
+    print(data["interactID"]+": Processing for user "+data["userID"]+" with interactID...")
     # Download the audio file and start processing it
     fileName = SaveFileToDisk(data["mediaLink"])
     if fileName is None:
@@ -89,7 +89,7 @@ def callback(ch, method, properties, body):
         "success": True,
         "userID": data["userID"],
         "interactID": data["interactID"],
-        "result": result.text,
+        "result": result['text'],
         "processTime": end-start
     }))
     print(data["interactID"]+": File deleted")
