@@ -7,5 +7,5 @@ model = whisper.load_model(model)
 print("Inference running on "+str(model.device))
 
 def convert(fileName: str, lang: str = None):
-    #, task="translate"
-    return model.transcribe(fileName, task="trascribe", language=lang)
+    #, task="translate" & "transcribe"
+    return model.transcribe(fileName, language=lang)
