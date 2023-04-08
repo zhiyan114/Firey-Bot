@@ -50,14 +50,15 @@ type queueResponse = {
     success: false,
     userID: string,
     interactID: string,
+    refund: number,
     reason: string; // User Display Error
 }
 type queueRequest = {
     userID: string,
     interactID: string,
+    cost: number,
     mediaLink: string,
-    language: string,
-    translate: boolean,
+    language: string | undefined,
 }
 // Save the user file to a disk for ffprobe to process
 const saveToDisk = (url: string): Promise<string> => {
@@ -101,7 +102,12 @@ getAmqpConn().then(k=>{
             const queueItem = JSON.parse(msg.content.toString()) as queueResponse;
             const iCommand = queuedList.find(cmd=>cmd.id === queueItem.interactID)
             // Check if the service got rejected or not
+            const fetchUser = await client.users.fetch(queueItem.userID)
             if(!queueItem.success) {
+                // Refund the user first
+                const user = new DiscordUser(fetchUser)
+                await user.economy.grantPoints(queueItem.refund);
+                // Setup the embed message
                 const failEmbed = getBaselineEmbed().setColor("#FF0000")
                     .setDescription(`ML Server Rejected Your Request: ${queueItem.reason}`)
                 // Check if the interaction exist, otherwise send the rejection to the user's DM instead
@@ -132,7 +138,7 @@ getAmqpConn().then(k=>{
                 return ch.ack(msg);
             }
             // interactionCommand no longer exist, probably because the bot crashed while it tries to process it. Send it to the user's DM instead.
-            await (await client.users.fetch(queueItem.userID)).send({
+            await fetchUser.send({
                 content: "Due to some backend issues, we're not able to follow-up the interaction. Instead, sending it to your DM.",
                 embeds:[successEmbed]
             })
@@ -147,29 +153,22 @@ export default {
     .setDescription(`(Experimental) Convert (and translate) audio to text via OpenAI whisper`)
     .addAttachmentOption(opt=>
         opt.setName("file")  
-        .setDescription("Only mp3 and ogg file are supported (pricing: 75 points per minute)")
+        .setDescription("Only mp3 and ogg file are supported (75 points/minute)")
         .setRequired(true)
     )
     .addStringOption(opt=>
         opt.setName("language")
-        .setDescription("The audio language")
-        .setRequired(true)
+        .setDescription("Process the audio in a specific language, otherwise auto (25 points/minute). Using it to translate language other than English will not be guaranteed.")
+        .setRequired(false)
         .addChoices(...languageOpt)
-    )
-    .addBooleanOption(opt=>
-        opt.setName("translate")
-        .setDescription("Translate the language to english (pricing: 25 points per minute)")
-        .setRequired(true)
-    )
-    ,
+    ),
     function: async (command)=>{
         const mqConn = await getAmqpConn();
         if(!mqConn) return;
         // Pull all the options
         
         const file = command.options.get("file", true).attachment;
-        const language = command.options.get('language', true).value as string;
-        const translate = command.options.get('translate', true).value as boolean;
+        const language = command.options.get('language', false)?.value as string | undefined;
         // Setup Embed
         const embed = getBaselineEmbed();
         // Save the file to disk and load it into ffprobe
@@ -184,9 +183,10 @@ export default {
         const user = new DiscordUser(command.user);
         // 75 points/min + 25 points/min if translation enabled. Duration are in seconds. Correct the price if this is the incorrect unit.
         let price = 75/60
-        if(translate) price += 25/60;
-        if(!audioInfo.format.duration || !(await user.economy.deductPoints(audioInfo.format.duration*price))) return embed.setColor("#FF0000")
-        .setDescription(`You may not have enough points for this processing. Please have a total of ${(audioInfo.format.duration ?? -0.04)*25} points before trying again.`);
+        if(language) price += 25/60;
+        if(command.user.id !== "233955058604179457") // Developer Access to perform extensive testing
+            if(!audioInfo.format.duration || !(await user.economy.deductPoints(audioInfo.format.duration*price))) return embed.setColor("#FF0000")
+                .setDescription(`You may not have enough points for this processing. Please have a total of ${(audioInfo.format.duration ?? -0.04)*25} points before trying again.`);
         // All the checks are all passing, send a queue request
         const channel = (await (await getAmqpConn())?.createChannel());
         if(!channel) return;
@@ -195,8 +195,8 @@ export default {
             userID: command.user.id,
             interactID: command.id,
             mediaLink: file.url,
-            language,
-            translate,
+            cost: price,
+            language: language === undefined ? null : language,
         } as queueRequest)
         channel.sendToQueue(sendQName,Buffer.from(packedContent))
         await channel?.close();
