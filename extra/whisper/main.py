@@ -1,3 +1,4 @@
+import sys
 import inference
 import queueHandler
 import json
@@ -100,5 +101,12 @@ def callback(ch, method, properties, body):
 
 
 if __name__ == '__main__':
-    print("Starting OpenAI Whisper ML Server...")
-    queueHandler.receiveFromQueue(callback)
+    try:
+        print("Starting OpenAI Whisper ML Server...")
+        queueHandler.receiveFromQueue(callback)
+    except KeyboardInterrupt:
+        print("Shutting down OpenAI Whisper ML Server...")
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
