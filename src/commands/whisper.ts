@@ -7,6 +7,7 @@ import { randomUUID } from "crypto";
 import { createWriteStream } from 'fs';
 import { DiscordUser } from "../ManagerUtils/DiscordUser";
 import { client } from "..";
+import { unlink } from "fs/promises";
 
 // More language are available here: https://github.com/openai/whisper#available-models-and-languages
 // Make PR if you want to add your language here
@@ -95,8 +96,8 @@ Queue Receiver System. Rather than placing this under `src/services`, it will be
 const queuedList: CommandInteraction[] = [];
 getAmqpConn().then(k=>{
     k?.createChannel().then(async(ch)=>{
-        await ch.assertQueue(receiveQName);
-        ch.consume(receiveQName,async(msg)=>{
+        await ch.assertQueue(receiveQName, {durable: true});
+        ch.consume(receiveQName, async(msg)=>{
             if(!msg) return;
             // Check if the interactionCommand still in the queuedList
             const queueItem = JSON.parse(msg.content.toString()) as queueResponse;
@@ -175,6 +176,7 @@ export default {
         if(!file?.url) return;
         const fName = await saveToDisk(file.url);
         const audioInfo = await ffProbeAsync(fName)
+        await unlink(fName);
         // Validate the file format.
         // Will not support other audio format to keep things simple
         if(!['mp3','ogg'].find(f=>audioInfo.format.format_name === f))
@@ -190,7 +192,7 @@ export default {
         // All the checks are all passing, send a queue request
         const channel = (await (await getAmqpConn())?.createChannel());
         if(!channel) return;
-        await channel.assertQueue(sendQName);
+        await channel.assertQueue(sendQName, {durable: true});
         const packedContent = JSON.stringify({
             userID: command.user.id,
             interactID: command.id,
@@ -201,5 +203,5 @@ export default {
         channel.sendToQueue(sendQName,Buffer.from(packedContent))
         await channel?.close();
     },
-    disabled: process.env['AMQP_CONN'] ?? false,
+    disabled: !(process.env['AMQP_CONN'] ?? false),
 } as ICommand;

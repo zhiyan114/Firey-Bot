@@ -40,13 +40,13 @@ pikaParams = pika.ConnectionParameters(
 def sendToQueue(message):
     connection = pika.BlockingConnection(pikaParams)
     channel = connection.channel()
-    channel.queue_declare(queue=sendQName)
+    channel.queue_declare(queue=sendQName, durable=True)
     channel.basic_publish(exchange='', routing_key=sendQName, body=message)
     connection.close()
 def receiveFromQueue(callback):
     connection = pika.BlockingConnection(pikaParams)
     channel = connection.channel()
-    channel.queue_declare(queue=receiveQName)
+    channel.queue_declare(queue=receiveQName, durable=True)
     channel.basic_consume(queue=receiveQName, on_message_callback=callback, auto_ack=False) # Acknowledge the message after processing
     channel.start_consuming()
     connection.close()
