@@ -7,6 +7,7 @@ import { client } from "..";
 import { unlink } from "fs/promises";
 import { ffProbeAsync, saveToDisk } from "../utils/Asyncify";
 import { Channel } from "amqplib";
+import { statSync } from "fs";
 
 // More language are available here: https://github.com/openai/whisper#available-models-and-languages
 // Make PR if you want to add your language here
@@ -149,7 +150,6 @@ export default {
         const mqConn = await getAmqpConn();
         if(!mqConn) return;
         // Pull all the options
-        
         const file = command.options.get("file", true).attachment;
         const language = command.options.get('language', false)?.value as string | undefined;
         await command.deferReply({ephemeral: true});
@@ -157,23 +157,24 @@ export default {
         const embed = getBaselineEmbed().setColor("#FF0000");
         // Save the file to disk and load it into ffprobe
         if(!file?.url) return;
+        const fName = randomUUID();
         const audioInfo = await (async()=>{
-            const fName = randomUUID();
             try {
                 await saveToDisk(file.url, fName);
                 return await ffProbeAsync(fName);
             } catch(ex) {
                 return;
-            } finally {
-                await unlink(fName);
             }
         })();
+        const fileInfo = statSync(fName);
+        await unlink(fName);
         if(!audioInfo) return await command.followUp({embeds:[embed
             .setDescription(`The file you supplied is an invalid media file.`)], ephemeral: true});
-        // Validate the file format.
-        // Will not support other audio format to keep things simple
+        // Validate the file format. Will not support other audio format to keep things simple
         if(!['mp3','ogg'].find(f=>audioInfo.format.format_name === f) || !audioInfo.format.duration)
             return await command.followUp({embeds:[embed.setDescription("Invalid Audio Format, only mp3 and ogg is supported")], ephemeral: true})
+        // Reject the audio if it's' either larger than 300MB or longer than 2 hours.
+        if(audioInfo.format.duration > 60*60*2 || fileInfo.size/(1024*1024) > 300) return await command.followUp({embeds:[embed.setDescription("Audio is too large. It might be bigger than 300 MB or longer than 2 hours.")], ephemeral: true})
         // Try to subtract the user's points balance and decline if not enough balance
         const user = new DiscordUser(command.user);
         // 75 points/min + 25 points/min if translation enabled. Duration are in seconds. Correct the price if this is the incorrect unit.
