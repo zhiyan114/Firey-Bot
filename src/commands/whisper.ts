@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { AttachmentBuilder, BufferResolvable, CommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { ICommand } from "../interface";
 import { getAmqpConn } from "../utils/DatabaseManager";
 import { randomUUID } from "crypto";
@@ -110,12 +110,20 @@ getAmqpConn().then(k=>{
             // Service seems to be accepted, setup the embed
             const successEmbed = getBaselineEmbed()
                 .setColor("#00FF00")
-                .setDescription(queueItem.result)
                 .addFields({name: "Price", value:`${queueItem.cost} points`})
+                .addFields({name: "Text Size", value: `${queueItem.result.length} characters`})
                 .addFields({name: "Processing Time", value: `${queueItem.processTime.toFixed(2)}s`})
+            const files: AttachmentBuilder[] = []
+            // Send the result as a file instead when the text exceeds 2000 characters
+            if(queueItem.result.length > 2000) {
+                successEmbed.setDescription("The text is way too long, sent as a file instead.")
+                files.push(new AttachmentBuilder(Buffer.from(queueItem.result,'utf8'), {
+                    name: `${randomUUID()}.txt`
+                }))
+            } else successEmbed.setDescription(queueItem.result);
             if(iCommand) {
                 // Follow up with the user via interaction follow-up
-                await iCommand.followUp({embeds: [successEmbed], ephemeral: true})
+                await iCommand.followUp({embeds: [successEmbed], ephemeral: true, files})
                 // Delete the interact object from the queueList and finalize it
                 const cmdIndex = queuedList.findIndex((cmd)=>cmd === iCommand);
                 if(cmdIndex !== -1) queuedList.splice(cmdIndex, 1);
@@ -124,7 +132,8 @@ getAmqpConn().then(k=>{
             // interactionCommand no longer exist, probably because the bot crashed while it tries to process it. Send it to the user's DM instead.
             await fetchUser.send({
                 content: "Due to some backend issues, we're not able to follow-up the interaction. Instead, sending it to your DM.",
-                embeds:[successEmbed]
+                embeds:[successEmbed],
+                files
             })
             return ch.ack(msg)
         })
