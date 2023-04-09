@@ -1,4 +1,4 @@
-import { AttachmentBuilder, BufferResolvable, CommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { AttachmentBuilder, BufferResolvable, CommandInteraction, DiscordAPIError, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { ICommand } from "../interface";
 import { getAmqpConn } from "../utils/DatabaseManager";
 import { randomUUID } from "crypto";
@@ -9,6 +9,8 @@ import { ffProbeAsync, saveToDisk } from "../utils/Asyncify";
 import { Channel } from "amqplib";
 import { statSync } from "fs";
 import { enableExtra } from "../config";
+import { captureException } from "@sentry/node";
+import { APIErrors } from "../utils/discordErrorCode";
 
 // More language are available here: https://github.com/openai/whisper#available-models-and-languages
 // Make PR if you want to add your language here
@@ -88,58 +90,64 @@ getAmqpConn().then(k=>{
             // Check if the interactionCommand still in the queuedList
             const queueItem = JSON.parse(msg.content.toString()) as queueResponse;
             const iCommand = queuedList.find(cmd=>cmd.id === queueItem.interactID)
-            // Check if the service got rejected or not
             const fetchUser = await client.users.fetch(queueItem.userID)
-            if(!queueItem.success) {
-                // Refund the user first
-                const user = new DiscordUser(fetchUser)
-                await user.economy.grantPoints(queueItem.cost);
-                // Setup the embed message
-                const failEmbed = getBaselineEmbed().setColor("#FF0000")
-                    .setDescription(`ML Server Rejected Your Request: ${queueItem.reason}`)
-                // Check if the interaction exist, otherwise send the rejection to the user's DM instead
-                if(!iCommand) {
-                    await (await client.users.fetch(queueItem.userID)).send({
-                        content: "Due to some backend issues, we're not able to follow-up the interaction. Instead, sending it to your DM.",
-                        embeds:[failEmbed]
-                    })
-                    return ch.ack(msg);
-                }
-                // Clean up then follow-up with the error
-                const cmdIndex = queuedList.findIndex((cmd)=>cmd === iCommand);
-                if(cmdIndex !== -1) queuedList.splice(cmdIndex, 1);
-                await iCommand.followUp({embeds:[failEmbed], ephemeral: true})
-                return ch.ack(msg);
-            }
-            // Service seems to be accepted, setup the embed
-            const successEmbed = getBaselineEmbed()
-                .setColor("#00FF00")
+            const user = new DiscordUser(fetchUser)
+
+            // Determine the result and generate an appreciate embed and files for it
+            const files: AttachmentBuilder[] = []
+            let embed = getBaselineEmbed().addFields({name: "Job ID", value: queueItem.interactID});
+            if(queueItem.success) {
+                // The processing was successful
+                embed = embed.setColor("#00FF00")
                 .addFields({name: "Price", value:`${queueItem.cost} points`})
                 .addFields({name: "Text Size", value: `${queueItem.result.length} characters`})
-                .addFields({name: "Processing Time", value: `${queueItem.processTime.toFixed(2)}s`})
-            const files: AttachmentBuilder[] = []
-            // Send the result as a file instead when the text exceeds 2000 characters
-            if(queueItem.result.length > 2000) {
-                successEmbed.setDescription("The text is way too long, sent as a file instead.")
-                files.push(new AttachmentBuilder(Buffer.from(queueItem.result,'utf8'), {
-                    name: `${randomUUID()}.txt`
-                }))
-            } else successEmbed.setDescription(queueItem.result);
-            if(iCommand) {
-                // Follow up with the user via interaction follow-up
-                await iCommand.followUp({embeds: [successEmbed], ephemeral: true, files})
-                // Delete the interact object from the queueList and finalize it
-                const cmdIndex = queuedList.findIndex((cmd)=>cmd === iCommand);
-                if(cmdIndex !== -1) queuedList.splice(cmdIndex, 1);
-                return ch.ack(msg);
+                .addFields({name: "Processing Time", value: `${queueItem.processTime.toFixed(2)}s`});
+                if(queueItem.result.length > 2000) {
+                    embed.setDescription("The text is way too long, sent as a file instead.")
+                    files.push(new AttachmentBuilder(Buffer.from(queueItem.result, 'utf8'), {
+                        name: `${randomUUID()}.txt`
+                    }))
+                } else embed.setDescription(queueItem.result);
+            } else {
+                // The processing was unsuccessful
+                await user.economy.grantPoints(queueItem.cost); // Refund the user
+                embed = embed.setColor("#FF0000")
+                .setDescription(`ML Server Rejected Your Request: ${queueItem.reason}`);
             }
-            // interactionCommand no longer exist, probably because the bot crashed while it tries to process it. Send it to the user's DM instead.
-            await fetchUser.send({
-                content: "Due to some backend issues, we're not able to follow-up the interaction. Instead, sending it to your DM.",
-                embeds:[successEmbed],
-                files
-            })
-            return ch.ack(msg)
+
+            // If iCommand exists, follow-up the interaction
+            if(iCommand) {
+                try {
+                    await iCommand.editReply({
+                        embeds:[embed],
+                        files,
+                    })
+                    return ch.ack(msg);
+                } catch(ex) {
+                    // The processing probably took too long and causing the interaction to expire. Send it to the user's DM instead.
+                    // Ensure to only capture the error that isn't caused by the timeout
+                    if(!(ex instanceof DiscordAPIError && ex.code === APIErrors.INVALID_WEBHOOK_TOKEN)) captureException(ex);
+                } finally {
+                    // Delete the iCommand object from the array
+                    const cmdIndex = queuedList.findIndex((cmd)=>cmd === iCommand);
+                    if(cmdIndex !== -1) queuedList.splice(cmdIndex, 1);
+                }
+            }
+            
+            // iCommand does not exist (or interaction timed out), send it via user's DM instead
+            try {
+                await fetchUser.send({
+                    content: "We're not able to follow-up with the interaction, so we sent the result in your DM instead",
+                    embeds:[embed],
+                    files,
+                })
+                return ch.ack(msg);
+            } catch(ex) {
+                // Only capture the error if it's not caused by the user's DM setting
+                if(!(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)) return captureException(ex);
+                // @TODO: Figure out how to handle user with DM disabled; Maybe delay it and ask the user in the server to unblock their DM?
+                return;
+            }
         })
     })
 });
@@ -214,6 +222,13 @@ export default {
             language: language === undefined ? null : language,
         } as queueRequest)
         sendChannel.sendToQueue(sendQName,Buffer.from(packedContent))
+        await command.followUp({
+            embeds: [
+                embed.setColor("#00FF00")
+                .setDescription("Your request has been queued and will be processed shortly! Once processed, you'll either see the result here or in your DM.")
+                .addFields({name:"Job ID", value: command.id})
+            ]
+        })
     },
     disabled: !serviceEnabled,
 } as ICommand;
