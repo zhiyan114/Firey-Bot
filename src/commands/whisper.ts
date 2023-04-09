@@ -111,7 +111,7 @@ getAmqpConn().then(k=>{
                 .setColor("#00FF00")
                 .setDescription(queueItem.result)
                 .addFields({name: "Price", value:`${queueItem.cost} points`})
-                .addFields({name: "Processing Time", value: `${queueItem.processTime.toString()}s`})
+                .addFields({name: "Processing Time", value: `${queueItem.processTime.toFixed(2)}s`})
             if(iCommand) {
                 // Follow up with the user via interaction follow-up
                 await iCommand.followUp({embeds: [successEmbed], ephemeral: true})
@@ -154,7 +154,7 @@ export default {
         const language = command.options.get('language', false)?.value as string | undefined;
         await command.deferReply({ephemeral: true});
         // Setup Embed
-        const embed = getBaselineEmbed();
+        const embed = getBaselineEmbed().setColor("#FF0000");
         // Save the file to disk and load it into ffprobe
         if(!file?.url) return;
         const audioInfo = await (async()=>{
@@ -168,20 +168,21 @@ export default {
                 await unlink(fName);
             }
         })();
-        if(!audioInfo) return await command.followUp({embeds:[embed.setColor("#FF0000")
-        .setDescription(`The file you supplied is an invalid media file.`)], ephemeral: true});
+        if(!audioInfo) return await command.followUp({embeds:[embed
+            .setDescription(`The file you supplied is an invalid media file.`)], ephemeral: true});
         // Validate the file format.
         // Will not support other audio format to keep things simple
-        if(!['mp3','ogg'].find(f=>audioInfo.format.format_name === f))
-            return await command.followUp({embeds:[embed.setColor("#0FF0000").setDescription("Invalid Audio Format, only mp3 and ogg is supported")], ephemeral: true})
+        if(!['mp3','ogg'].find(f=>audioInfo.format.format_name === f) || !audioInfo.format.duration)
+            return await command.followUp({embeds:[embed.setDescription("Invalid Audio Format, only mp3 and ogg is supported")], ephemeral: true})
         // Try to subtract the user's points balance and decline if not enough balance
         const user = new DiscordUser(command.user);
         // 75 points/min + 25 points/min if translation enabled. Duration are in seconds. Correct the price if this is the incorrect unit.
         let price = 75/60
         if(language) price += 25/60;
-        if(command.user.id !== "233955058604179457") // Developer Access to perform extensive testing
-            if(!audioInfo.format.duration || !(await user.economy.deductPoints(audioInfo.format.duration*price))) return await command.followUp({embeds:[embed.setColor("#FF0000")
-                .setDescription(`You do not have enough points for this processing. Please have a total of ${(audioInfo.format.duration ?? -0.04)*25} points before trying again.`)], ephemeral: true});
+        price = Math.ceil(audioInfo.format.duration*price);
+        if(price > 0 && command.user.id !== "233955058604179457") // zhiyan114 is free ^w^ (Actually no, I'm paying for the server cost so :/)
+            if(!(await user.economy.deductPoints(price))) return await command.followUp({embeds:[embed
+                .setDescription(`You do not have enough points for this processing. Please have a total of ${price} points before trying again.`)], ephemeral: true});
         // All the checks are all passing, send a queue request
         queuedList.push(command);
         if(!sendChannel) {
@@ -190,6 +191,7 @@ export default {
             sendChannel = await conn.createChannel();
             await sendChannel.assertQueue(sendQName, {durable: true});
         }
+        
         const packedContent = JSON.stringify({
             userID: command.user.id,
             interactID: command.id,
