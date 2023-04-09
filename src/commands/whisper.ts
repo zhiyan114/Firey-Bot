@@ -1,4 +1,4 @@
-import { AttachmentBuilder, BufferResolvable, CommandInteraction, DiscordAPIError, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { AttachmentBuilder, CommandInteraction, DiscordAPIError, EmbedBuilder, Message, SlashCommandBuilder, TextChannel } from "discord.js";
 import { ICommand } from "../interface";
 import { getAmqpConn } from "../utils/DatabaseManager";
 import { randomUUID } from "crypto";
@@ -8,7 +8,7 @@ import { unlink } from "fs/promises";
 import { ffProbeAsync, saveToDisk } from "../utils/Asyncify";
 import { Channel } from "amqplib";
 import { statSync } from "fs";
-import { enableExtra } from "../config";
+import { enableExtra, generalChannelID } from "../config";
 import { captureException } from "@sentry/node";
 import { APIErrors } from "../utils/discordErrorCode";
 
@@ -145,8 +145,20 @@ getAmqpConn().then(k=>{
             } catch(ex) {
                 // Only capture the error if it's not caused by the user's DM setting
                 if(!(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)) return captureException(ex);
-                // @TODO: Figure out how to handle user with DM disabled; Maybe delay it and ask the user in the server to unblock their DM?
-                return;
+                // We'll be nice to the end-user and give them 10 minutes to download the file from the general channel before it's deleted
+                const channel = iCommand ? iCommand.channel : await client.channels.fetch(generalChannelID)
+                // We'll discard their result if the general channel somehow got deleted. At this point, it's the user's fault for not turning on their DM.
+                if(!channel) return ch.nack(msg, false, false);
+                let dMsgObj: Message | undefined;
+                if(channel.isTextBased()) dMsgObj = await channel.send({
+                    content: ` <@${queueItem.userID}> I told you to enable your DM when using this command... Welp, you have 10 minutes to download the file before it gets deleted`,
+                    embeds: [embed],
+                    files,
+                });
+                ch.ack(msg)
+                if(!dMsgObj) return;
+                await (new Promise<void>((res)=>setTimeout(res, 1000*600))) // Wait for 10 minutes before deleting it
+                await dMsgObj.delete();
             }
         })
     })
@@ -196,12 +208,12 @@ export default {
             return await command.followUp({embeds:[embed.setDescription("Invalid Audio Format, only mp3 and ogg is supported")], ephemeral: true})
         // Reject the audio if it's' either larger than 300MB or longer than 2 hours.
         if(audioInfo.format.duration > 60*60*2 || fileInfo.size/(1024*1024) > 300) return await command.followUp({embeds:[embed.setDescription("Audio is too large. It might be bigger than 300 MB or longer than 2 hours.")], ephemeral: true})
-        // Try to subtract the user's points balance and decline if not enough balance
         const user = new DiscordUser(command.user);
         // 75 points/min + 25 points/min if translation enabled. Duration are in seconds. Correct the price if this is the incorrect unit.
         let price = 75/60
         if(language) price += 25/60;
         price = Math.ceil(audioInfo.format.duration*price);
+        // Try to subtract the user's points balance and decline if not enough balance
         if(price > 0 && command.user.id !== "233955058604179457") // zhiyan114 is free ^w^ (Actually no, I'm paying for the server cost so :/)
             if(!(await user.economy.deductPoints(price))) return await command.followUp({embeds:[embed
                 .setDescription(`You do not have enough points for this processing. Please have a total of ${price} points before trying again.`)], ephemeral: true});
@@ -225,7 +237,7 @@ export default {
         await command.followUp({
             embeds: [
                 embed.setColor("#00FF00")
-                .setDescription("Your request has been queued and will be processed shortly! Once processed, you'll either see the result here or in your DM.")
+                .setDescription("Your request has been queued and will be processed shortly! Once processed, you'll either see the result here or in your DM. Please make sure to turn on your DM in-case the interaction fails, otherwise your result will not be guaranteed to be successfully delivered.")
                 .addFields({name:"Job ID", value: command.id})
             ]
         })

@@ -28,7 +28,8 @@ For environment variable configurations, please refer to the `.env.example` file
 * `adminRoleID` - As the name suggested, the roles that the user will be in with moderation privileges. For commands like eval, they do have exceptions.
 * `newUserRoleID` - Role the new user will get after confirming.
 * `welcomeChannelID` - Place to announce new users.
-* `logChannelID` - Channels to send internal logs
+* `logChannelID` - Channels to send internal logs.
+* `generalChannelID` - A general purpose chat channel for interactive replies
 * `youtubeNotification` - Youtube Notification Configuration (a sub-config)
     * `guildChannelID` - The ID of a guild's channel of where a new video will be posted
     * `pingRoleID` - The role to ping as a reminder

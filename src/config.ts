@@ -6,6 +6,7 @@ export const adminRoleID = "908090260087513098";
 export const newUserRoleID = "907768073442983966";
 export const welcomeChannelID = "907121158376288307";
 export const logChannelID = "971584951076147261";
+export const generalChannelID = "908069392384933938"
 export const webServer = {
     FQDN: process.env['WEBSERVER_FQDN'] || "",
     Port: process.env["WEBSERVER_PORT"] ? parseInt(process.env["WEBSERVER_PORT"]) : undefined,
