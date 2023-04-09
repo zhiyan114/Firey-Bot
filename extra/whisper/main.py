@@ -1,3 +1,4 @@
+import functools
 import sys
 import inference
 import queueHandler
@@ -65,39 +66,45 @@ def SaveFileToDisk(url: str) -> str:
 # reason: string
 # }
 
-def callback(ch, method, properties, body):
+def cbAck(ch, delivery_tag):
+    if ch.is_open:
+        ch.basic_ack(delivery_tag)
+def cbSend(jsonData):
+    queueHandler.sendToQueue(jsonData)
+
+def callback(ch, method, properties, body, conn):
     data = json.loads(body.decode("utf-8"))
-    print(data["interactID"]+": Processing for user "+data["userID"]+" with interactID...")
+    print(data["interactID"]+": Processing for user "+data["userID"]+"...", flush=True)
     # Download the audio file and start processing it
     fileName = SaveFileToDisk(data["mediaLink"])
     if fileName is None:
-        print(data["interactID"]+": Failed to download file")
-        return queueHandler.sendToQueue(json.dumps({
+        print(data["interactID"]+": Failed to download file", flush=True)
+        return conn.add_callback_threadsafe(functools.partial(cbSend, json.dumps({
             "success": False,
             "userID": data["userID"],
             "interactID": data["interactID"],
             "cost": data["cost"],
             "reason": "Failed to download file"
-        }))
-    print(data["interactID"]+": File downloaded")
+        })))
+    print(data["interactID"]+": File downloaded", flush=True)
     # Process the file
     start = time.time()
     result = inference.convert(fileName, data["language"])
     end = time.time()
     os.remove(fileName)
-    print(data["interactID"]+": Processed in "+str(end-start)+" seconds")
+    print(data["interactID"]+": Processed in "+str(end-start)+" seconds", flush=True)
     # Send the result back
-    queueHandler.sendToQueue(json.dumps({
+    conn.add_callback_threadsafe(functools.partial(cbSend, json.dumps({
         "success": True,
         "userID": data["userID"],
         "interactID": data["interactID"],
         "cost": data["cost"],
         "result": result['text'],
         "processTime": end-start
-    }))
-    print(data["interactID"]+": File deleted")
+    })))
     # Acknowledge the message
-    ch.basic_ack(delivery_tag = method.delivery_tag)
+    conn.add_callback_threadsafe(functools.partial(cbAck, ch, method.delivery_tag))
+    #ch.basic_ack(delivery_tag = method.delivery_tag)
 
 
 
