@@ -44,4 +44,6 @@ For environment variable configurations, please refer to the `.env.example` file
     * `roleToPing` - The role ID to ping when stream starts
     * `discordInvite` - Discord server invite link (keeping the link consistent)
     * `reminderInterval` - Interval to send a reminder for the discord server (in ms)
-* `noPointsChannel` - An list of channels that the points will not be awarded to
+* `noPointsChannel` - A list of channels that the points will not be awarded to
+* `enableExtra` - A list of extra services that can either be enabled or disabled
+    * `whisper` - OpenAI Speech To Text Transcriber

@@ -8,6 +8,7 @@ import { unlink } from "fs/promises";
 import { ffProbeAsync, saveToDisk } from "../utils/Asyncify";
 import { Channel } from "amqplib";
 import { statSync } from "fs";
+import { enableExtra } from "../config";
 
 // More language are available here: https://github.com/openai/whisper#available-models-and-languages
 // Make PR if you want to add your language here
@@ -71,11 +72,14 @@ const getBaselineEmbed = () => new EmbedBuilder()
 const sendQName = "WhisperReq"
 const receiveQName = "WhisperRes"
 
+const serviceEnabled = (process.env['AMQP_CONN'] ?? false) && enableExtra.whisper
 /*
 Queue Receiver System. Rather than placing this under `src/services`, it will be placed here for experimental purposes.
 */
 const queuedList: CommandInteraction[] = [];
 let sendChannel: Channel | undefined;
+
+if(serviceEnabled)
 getAmqpConn().then(k=>{
     k?.createChannel().then(async(ch)=>{
         await ch.assertQueue(receiveQName, {durable: true});
@@ -138,7 +142,7 @@ getAmqpConn().then(k=>{
             return ch.ack(msg)
         })
     })
-})
+});
 // Command Core
 export default {
     command: new SlashCommandBuilder()
@@ -211,5 +215,5 @@ export default {
         } as queueRequest)
         sendChannel.sendToQueue(sendQName,Buffer.from(packedContent))
     },
-    disabled: !(process.env['AMQP_CONN'] ?? false),
+    disabled: !serviceEnabled,
 } as ICommand;
