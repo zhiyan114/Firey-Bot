@@ -48,9 +48,9 @@ export const PromptConfirmation = (
     }
     let msg: Message;
     if(classObj instanceof CommandInteraction) {
-        if(!classObj.replied) msg = await classObj.reply({...dataToSend, fetchReply: true})
-        else if(classObj.replied && classObj.deferred) msg = await classObj.followUp(dataToSend)
-        else msg = await classObj.editReply(dataToSend);
+        if(!classObj.replied) msg = await classObj.followUp(dataToSend)
+        else if(classObj.deferred) msg = await classObj.editReply(dataToSend)
+        else msg = await classObj.reply({...dataToSend, fetchReply: true});
     } else msg = await classObj.send(dataToSend);
     const collector = msg.createMessageComponentCollector({
         filter: (interact) => {
