@@ -3,7 +3,7 @@
 */
 
 import { randomUUID } from "crypto";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Embed, EmbedBuilder, InteractionEditReplyOptions, InteractionReplyOptions, Message, MessageCreateOptions } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed, EmbedBuilder,  Message,  TextChannel } from "discord.js";
 
 type PromptConfirmOptions = {
     customEmbed?: false
@@ -19,20 +19,19 @@ type PromptConfirmOptions = {
 }
 /**
  * 
- * @param MessageFunc Supply with a message function that fits the sitution (such as create,reply,edit reply, and follow-up)
+ * @param ClassObj Either a TextChannel or Interaction
  * @param options All the options for the Prompt
  * @returns Whether they clicked accept or decline
  */
 // ((opt: InteractionReplyOptions)=>Promise<Message>) | ((opt: InteractionEditReplyOptions)=>Promise<Message>) | ((opt: MessageCreateOptions)=>Promise<Message>)
 export const PromptConfirmation = (
-    MessageFunc: ((opt: InteractionReplyOptions)=>Promise<Message>) | ((opt: InteractionEditReplyOptions)=>Promise<Message>) | ((opt: MessageCreateOptions)=>Promise<Message>),
+    classObj: TextChannel | CommandInteraction,
     options: PromptConfirmOptions,
 ) => new Promise<boolean>(async(res,rej) =>
 {
     const yesBTNID = randomUUID();
     const noBTNID = randomUUID();
-
-    const msg = await MessageFunc({
+    const dataToSend = {
         embeds: [
             options.customEmbed ? options.embed : new EmbedBuilder().setColor("#00FFFF")
             .setTitle(options.title || "Confirmation")
@@ -46,7 +45,13 @@ export const PromptConfirmation = (
                 new ButtonBuilder().setCustomId(noBTNID).setLabel(options.btnName?.decline || "No").setStyle(ButtonStyle.Danger)
             )
         ]
-    })
+    }
+    let msg: Message;
+    if(classObj instanceof CommandInteraction) {
+        if(classObj.replied && classObj.deferred) msg = await classObj.followUp(dataToSend);
+        if(classObj.replied && !classObj.deferred) msg = await classObj.editReply(dataToSend);
+        msg = await classObj.reply({...dataToSend, fetchReply: true});
+    } else msg = await classObj.send(dataToSend);
     const collector = msg.createMessageComponentCollector({
         filter: (interact) => {
             // User Lock should really only be used when sending a non-ephemeral message in a guild channel

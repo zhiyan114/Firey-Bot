@@ -215,7 +215,7 @@ export default {
         if(language) price += 25/60;
         price = Math.ceil(audioInfo.format.duration*price);
         // Ask the user if they want to continue with the processing before sending the request
-        const PromptRes = await PromptConfirmation(command.followUp, {
+        const PromptRes = await PromptConfirmation(command, {
             text: `Would you like to confirm your processing job for ${price} points?`,
             btnName: {confirm: "confirm", decline: "decline"}
         })
