@@ -51,7 +51,7 @@ export class DiscordUser {
         if(user.bot) throw Error("The discord user cannot be a bot");
         this.user = user;
         this.cachekey = `discorduser:${user.id}`;
-        this.economy = new UserEconomy(this, user.id);
+        this.economy = new UserEconomy(this, user.id, this.cachekey);
     }
     /**
     * Check if the user has confirm the rules or not
@@ -227,10 +227,12 @@ export class DiscordUser {
  */
 class UserEconomy {
     private userid: string;
-    private user: DiscordUser
-    constructor(user: DiscordUser, userid: string) {
+    private user: DiscordUser;
+    private cacheKey: string;
+    constructor(user: DiscordUser, userid: string, cacheKey: string) {
         this.user = user;
         this.userid = userid;
+        this.cacheKey = cacheKey;
     }
     /**
      * Generate a random amount of points between a range
@@ -335,5 +337,8 @@ class UserEconomy {
         // Grant the point
         await this.grantPoints(this.rngRewardPoints(5,10));
         return true;
+    }
+    public async getBalance() {
+        return Number(await redis.hGet(this.cacheKey,"points") ?? (await this.user.getCacheData())?.points ?? "0");
     }
 }

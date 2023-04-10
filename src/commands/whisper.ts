@@ -11,6 +11,7 @@ import { statSync } from "fs";
 import { enableExtra, generalChannelID } from "../config";
 import { captureException } from "@sentry/node";
 import { APIErrors } from "../utils/discordErrorCode";
+import { PromptConfirmation } from "../utils/djUtils";
 
 // More language are available here: https://github.com/openai/whisper#available-models-and-languages
 // Make PR if you want to add your language here
@@ -213,19 +214,23 @@ export default {
         let price = 75/60
         if(language) price += 25/60;
         price = Math.ceil(audioInfo.format.duration*price);
+        // Ask the user if they want to continue with the processing before sending the request
+        const PromptRes = await PromptConfirmation(command.followUp, {
+            text: `Would you like to confirm your processing job for ${price} points?`,
+            btnName: {confirm: "confirm", decline: "decline"}
+        })
+        if(!PromptRes) return await command.editReply({
+            embeds: [
+                embed.setColor("#FFFF00")
+                .setDescription("You have decline the processing job")
+                .addFields({name:"Job ID", value: command.id})
+            ],
+        })
         // Try to subtract the user's points balance and decline if not enough balance
         if(price > 0 && command.user.id !== "233955058604179457") // zhiyan114 is free ^w^ (Actually no, I'm paying for the server cost so :/)
             if(!(await user.economy.deductPoints(price))) return await command.followUp({embeds:[embed
-                .setDescription(`You do not have enough points for this processing. Please have a total of ${price} points before trying again.`)], ephemeral: true});
-        // All the checks are all passing, send a queue request
-        queuedList.push(command);
-        if(!sendChannel) {
-            const conn = await getAmqpConn();
-            if(!conn) return;
-            sendChannel = await conn.createChannel();
-            await sendChannel.assertQueue(sendQName, {durable: true});
-        }
-        
+                .setDescription(`You do not have enough points for this processing. You currently have ${await user.economy.getBalance()} points.`)], ephemeral: true});
+        // User consent to the processing, send it to the queue
         const packedContent = JSON.stringify({
             userID: command.user.id,
             interactID: command.id,
@@ -233,13 +238,21 @@ export default {
             cost: price,
             language: language === undefined ? null : language,
         } as queueRequest)
+        queuedList.push(command);
+        if(!sendChannel) {
+            const conn = await getAmqpConn();
+            if(!conn) return;
+            sendChannel = await conn.createChannel();
+            await sendChannel.assertQueue(sendQName, {durable: true});
+        }
         sendChannel.sendToQueue(sendQName,Buffer.from(packedContent))
-        await command.followUp({
+        await command.editReply({
+            content: "DO NOT CLOSE THIS BOX WHILE IT'S PROCESSING OR YOU WILL LOSE YOUR RESULT",
             embeds: [
                 embed.setColor("#00FF00")
                 .setDescription("Your request has been queued and will be processed shortly! Once processed, you'll either see the result here or in your DM. Please make sure to turn on your DM in-case the interaction fails, otherwise your result will not be guaranteed to be successfully delivered.")
                 .addFields({name:"Job ID", value: command.id})
-            ]
+            ],
         })
     },
     disabled: !serviceEnabled,
