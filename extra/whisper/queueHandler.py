@@ -1,7 +1,6 @@
 import pika
 import os
 import ssl
-import functools
 import threading
 
 

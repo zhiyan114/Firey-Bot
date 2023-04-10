@@ -66,11 +66,10 @@ def SaveFileToDisk(url: str) -> str:
 # reason: string
 # }
 
-def cbAck(ch, delivery_tag):
+def cbAck(ch, delivery_tag, data):
     if ch.is_open:
+        queueHandler.sendToQueue(data)
         ch.basic_ack(delivery_tag)
-def cbSend(jsonData):
-    queueHandler.sendToQueue(jsonData)
 
 def callback(ch, method, properties, body, conn):
     data = json.loads(body.decode("utf-8"))
@@ -79,7 +78,7 @@ def callback(ch, method, properties, body, conn):
     fileName = SaveFileToDisk(data["mediaLink"])
     if fileName is None:
         print(data["interactID"]+": Failed to download file", flush=True)
-        return conn.add_callback_threadsafe(functools.partial(cbSend, json.dumps({
+        return conn.add_callback_threadsafe(functools.partial(cbAck, method.delivery_tag, json.dumps({
             "success": False,
             "userID": data["userID"],
             "interactID": data["interactID"],
@@ -93,8 +92,8 @@ def callback(ch, method, properties, body, conn):
     end = time.time()
     os.remove(fileName)
     print(data["interactID"]+": Processed in "+str(end-start)+" seconds", flush=True)
-    # Send the result back
-    conn.add_callback_threadsafe(functools.partial(cbSend, json.dumps({
+    # Send the result back and Acknowledge the message
+    conn.add_callback_threadsafe(functools.partial(cbAck, method.delivery_tag, json.dumps({
         "success": True,
         "userID": data["userID"],
         "interactID": data["interactID"],
@@ -102,9 +101,6 @@ def callback(ch, method, properties, body, conn):
         "result": result['text'],
         "processTime": end-start
     })))
-    # Acknowledge the message
-    conn.add_callback_threadsafe(functools.partial(cbAck, ch, method.delivery_tag))
-    #ch.basic_ack(delivery_tag = method.delivery_tag)
 
 
 

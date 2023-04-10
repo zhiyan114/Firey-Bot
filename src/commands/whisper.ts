@@ -248,7 +248,7 @@ export default {
         }
         sendChannel.sendToQueue(sendQName,Buffer.from(packedContent))
         await command.editReply({
-            content: "DO NOT CLOSE THIS BOX WHILE IT'S PROCESSING OR YOU WILL LOSE YOUR RESULT",
+            content: "DO NOT DISMISS THE MESSAGE WHILE IT'S PROCESSING OR YOU WILL LOSE YOUR RESULT",
             embeds: [
                 embed.setColor("#00FF00")
                 .setDescription("Your request has been queued and will be processed shortly! Once processed, you'll either see the result here or in your DM. Please make sure to turn on your DM in-case the interaction fails, otherwise your result will not be guaranteed to be successfully delivered.")
