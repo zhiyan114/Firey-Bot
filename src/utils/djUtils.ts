@@ -48,7 +48,7 @@ export const PromptConfirmation = (
     }
     let msg: Message;
     if(classObj instanceof CommandInteraction) {
-        if(!classObj.replied) msg = await classObj.followUp(dataToSend)
+        if(classObj.replied) msg = await classObj.followUp(dataToSend)
         else if(classObj.deferred) msg = await classObj.editReply(dataToSend)
         else msg = await classObj.reply({...dataToSend, fetchReply: true});
     } else msg = await classObj.send(dataToSend);
@@ -63,7 +63,10 @@ export const PromptConfirmation = (
         max: 1,
     })
     // Check to see if the user interacted with the yes button
-    collector.on('collect', i => res(i.customId === yesBTNID))
+    collector.on('collect', async (i) => {
+        await i.update({});
+        res(i.customId === yesBTNID)
+    })
     // User didn't interact with the button, return false
     collector.on('end', ()=>res(false))
 })

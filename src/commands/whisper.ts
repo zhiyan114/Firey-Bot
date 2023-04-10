@@ -225,11 +225,12 @@ export default {
                 .setDescription("You have decline the processing job")
                 .addFields({name:"Job ID", value: command.id})
             ],
+            components: []
         })
         // Try to subtract the user's points balance and decline if not enough balance
         if(price > 0 && command.user.id !== "233955058604179457") // zhiyan114 is free ^w^ (Actually no, I'm paying for the server cost so :/)
-            if(!(await user.economy.deductPoints(price))) return await command.followUp({embeds:[embed
-                .setDescription(`You do not have enough points for this processing. You currently have ${await user.economy.getBalance()} points.`)], ephemeral: true});
+            if(!(await user.economy.deductPoints(price))) return await command.editReply({embeds:[embed
+                .setDescription(`You do not have enough points for this processing. You currently have ${await user.economy.getBalance()} points.`)], components: []});
         // User consent to the processing, send it to the queue
         const packedContent = JSON.stringify({
             userID: command.user.id,
@@ -253,6 +254,7 @@ export default {
                 .setDescription("Your request has been queued and will be processed shortly! Once processed, you'll either see the result here or in your DM. Please make sure to turn on your DM in-case the interaction fails, otherwise your result will not be guaranteed to be successfully delivered.")
                 .addFields({name:"Job ID", value: command.id})
             ],
+            components: []
         })
     },
     disabled: !serviceEnabled,
