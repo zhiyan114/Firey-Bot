@@ -62,11 +62,11 @@ export const PromptConfirmation = (
         time: 60000, // 1 minute in millisecond
         max: 1,
     })
-    // Check to see if the user interacted with the yes button
-    collector.on('collect', async (i) => {
-        await i.update({});
-        res(i.customId === yesBTNID)
-    })
     // User didn't interact with the button, return false
-    collector.on('end', ()=>res(false))
+    collector.on('end', async (ilist)=>{
+        const i = ilist.first();
+        if(!i) return res(false);
+        await i.update({});
+        res(i.customId === yesBTNID);
+    })
 })
