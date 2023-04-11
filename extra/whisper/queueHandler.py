@@ -28,26 +28,28 @@ pikaParams = pika.ConnectionParameters(
     heartbeat=60
 )
 
-connection = None
-sendChannel = None
-receiveChannel = None
+pikaParam = {
+    "connection": None,
+    "sendChannel": None,
+    "receiveChannel": None
+}
 def init():
-    connection = pika.BlockingConnection(pikaParams)
-    sendChannel = connection.channel()
+    pikaParam['connection'] = pika.BlockingConnection(pikaParams)
+    sendChannel = pikaParam['connection'].channel()
     sendChannel.queue_declare(queue=sendQName, durable=True)
-    receiveChannel = connection.channel()
+    receiveChannel = pikaParam['connection'].channel()
     receiveChannel.queue_declare(queue=receiveQName, durable=True)
     receiveChannel.basic_qos(prefetch_count=1) # Only receive one message at a time
 init()
 def sendToQueue(message):
-    sendChannel.basic_publish(exchange='', routing_key=sendQName, body=message)
+    pikaParams['sendChannel'].basic_publish(exchange='', routing_key=sendQName, body=message)
 def receiveFromQueue(callback):
     def internal_callback(ch, method, properties, body):
-        threading.Thread(target=callback, args=(ch,method,properties,body,connection)).start()
+        threading.Thread(target=callback, args=(ch,method,properties,body,pikaParam['connection'])).start()
     while True:
-        receiveChannel.basic_consume(queue=receiveQName, on_message_callback=internal_callback, auto_ack=False) # Acknowledge the message after processing
+        pikaParams['receiveChannel'].basic_consume(queue=receiveQName, on_message_callback=internal_callback, auto_ack=False) # Acknowledge the message after processing
         try:
-            receiveChannel.start_consuming()
+            pikaParams['receiveChannel'].start_consuming()
         except pika.exceptions.StreamLostError:
             print("Network dropped, reconnecting...")
             init()
