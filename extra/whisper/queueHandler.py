@@ -2,6 +2,7 @@ import pika
 import os
 import ssl
 import threading
+import time
 
 
 sendQName = "WhisperRes"
@@ -34,12 +35,22 @@ pikaConnDat = {
     "receiveChannel": None
 }
 def init():
-    pikaConnDat['connection'] = pika.BlockingConnection(pikaParams)
-    pikaConnDat['sendChannel'] = pikaConnDat['connection'].channel()
-    pikaConnDat['sendChannel'].queue_declare(queue=sendQName, durable=True)
-    pikaConnDat['receiveChannel'] = pikaConnDat['connection'].channel()
-    pikaConnDat['receiveChannel'].queue_declare(queue=receiveQName, durable=True)
-    pikaConnDat['receiveChannel'].basic_qos(prefetch_count=1) # Only receive one message at a time
+    pauseTime = 5
+    while True:
+        try:
+            pikaConnDat['connection'] = pika.BlockingConnection(pikaParams)
+            pikaConnDat['sendChannel'] = pikaConnDat['connection'].channel()
+            pikaConnDat['sendChannel'].queue_declare(queue=sendQName, durable=True)
+            pikaConnDat['receiveChannel'] = pikaConnDat['connection'].channel()
+            pikaConnDat['receiveChannel'].queue_declare(queue=receiveQName, durable=True)
+            pikaConnDat['receiveChannel'].basic_qos(prefetch_count=1) # Only receive one message at a time
+            break
+        except Exception:
+            print(f"Failed to connect to RabbitMQ, retrying in {pauseTime} seconds...")
+            time.sleep(pauseTime)
+            if(pauseTime < 30):
+                pauseTime += 5
+
 
 def sendToQueue(message):
     pikaConnDat['sendChannel'].basic_publish(exchange='', routing_key=sendQName, body=message)
@@ -50,7 +61,7 @@ def receiveFromQueue(callback):
         pikaConnDat['receiveChannel'].basic_consume(queue=receiveQName, on_message_callback=internal_callback, auto_ack=False) # Acknowledge the message after processing
         try:
             pikaConnDat['receiveChannel'].start_consuming()
-        except pika.exceptions.StreamLostError:
+        except (pika.exceptions.StreamLostError, pika.exceptions.AMQPHeartbeatTimeout):
             print("Network dropped, reconnecting...")
             init()
             print("Reconnected")
