@@ -108,6 +108,7 @@ def callback(ch, method, properties, body, conn):
 if __name__ == '__main__':
     try:
         print("Starting OpenAI Whisper ML Server...")
+        queueHandler.init()
         queueHandler.receiveFromQueue(callback)
     except KeyboardInterrupt:
         print("Shutting down OpenAI Whisper ML Server...")

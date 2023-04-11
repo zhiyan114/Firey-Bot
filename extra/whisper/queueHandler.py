@@ -35,12 +35,12 @@ pikaConnDat = {
 }
 def init():
     pikaConnDat['connection'] = pika.BlockingConnection(pikaParams)
-    sendChannel = pikaConnDat['connection'].channel()
-    sendChannel.queue_declare(queue=sendQName, durable=True)
-    receiveChannel = pikaConnDat['connection'].channel()
-    receiveChannel.queue_declare(queue=receiveQName, durable=True)
-    receiveChannel.basic_qos(prefetch_count=1) # Only receive one message at a time
-init()
+    pikaConnDat['sendChannel'] = pikaConnDat['connection'].channel()
+    pikaConnDat['sendChannel'].queue_declare(queue=sendQName, durable=True)
+    pikaConnDat['receiveChannel'] = pikaConnDat['connection'].channel()
+    pikaConnDat['receiveChannel'].queue_declare(queue=receiveQName, durable=True)
+    pikaConnDat['receiveChannel'].basic_qos(prefetch_count=1) # Only receive one message at a time
+
 def sendToQueue(message):
     pikaConnDat['sendChannel'].basic_publish(exchange='', routing_key=sendQName, body=message)
 def receiveFromQueue(callback):
