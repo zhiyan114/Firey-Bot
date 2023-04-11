@@ -78,7 +78,7 @@ def callback(ch, method, properties, body, conn):
     fileName = SaveFileToDisk(data["mediaLink"])
     if fileName is None:
         print(data["interactID"]+": Failed to download file", flush=True)
-        return conn.add_callback_threadsafe(functools.partial(cbAck, method.delivery_tag, json.dumps({
+        return conn.add_callback_threadsafe(functools.partial(cbAck, ch, method.delivery_tag, json.dumps({
             "success": False,
             "userID": data["userID"],
             "interactID": data["interactID"],
@@ -93,7 +93,7 @@ def callback(ch, method, properties, body, conn):
     os.remove(fileName)
     print(data["interactID"]+": Processed in "+str(end-start)+" seconds", flush=True)
     # Send the result back and Acknowledge the message
-    conn.add_callback_threadsafe(functools.partial(cbAck, method.delivery_tag, json.dumps({
+    conn.add_callback_threadsafe(functools.partial(cbAck, ch, method.delivery_tag, json.dumps({
         "success": True,
         "userID": data["userID"],
         "interactID": data["interactID"],

@@ -45,7 +45,7 @@ def sendToQueue(message):
     pikaConnDat['sendChannel'].basic_publish(exchange='', routing_key=sendQName, body=message)
 def receiveFromQueue(callback):
     def internal_callback(ch, method, properties, body):
-        threading.Thread(target=callback, args=(ch,method,properties,body,pikaConnDat['connection'])).start()
+        threading.Thread(target=callback, args=(ch, method, properties, body, pikaConnDat['connection'])).start()
     while True:
         pikaConnDat['receiveChannel'].basic_consume(queue=receiveQName, on_message_callback=internal_callback, auto_ack=False) # Acknowledge the message after processing
         try:
