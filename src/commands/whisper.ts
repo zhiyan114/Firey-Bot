@@ -79,7 +79,6 @@ const serviceEnabled = (process.env['AMQP_CONN'] ?? false) && enableExtra.whispe
 /*
 Queue Receiver System. Rather than placing this under `src/services`, it will be placed here for experimental purposes.
 */
-const queuedList: CommandInteraction[] = [];
 let sendChannel: Channel | undefined;
 
 if(serviceEnabled)
@@ -90,7 +89,6 @@ getAmqpConn().then(k=>{
             if(!msg) return;
             // Check if the interactionCommand still in the queuedList
             const queueItem = JSON.parse(msg.content.toString()) as queueResponse;
-            const iCommand = queuedList.find(cmd=>cmd.id === queueItem.interactID)
             const fetchUser = await client.users.fetch(queueItem.userID)
             const user = new DiscordUser(fetchUser)
 
@@ -115,30 +113,11 @@ getAmqpConn().then(k=>{
                 embed = embed.setColor("#FF0000")
                 .setDescription(`ML Server Rejected Your Request: ${queueItem.reason}`);
             }
-
-            // If iCommand exists, follow-up the interaction
-            if(iCommand) {
-                try {
-                    await iCommand.editReply({
-                        embeds:[embed],
-                        files,
-                    })
-                    return ch.ack(msg);
-                } catch(ex) {
-                    // The processing probably took too long and causing the interaction to expire. Send it to the user's DM instead.
-                    // Ensure to only capture the error that isn't caused by the timeout
-                    if(!(ex instanceof DiscordAPIError && ex.code === APIErrors.INVALID_WEBHOOK_TOKEN)) captureException(ex);
-                } finally {
-                    // Delete the iCommand object from the array
-                    const cmdIndex = queuedList.findIndex((cmd)=>cmd === iCommand);
-                    if(cmdIndex !== -1) queuedList.splice(cmdIndex, 1);
-                }
-            }
             
-            // iCommand does not exist (or interaction timed out), send it via user's DM instead
+            // Send it via user's DM
             try {
                 await fetchUser.send({
-                    content: "We're not able to follow-up with the interaction, so we sent the result in your DM instead",
+                    content: "We're not able to follow-up with the interaction, so we sent the result to your DM instead",
                     embeds:[embed],
                     files,
                 })
@@ -147,11 +126,11 @@ getAmqpConn().then(k=>{
                 // Only capture the error if it's not caused by the user's DM setting
                 if(!(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)) return captureException(ex);
                 // We'll be nice to the end-user and give them 10 minutes to download the file from the general channel before it's deleted
-                const channel = iCommand ? iCommand.channel : await client.channels.fetch(generalChannelID)
+                const channel = await client.channels.fetch(generalChannelID)
                 // We'll discard their result if the general channel somehow got deleted. At this point, it's the user's fault for not turning on their DM.
                 if(!channel) return ch.nack(msg, false, false);
                 let dMsgObj: Message | undefined;
-                if(channel.isTextBased()) dMsgObj = await channel.send({
+                if(channel.isTextBased() || channel.isVoiceBased() || channel.isThread()) dMsgObj = await channel.send({
                     content: ` <@${queueItem.userID}> I told you to enable your DM when using this command... Welp, you have 10 minutes to download the file before it gets deleted`,
                     embeds: [embed],
                     files,
@@ -239,7 +218,6 @@ export default {
             cost: price,
             language: language === undefined ? null : language,
         } as queueRequest)
-        queuedList.push(command);
         if(!sendChannel) {
             const conn = await getAmqpConn();
             if(!conn) return;
@@ -248,10 +226,9 @@ export default {
         }
         sendChannel.sendToQueue(sendQName,Buffer.from(packedContent))
         await command.editReply({
-            content: "DO NOT DISMISS THE MESSAGE WHILE IT'S PROCESSING OR YOU WILL LOSE YOUR RESULT",
             embeds: [
                 embed.setColor("#00FF00")
-                .setDescription("Your request has been queued and will be processed shortly! Once processed, you'll either see the result here or in your DM. Please make sure to turn on your DM in-case the interaction fails, otherwise your result will not be guaranteed to be successfully delivered.")
+                .setDescription("Your request has been queued and will be processed shortly! Once processed, I'll be delivered to your DM so make sure it's turned on.")
                 .addFields({name:"Job ID", value: command.id})
             ],
             components: []
