@@ -45,6 +45,9 @@ def init():
             pikaConnDat['receiveChannel'].queue_declare(queue=receiveQName, durable=True)
             pikaConnDat['receiveChannel'].basic_qos(prefetch_count=1) # Only receive one message at a time
             break
+        except pika.exceptions.AuthenticationError:
+            print("Authentication error, check your AMQP credentials")
+            exit(1)
         except Exception:
             print(f"Failed to connect to RabbitMQ, retrying in {pauseTime} seconds...")
             time.sleep(pauseTime)
