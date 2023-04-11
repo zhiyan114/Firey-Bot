@@ -10,11 +10,14 @@ import time
 import shutil
 import sentry_sdk
 
+# use sentry to filter out event that contains either "Errno 104" or StreamLostError"
+
 sentryData = os.environ.get("SENTRY_DSN", None)
 if(sentryData is not None):
     sentry_sdk.init(
     dsn=sentryData,
-    traces_sample_rate=0
+    traces_sample_rate=0,
+    before_send= lambda event, hint: None if "Errno 104" in event["exception"]["values"][0]["value"] or "StreamLostError" in event["exception"]["values"][0]["value"] else event
     )
 
 def SaveFileToDisk(url: str) -> str:
