@@ -117,7 +117,6 @@ getAmqpConn().then(k=>{
             // Send it via user's DM
             try {
                 await fetchUser.send({
-                    content: "We're not able to follow-up with the interaction, so we sent the result to your DM instead",
                     embeds:[embed],
                     files,
                 })
