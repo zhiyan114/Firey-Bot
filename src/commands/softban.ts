@@ -7,6 +7,7 @@ export default {
     command: new SlashCommandBuilder()
     .setName('softban')
     .setDescription(`Kicks the user but also deletes their messgae.`)
+    .setDMPermission(false)
     .addUserOption(option =>
         option.setName('user')
             .setDescription('The user to softban.')

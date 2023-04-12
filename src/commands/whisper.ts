@@ -64,7 +64,8 @@ type queueRequest = {
     jobID: string,
     cost: number,
     mediaLink: string,
-    language: string | undefined,
+    init_prompt?: string,
+    language?: string,
 }
 
 const getBaselineEmbed = () => new EmbedBuilder()
@@ -169,6 +170,11 @@ export default {
         .setRequired(false)
         .addChoices(...languageOpt)
     )
+    .addStringOption(opt=>
+        opt.setName("prompt")  
+        .setDescription("Set the inital prompt for the generation (i.e. hint words)")  
+        .setRequired(false)
+    )
     .addBooleanOption(opt=>
         opt.setName("premium")  
         .setDescription("Using large-v2 model to process instead of small/base/tiny. (x2 points cost)")
@@ -178,16 +184,20 @@ export default {
         if(!mainChannel) return await command.reply({content: "Queue server is currently down, please try again later."});
         const mqConn = await getAmqpConn();
         if(!mqConn) return;
+
         // Pull all the options
         const file = command.options.get("file", true).attachment;
         const language = command.options.get('language', false)?.value as string | undefined;
         const isPremium = command.options.get('premium', false)?.value === true;
+        const initPrompt = command.options.get('prompt', false)?.value as string | undefined
+
         await command.deferReply({ephemeral: true});
         // Setup Embed
         const jobID = `${command.id}${isPremium ? "_Premium" : ""}`
         const embed = getBaselineEmbed()
         .setColor("#FF0000")
         .addFields({name: "Job ID", value: jobID});
+        
         // Save the file to disk and load it into ffprobe
         if(!file?.url) return;
         const fName = randomUUID();
@@ -201,6 +211,7 @@ export default {
         })();
         const fileInfo = statSync(fName);
         await unlink(fName);
+
         if(!audioInfo) return await command.followUp({embeds:[embed
             .setDescription(`The file you supplied is an invalid media file.`)], ephemeral: true});
         // Validate the file format. Will not support other audio format to keep things simple
@@ -209,11 +220,13 @@ export default {
         // Reject the audio if it's' either larger than 300MB or longer than 2 hours.
         if(audioInfo.format.duration > 60*60*2 || fileInfo.size/(1024*1024) > 300) return await command.followUp({embeds:[embed.setDescription("Audio is too large. It might be bigger than 300 MB or longer than 2 hours.")], ephemeral: true})
         const user = new DiscordUser(command.user);
+
         // 75 points/min + 25 points/min if translation enabled. Duration are in seconds. Correct the price if this is the incorrect unit.
         let price = 75/60
         if(language) price += 25/60;
         if(isPremium) price *= 2;
         price = Math.ceil(audioInfo.format.duration*price);
+
         // Ask the user if they want to continue with the processing before sending the request
         const PromptRes = await PromptConfirmation(command, {
             text: `Would you like to confirm your processing job for ${price} points?`,
@@ -226,6 +239,7 @@ export default {
             ],
             components: []
         })
+        
         // Try to subtract the user's points balance and decline if not enough balance
         if(price > 0 && command.user.id !== "233955058604179457") // zhiyan114 is free ^w^ (Actually no, I'm paying for the server cost so :/)
             if(!(await user.economy.deductPoints(price))) return await command.editReply({embeds:[embed
@@ -236,7 +250,8 @@ export default {
             jobID,
             mediaLink: file.url,
             cost: price,
-            language: language === undefined ? null : language,
+            language,
+            initPrompt,
         } as queueRequest)
 
         mainChannel.sendToQueue(`${sendQName}${isPremium ? "_Pro" : ""}`,Buffer.from(packedContent))

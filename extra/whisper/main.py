@@ -66,7 +66,7 @@ def callback(ch, method, properties, body, conn):
     print(data["jobID"]+": File downloaded", flush=True)
     # Process the file
     start = time.time()
-    result = inference.convert(fileName, data["language"])
+    result = inference.convert(fileName, data.get("language"), data.get("initPrompt"))
     end = time.time()
     os.remove(fileName)
     print(data["jobID"]+": Processed in "+str(end-start)+" seconds", flush=True)

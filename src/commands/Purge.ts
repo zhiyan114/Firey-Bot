@@ -7,6 +7,7 @@ import { DiscordUser } from '../ManagerUtils/DiscordUser';
 const PurgeCmd = new SlashCommandBuilder()
     .setName('purge')
     .setDescription(`Purge messages from a channel`)
+    .setDMPermission(false)
     .addNumberOption(option =>
         option.setName("amount")
             .setDescription("The amount of messages to purge. Maximum 100.")
