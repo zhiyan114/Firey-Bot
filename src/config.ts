@@ -1,34 +1,3 @@
-// Type definition if you want to default this lmao
-export type Config = {
-    clientID: string,
-    botToken: string,
-    guildID: string,
-    adminRoleID: string,
-    newUserRoleID: string,
-    welcomeChannelID: string,
-    logChannelID: string,
-    webServer: {
-        FQDN: string,
-        webServerPort: number | undefined,
-        https: {
-            certificate: string | undefined,
-            key: string | undefined,
-        }
-    },
-    youtubeNotification: {
-        youtubeChannelID: string,
-        guildChannelID: string,
-        pingRoleID: string,
-    }
-    reactionRole: {
-        reactionLists: {
-            [key: string]: string,
-        },
-        channelID: string,
-        messageID: string,
-    }
-}
-
 // Enviornment variable first before using empty value or default value that you configured
 export const clientID = process.env['CLIENTID'] || "";
 export const botToken = process.env['BOTTOKEN'] || "";
@@ -37,6 +6,7 @@ export const adminRoleID = "908090260087513098";
 export const newUserRoleID = "907768073442983966";
 export const welcomeChannelID = "907121158376288307";
 export const logChannelID = "971584951076147261";
+export const generalChannelID = "908069392384933938"
 export const webServer = {
     FQDN: process.env['WEBSERVER_FQDN'] || "",
     Port: process.env["WEBSERVER_PORT"] ? parseInt(process.env["WEBSERVER_PORT"]) : undefined,
@@ -70,3 +40,7 @@ export const twitch = {
 export const noPointsChannel = [
     "907121158376288307"
 ]
+// Whether the extra service should be enabled or not
+export const enableExtra = {
+    whisper: true
+}

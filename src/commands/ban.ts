@@ -8,6 +8,7 @@ import { DiscordUser } from '../ManagerUtils/DiscordUser';
 const BanCmd = new SlashCommandBuilder()
     .setName('ban')
     .setDescription(`Bans the target user.`)
+    .setDMPermission(false)
     .addUserOption(option =>
         option.setName('user')
             .setDescription('The user to ban.')

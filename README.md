@@ -28,7 +28,8 @@ For environment variable configurations, please refer to the `.env.example` file
 * `adminRoleID` - As the name suggested, the roles that the user will be in with moderation privileges. For commands like eval, they do have exceptions.
 * `newUserRoleID` - Role the new user will get after confirming.
 * `welcomeChannelID` - Place to announce new users.
-* `logChannelID` - Channels to send internal logs
+* `logChannelID` - Channels to send internal logs.
+* `generalChannelID` - A general purpose chat channel for interactive replies
 * `youtubeNotification` - Youtube Notification Configuration (a sub-config)
     * `guildChannelID` - The ID of a guild's channel of where a new video will be posted
     * `pingRoleID` - The role to ping as a reminder
@@ -44,4 +45,6 @@ For environment variable configurations, please refer to the `.env.example` file
     * `roleToPing` - The role ID to ping when stream starts
     * `discordInvite` - Discord server invite link (keeping the link consistent)
     * `reminderInterval` - Interval to send a reminder for the discord server (in ms)
-* `noPointsChannel` - An list of channels that the points will not be awarded to
+* `noPointsChannel` - A list of channels that the points will not be awarded to
+* `enableExtra` - A list of extra services that can either be enabled or disabled
+    * `whisper` - OpenAI Speech To Text Transcriber

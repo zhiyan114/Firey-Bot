@@ -9,6 +9,7 @@ export default {
     command: new SlashCommandBuilder()
     .setName('unban')
     .setDescription(`Remove a user from the ban list`)
+    .setDMPermission(false)
     .addUserOption(option =>
         option.setName('user')
             .setDescription('The user to unban (user ID will work).')

@@ -7,6 +7,7 @@ import { DiscordUser } from '../ManagerUtils/DiscordUser';
 const KickCmd = new SlashCommandBuilder()
     .setName('kick')
     .setDescription(`Kicks a target user.`)
+    .setDMPermission(false)
     .addUserOption(option =>
         option.setName('user')
             .setDescription('The user to kick.')
