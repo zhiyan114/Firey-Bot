@@ -32,19 +32,17 @@ pikaParams = pika.ConnectionParameters(
 
 pikaConnDat = {
     "connection": None,
-    "sendChannel": None,
-    "receiveChannel": None
+    "mainChannel": None,
 }
 def init():
     pauseTime = 5
     while True:
         try:
             pikaConnDat['connection'] = pika.BlockingConnection(pikaParams)
-            pikaConnDat['sendChannel'] = pikaConnDat['connection'].channel()
-            pikaConnDat['sendChannel'].queue_declare(queue=sendQName, durable=True)
-            pikaConnDat['receiveChannel'] = pikaConnDat['connection'].channel()
-            pikaConnDat['receiveChannel'].queue_declare(queue=receiveQName, durable=True)
-            pikaConnDat['receiveChannel'].basic_qos(prefetch_count=1) # Only receive one message at a time
+            pikaConnDat['mainChannel'] = pikaConnDat['connection'].channel()
+            pikaConnDat['mainChannel'].queue_declare(queue=sendQName, durable=True)
+            pikaConnDat['mainChannel'].queue_declare(queue=receiveQName, durable=True)
+            pikaConnDat['mainChannel'].basic_qos(prefetch_count=1) # Only receive one message at a time
             break
         except pika.exceptions.AuthenticationError:
             print("Authentication error, check your AMQP credentials")
@@ -57,14 +55,14 @@ def init():
 
 
 def sendToQueue(message):
-    pikaConnDat['sendChannel'].basic_publish(exchange='', routing_key=sendQName, body=message)
+    pikaConnDat['mainChannel'].basic_publish(exchange='', routing_key=sendQName, body=message)
 def receiveFromQueue(callback):
     def internal_callback(ch, method, properties, body):
         threading.Thread(target=callback, args=(ch, method, properties, body, pikaConnDat['connection'])).start()
     while True:
-        pikaConnDat['receiveChannel'].basic_consume(queue=receiveQName, on_message_callback=internal_callback, auto_ack=False) # Acknowledge the message after processing
+        pikaConnDat['mainChannel'].basic_consume(queue=receiveQName, on_message_callback=internal_callback, auto_ack=False) # Acknowledge the message after processing
         try:
-            pikaConnDat['receiveChannel'].start_consuming()
+            pikaConnDat['mainChannel'].start_consuming()
         except (pika.exceptions.StreamLostError, pika.exceptions.AMQPHeartbeatTimeout):
             print("Network dropped, reconnecting...")
             init()
