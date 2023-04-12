@@ -37,17 +37,34 @@ redis.connect().then(()=>{
   captureException(ex);
 })
 
+
+
 // Handle amqplib connection. I know it's not a database.
 let amqpConn: undefined | Connection;
+let amqpIsConnected: boolean = false;
+// This algorithm will handle the connection and reconnection when needed
+const init = async() => {
+  if(!process.env['AMQP_CONN']) return;
+  amqpConn = await connect(process.env['AMQP_CONN']);
+  amqpConn.on('error',err=> {
+    if((err as Error).message !== "Connection closing") captureException(err);
+  })
+  amqpConn.on('close',()=>{
+    sendLog(LogType.Warning, "AMQP Server disconnected, reconnecting in 5 seconds...")
+    amqpIsConnected = false;
+    setTimeout(init, 5000);
+  })
+  amqpIsConnected = true;
+  sendLog(LogType.Info, "AMQP Server Connected");
+}
 
 const getAmqpConn = async () => {
   if(amqpConn) return amqpConn;
-  if(!process.env['AMQP_CONN']) return;
-  amqpConn = await connect(process.env['AMQP_CONN']);
-  sendLog(LogType.Info, "AMQP Server Connected")
+  await init();
   return amqpConn;
 }
 const getAmqpConnSync = () => amqpConn;
+const isAmqpConnected = () => amqpIsConnected;
 
 // Export all the component
-export {prisma, redis, getAmqpConn, getAmqpConnSync}
+export {prisma, redis, getAmqpConn, getAmqpConnSync, isAmqpConnected}

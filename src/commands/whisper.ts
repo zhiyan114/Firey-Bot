@@ -1,6 +1,6 @@
 import { AttachmentBuilder, CommandInteraction, DiscordAPIError, EmbedBuilder, Message, SlashCommandBuilder, TextChannel } from "discord.js";
 import { ICommand } from "../interface";
-import { getAmqpConn } from "../utils/DatabaseManager";
+import { getAmqpConn, isAmqpConnected } from "../utils/DatabaseManager";
 import { randomUUID } from "crypto";
 import { DiscordUser } from "../ManagerUtils/DiscordUser";
 import { client } from "..";
@@ -81,9 +81,13 @@ Queue Receiver System. Rather than placing this under `src/services`, it will be
 */
 let sendChannel: Channel | undefined;
 
-if(serviceEnabled)
+const initListener = () =>
 getAmqpConn().then(k=>{
     k?.createChannel().then(async(ch)=>{
+        ch.on('close', async()=>{
+            while(!isAmqpConnected()) await new Promise<void>((res,rej)=>setTimeout(res, 3000));
+            initListener();
+        })
         await ch.assertQueue(receiveQName, {durable: true});
         ch.consume(receiveQName, async(msg)=>{
             if(!msg) return;
@@ -142,6 +146,7 @@ getAmqpConn().then(k=>{
         })
     })
 });
+if(serviceEnabled) initListener();
 // Command Core
 export default {
     command: new SlashCommandBuilder()
@@ -164,6 +169,7 @@ export default {
         .setRequired(false)
     ),
     function: async (command)=>{
+        if(!isAmqpConnected()) return await command.reply({content: "Queue server is currently down, please try again later."});
         const mqConn = await getAmqpConn();
         if(!mqConn) return;
         // Pull all the options
@@ -200,6 +206,7 @@ export default {
         // 75 points/min + 25 points/min if translation enabled. Duration are in seconds. Correct the price if this is the incorrect unit.
         let price = 75/60
         if(language) price += 25/60;
+        if(isPremium) price *= 2;
         price = Math.ceil(audioInfo.format.duration*price);
         // Ask the user if they want to continue with the processing before sending the request
         const PromptRes = await PromptConfirmation(command, {
@@ -229,6 +236,9 @@ export default {
             const conn = await getAmqpConn();
             if(!conn) return;
             sendChannel = await conn.createChannel();
+            sendChannel.on('close',async ()=>{
+                sendChannel = undefined;
+            })
             await sendChannel.assertQueue(sendQName, {durable: true});
             await sendChannel.assertQueue(sendQName+"_Pro", {durable: true});
         }
