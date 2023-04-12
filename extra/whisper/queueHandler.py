@@ -3,10 +3,11 @@ import os
 import ssl
 import threading
 import time
+import inference
 
 
 sendQName = "WhisperRes"
-receiveQName = "WhisperReq"
+receiveQName = "WhisperReq_Pro" if inference.isPremiumProcessing else "WhisperReq"
 
 def strtobool (val):
     val = val.lower()

@@ -13,12 +13,12 @@
     "express": "^4.18.1",
     "fluent-ffmpeg": "^2.1.2",
     "redis": "^4.6.5",
-    "rimraf": "^4.1.2",
+    "rimraf": "^5.0.0",
     "sharp": "^0.32.0",
     "tmi.js": "^1.8.5",
     "utf-8-validate": "^6.0.3",
     "ws": "^8.6.0",
-    "xml2js": "^0.4.23",
+    "xml2js": "^0.5.0",
     "zlib-sync": "^0.1.7"
   },
   "scripts": {
@@ -33,7 +33,7 @@
     "@types/tmi.js": "^1.8.2",
     "@types/xml2js": "^0.4.11",
     "prisma": "^4.7.1",
-    "typescript": "^5.0.3"
+    "typescript": "^5.0.4"
   },
   "name": "firey-bot",
   "description": "This bot is developed to serve a single server; thus, codes are not reusable without modification.",

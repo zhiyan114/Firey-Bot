@@ -48,20 +48,20 @@ const languageOpt = [
 type queueResponse = {
     success: true,
     userID: string,
-    interactID: string,
+    jobID: string,
     cost: number,
     result: string,
     processTime: number, // Process time in millisecond
 } | {
     success: false,
     userID: string,
-    interactID: string,
+    jobID: string,
     cost: number,
     reason: string; // User Display Error
 }
 type queueRequest = {
     userID: string,
-    interactID: string,
+    jobID: string,
     cost: number,
     mediaLink: string,
     language: string | undefined,
@@ -94,7 +94,7 @@ getAmqpConn().then(k=>{
 
             // Determine the result and generate an appreciate embed and files for it
             const files: AttachmentBuilder[] = []
-            let embed = getBaselineEmbed().addFields({name: "Job ID", value: queueItem.interactID});
+            let embed = getBaselineEmbed().addFields({name: "Job ID", value: queueItem.jobID});
             if(queueItem.success) {
                 // The processing was successful
                 embed = embed.setColor("#00FF00")
@@ -157,6 +157,11 @@ export default {
         .setDescription("Process/translate the audio in a specific language, otherwise auto (25 points/minute)")
         .setRequired(false)
         .addChoices(...languageOpt)
+    )
+    .addStringOption(opt=>
+        opt.setName("premium")  
+        .setDescription("Using large-v2 model to process instead of small/base/tiny. (x2 points cost)")
+        .setRequired(false)
     ),
     function: async (command)=>{
         const mqConn = await getAmqpConn();
@@ -164,9 +169,13 @@ export default {
         // Pull all the options
         const file = command.options.get("file", true).attachment;
         const language = command.options.get('language', false)?.value as string | undefined;
+        const isPremium = command.options.get('premium', false)?.value === true;
         await command.deferReply({ephemeral: true});
         // Setup Embed
-        const embed = getBaselineEmbed().setColor("#FF0000");
+        const jobID = `${command.id}${isPremium ? "_Premium" : ""}`
+        const embed = getBaselineEmbed()
+        .setColor("#FF0000")
+        .addFields({name: "Job ID", value: jobID});
         // Save the file to disk and load it into ffprobe
         if(!file?.url) return;
         const fName = randomUUID();
@@ -201,7 +210,6 @@ export default {
             embeds: [
                 embed.setColor("#FFFF00")
                 .setDescription("You have decline the processing job")
-                .addFields({name:"Job ID", value: command.id})
             ],
             components: []
         })
@@ -212,7 +220,7 @@ export default {
         // User consent to the processing, send it to the queue
         const packedContent = JSON.stringify({
             userID: command.user.id,
-            interactID: command.id,
+            jobID,
             mediaLink: file.url,
             cost: price,
             language: language === undefined ? null : language,
@@ -222,13 +230,14 @@ export default {
             if(!conn) return;
             sendChannel = await conn.createChannel();
             await sendChannel.assertQueue(sendQName, {durable: true});
+            await sendChannel.assertQueue(sendQName+"_Pro", {durable: true});
         }
-        sendChannel.sendToQueue(sendQName,Buffer.from(packedContent))
+
+        sendChannel.sendToQueue(`${sendQName}${isPremium ? "_Pro" : ""}`,Buffer.from(packedContent))
         await command.editReply({
             embeds: [
                 embed.setColor("#00FF00")
-                .setDescription("Your request has been queued and will be processed shortly! Once processed, I'll be delivered to your DM so make sure it's turned on.")
-                .addFields({name:"Job ID", value: command.id})
+                .setDescription(`Your request has been queued and will be processed shortly! Once processed, I'll be delivered to your DM so make sure it's turned on. ${isPremium ? "It seems like requested a premium processing. Due to the operation expense, the server will only be enable on-demand. Please DM zhiyan114 to confirm this." : ""}`)
             ],
             components: []
         })

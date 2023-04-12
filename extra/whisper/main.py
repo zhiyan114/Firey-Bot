@@ -43,31 +43,6 @@ def SaveFileToDisk(url: str) -> str:
     else:
         return None
 
-# Callback body documentation:
-# Receive Request
-# {
-# userID: string
-# interactID: string
-# cost: number
-# mediaLink: string
-# language: string
-# }
-# Send Response
-# {
-# success: True
-# userID: string
-# interactID: string
-# cost: number
-# result: string
-# processTime: number
-# } |
-# {
-# success: False
-# userID: string
-# interactID: string
-# cost: number
-# reason: string
-# }
 
 def cbAck(ch, delivery_tag, data):
     if ch.is_open:
@@ -76,30 +51,30 @@ def cbAck(ch, delivery_tag, data):
 
 def callback(ch, method, properties, body, conn):
     data = json.loads(body.decode("utf-8"))
-    print(data["interactID"]+": Processing for user "+data["userID"]+"...", flush=True)
+    print(data["jobID"]+": Processing for user "+data["userID"]+"...", flush=True)
     # Download the audio file and start processing it
     fileName = SaveFileToDisk(data["mediaLink"])
     if fileName is None:
-        print(data["interactID"]+": Failed to download file", flush=True)
+        print(data["jobID"]+": Failed to download file", flush=True)
         return conn.add_callback_threadsafe(functools.partial(cbAck, ch, method.delivery_tag, json.dumps({
             "success": False,
             "userID": data["userID"],
-            "interactID": data["interactID"],
+            "jobID": data["jobID"],
             "cost": data["cost"],
             "reason": "Failed to download file"
         })))
-    print(data["interactID"]+": File downloaded", flush=True)
+    print(data["jobID"]+": File downloaded", flush=True)
     # Process the file
     start = time.time()
     result = inference.convert(fileName, data["language"])
     end = time.time()
     os.remove(fileName)
-    print(data["interactID"]+": Processed in "+str(end-start)+" seconds", flush=True)
+    print(data["jobID"]+": Processed in "+str(end-start)+" seconds", flush=True)
     # Send the result back and Acknowledge the message
     conn.add_callback_threadsafe(functools.partial(cbAck, ch, method.delivery_tag, json.dumps({
         "success": True,
         "userID": data["userID"],
-        "interactID": data["interactID"],
+        "jobID": data["jobID"],
         "cost": data["cost"],
         "result": result['text'],
         "processTime": end-start
