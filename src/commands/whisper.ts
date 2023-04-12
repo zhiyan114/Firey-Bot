@@ -79,16 +79,22 @@ const serviceEnabled = (process.env['AMQP_CONN'] ?? false) && enableExtra.whispe
 /*
 Queue Receiver System. Rather than placing this under `src/services`, it will be placed here for experimental purposes.
 */
-let sendChannel: Channel | undefined;
+let mainChannel: Channel | undefined;
 
 const initListener = () =>
 getAmqpConn().then(k=>{
     k?.createChannel().then(async(ch)=>{
+        // Load the channel data for command to use
+        mainChannel = ch;
+        await ch.assertQueue(sendQName, {durable: true});
+        await ch.assertQueue(sendQName+"_Pro", {durable: true});
+        await ch.assertQueue(receiveQName, {durable: true});
         ch.on('close', async()=>{
+            mainChannel = undefined;
             while(!isAmqpConnected()) await new Promise<void>((res,rej)=>setTimeout(res, 3000));
             initListener();
         })
-        await ch.assertQueue(receiveQName, {durable: true});
+        // Handle all the receiving events
         ch.consume(receiveQName, async(msg)=>{
             if(!msg) return;
             // Check if the interactionCommand still in the queuedList
@@ -169,7 +175,7 @@ export default {
         .setRequired(false)
     ),
     function: async (command)=>{
-        if(!isAmqpConnected()) return await command.reply({content: "Queue server is currently down, please try again later."});
+        if(!mainChannel) return await command.reply({content: "Queue server is currently down, please try again later."});
         const mqConn = await getAmqpConn();
         if(!mqConn) return;
         // Pull all the options
@@ -232,18 +238,8 @@ export default {
             cost: price,
             language: language === undefined ? null : language,
         } as queueRequest)
-        if(!sendChannel) {
-            const conn = await getAmqpConn();
-            if(!conn) return;
-            sendChannel = await conn.createChannel();
-            sendChannel.on('close',async ()=>{
-                sendChannel = undefined;
-            })
-            await sendChannel.assertQueue(sendQName, {durable: true});
-            await sendChannel.assertQueue(sendQName+"_Pro", {durable: true});
-        }
 
-        sendChannel.sendToQueue(`${sendQName}${isPremium ? "_Pro" : ""}`,Buffer.from(packedContent))
+        mainChannel.sendToQueue(`${sendQName}${isPremium ? "_Pro" : ""}`,Buffer.from(packedContent))
         await command.editReply({
             embeds: [
                 embed.setColor("#00FF00")
