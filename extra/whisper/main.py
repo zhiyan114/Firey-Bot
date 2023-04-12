@@ -86,6 +86,7 @@ def callback(ch, method, properties, body, conn):
 if __name__ == '__main__':
     try:
         print("Starting OpenAI Whisper ML Server...")
+        print(f"Premium Model: {str(inference.isPremiumProcessing)}")
         queueHandler.init()
         queueHandler.receiveFromQueue(callback)
     except KeyboardInterrupt:
