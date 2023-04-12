@@ -158,7 +158,7 @@ export default {
         .setRequired(false)
         .addChoices(...languageOpt)
     )
-    .addStringOption(opt=>
+    .addBooleanOption(opt=>
         opt.setName("premium")  
         .setDescription("Using large-v2 model to process instead of small/base/tiny. (x2 points cost)")
         .setRequired(false)
