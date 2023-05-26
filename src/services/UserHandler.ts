@@ -34,15 +34,10 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
             }]
         })
     }
-    // Add the user to the database
+    // Update or add the user to the database
     const user = new DiscordUser(member.user);
-    const addSuccess = await user.updateUserData({
-        method: "create"
-    });
-    // Update the user data if the user already existed
-    if (!addSuccess) await user.updateUserData({
-        method: "update",
-        tag: member.user.tag,
+    await user.updateUserData({
+        tag: member.user.tag
     })
 });
 
@@ -52,13 +47,11 @@ client.on('userUpdate',async (oldUser, newUser)=>{
     const user = new DiscordUser(newUser)
     if(oldUser.tag !== newUser.tag) {
         const userUpdated = await user.updateUserData({
-            method: "update",
             tag: newUser.tag
         })
         if(!userUpdated) {
             const userHasVerifiedRole = (await client.guilds.cache.find(g=>g.id === guildID)?.members.fetch(newUser))?.roles.cache.find(role=>role.id === newUserRoleID);
             await user.updateUserData({
-                method: "create",
                 rulesconfirmedon: userHasVerifiedRole ? new Date() : undefined
             })
         }
