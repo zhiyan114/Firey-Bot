@@ -121,11 +121,7 @@ export class DiscordUser {
             })
             if(!dbUser) return await this.createNewUser();
         } catch(ex) {
-            captureException(ex,{
-                tags: {
-                    code: (ex instanceof Prisma.PrismaClientKnownRequestError) ? ex.code : undefined
-                }
-            })
+            captureException(ex)
         }
     }
     /**
@@ -166,11 +162,7 @@ export class DiscordUser {
                     
                 }
             }
-            captureException(ex,{
-                tags: {
-                    code: (ex instanceof Prisma.PrismaClientKnownRequestError) ? ex.code : undefined
-                }
-            })
+            captureException(ex)
             return false;
         }
     }
@@ -190,11 +182,7 @@ export class DiscordUser {
                 }
             })
         } catch(ex) {
-            captureException(ex,{
-                tags: {
-                    code: (ex instanceof Prisma.PrismaClientKnownRequestError) ? ex.code : undefined
-                }
-            })
+            captureException(ex)
         }
     }
     /**

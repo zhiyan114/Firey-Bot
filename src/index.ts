@@ -1,6 +1,7 @@
 // Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
 import {init as sentryInit} from '@sentry/node';
+import { ExtraErrorData } from "@sentry/integrations";
 import {botToken, guildID, twitch} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
 import { prisma } from './utils/DatabaseManager';
@@ -13,6 +14,9 @@ if(process.env['SENTRY_DSN']) {
   sentryInit({
     dsn: process.env['SENTRY_DSN'],
     integrations: [
+      new ExtraErrorData({
+        depth: 3
+      })
     ],
     beforeSend : (evnt) => { 
       if(evnt.tags && evnt.tags['isEval']) return null;

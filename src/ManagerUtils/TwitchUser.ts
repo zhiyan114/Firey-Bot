@@ -96,11 +96,16 @@ export class TwitchUser {
      */
     private async getUserFromDB(): Promise<null | userData> {
         if(!prisma) return null;
-        return await prisma.twitch.findUnique({
-            where: {
-                id: this.userid,
-            }
-        })
+        try {
+            return await prisma.twitch.findUnique({
+                where: {
+                    id: this.userid,
+                }
+            })
+        } catch(ex) {
+            captureException(ex);
+            return null;
+        }
     }
     /**
      * Add or Update user data from the database
