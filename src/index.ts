@@ -24,7 +24,7 @@ if(process.env['SENTRY_DSN']) {
       if(evnt.tags && evnt.tags['isEval']) return null;
       return evnt;
     },
-    release: execSync("git rev-parse HEAD").toString().trim() // Pull Release Data
+    release: execSync(`git -C ${__dirname} rev-parse HEAD`).toString().trim() // Pull Release Data
   });
 }
 
