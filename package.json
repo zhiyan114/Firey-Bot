@@ -22,6 +22,7 @@
     "zlib-sync": "^0.1.7"
   },
   "scripts": {
+    "sentryinit": "sentry-cli sourcemaps inject ./dist && sentry-cli sourcemaps upload --release=$(git rev-parse HEAD) ./dist",
     "build": "prisma generate && rimraf dist && tsc -p tsconfig.json",
     "start": "node ./dist/index.js"
   },

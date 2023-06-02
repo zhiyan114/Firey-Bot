@@ -1,12 +1,13 @@
 // Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
-import {init as sentryInit} from '@sentry/node';
-import { ExtraErrorData } from "@sentry/integrations";
+import { init as sentryInit } from '@sentry/node';
+import { ExtraErrorData, RewriteFrames } from "@sentry/integrations";
 import {botToken, guildID, twitch} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
 import { prisma } from './utils/DatabaseManager';
 import { twitchClient as tStreamClient } from './utils/twitchStream';
 import { redis as rClient } from './utils/DatabaseManager';
+import { execSync } from 'child_process';
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
@@ -15,13 +16,15 @@ if(process.env['SENTRY_DSN']) {
     dsn: process.env['SENTRY_DSN'],
     integrations: [
       new ExtraErrorData({
-        depth: 3
-      })
+        depth: 5
+      }),
+      new RewriteFrames()
     ],
     beforeSend : (evnt) => { 
       if(evnt.tags && evnt.tags['isEval']) return null;
       return evnt;
     },
+    release: execSync("git rev-parse HEAD").toString().trim() // Pull Release Data
   });
 }
 
