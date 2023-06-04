@@ -11,7 +11,7 @@ import { execSync } from 'child_process';
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
-  sendLog(LogType.Info,"Sentry DSN Detected, Error and Performance Logging will be enabled")
+  sendLog(LogType.Info,"Sentry DSN Detected, Error Logging will be enabled")
   sentryInit({
     dsn: process.env['SENTRY_DSN'],
     integrations: [
@@ -24,6 +24,9 @@ if(process.env['SENTRY_DSN']) {
       new dIntegrations.Http({
         breadcrumbs: false
       })
+    ],
+    ignoreErrors: [
+      'ETIMEDOUT'
     ],
     beforeSend : (evnt) => { 
       if(evnt.tags && evnt.tags['isEval']) return null;

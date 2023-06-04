@@ -87,26 +87,28 @@ const updateStatus = async () => {
 const EvalFunc = async (interaction : CommandInteraction) => {
     const code = interaction.options.get('code',true).value as string;
     await interaction.deferReply({ ephemeral: true })
-    // Setup pre-defined variables
+    
     const channel = interaction.channel;
-    const guild = interaction.guild;
-    const member = interaction.member;
-    const dClient = client;
-    const tClient = tmiClient;
-    const sScope = sentryScope;
     const print = async (msg: string) => {
         await channel?.send(msg)
     }
-    const secureFunction = new Function(`
-    sScope(async (scope)=>{
-        scope.setTag("isEval", true);
-        ${code}
-    })`);
+
+    // Setup pre-defined variables and code execution
+    const secureFunction = new Function(
+        'channel',
+        'guild',
+        'member',
+        'dClient',
+        'tClient',
+        'print',
+        code
+    );
+
     sentryScope(async (scope)=>{
         scope.setTag("isEval", true);
         try {
             // Execute the code
-            secureFunction();
+            secureFunction(channel, interaction.guild, interaction.member, client, tmiClient, print);
             await interaction.followUp({content: "Execution Completed", ephemeral: true})
             //await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
         } catch(ex) {
