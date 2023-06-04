@@ -18,7 +18,9 @@ if(process.env['SENTRY_DSN']) {
       new ExtraErrorData({
         depth: 5
       }),
-      new RewriteFrames()
+      new RewriteFrames({
+        prefix: "/"
+      })
     ],
     beforeSend : (evnt) => { 
       if(evnt.tags && evnt.tags['isEval']) return null;
