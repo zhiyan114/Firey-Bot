@@ -42,5 +42,5 @@ export const noPointsChannel = [
 ]
 // Whether the extra service should be enabled or not
 export const enableExtra = {
-    whisper: true
+    whisper: false
 }

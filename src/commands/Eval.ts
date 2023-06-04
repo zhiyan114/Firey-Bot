@@ -85,22 +85,22 @@ const updateStatus = async () => {
 
 /* Function Builder */
 const EvalFunc = async (interaction : CommandInteraction) => {
+    const code = interaction.options.get('code',true).value as string;
+    await interaction.deferReply({ ephemeral: true })
+    // Setup pre-defined variables
+    const channel = interaction.channel;
+    const guild = interaction.guild;
+    const member = interaction.member;
+    const dClient = client;
+    const tClient = tmiClient;
+    const sScope = sentryScope;
+    const secureCode = `
+    sScope(async (scope)=>{
+        scope.setTag("isEval", true);
+        ${code}
+    })`;
     sentryScope(async (scope)=>{
         scope.setTag("isEval", true);
-        const code = interaction.options.get('code',true).value as string;
-        await interaction.deferReply({ ephemeral: true })
-        // Setup pre-defined variables
-        const channel = interaction.channel;
-        const guild = interaction.guild;
-        const member = interaction.member;
-        const dClient = client;
-        const tClient = tmiClient;
-        const secureCode = `
-        try {
-            ${code}
-        } catch(ex) {
-            channel.send({content: "ERROR: ["+ex.name+"]: "+ex.message})
-        }`;
         try {
             // Execute the code
             const result = eval(secureCode);
