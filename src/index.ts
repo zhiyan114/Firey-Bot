@@ -1,6 +1,6 @@
 // Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
-import { init as sentryInit } from '@sentry/node';
+import { init as sentryInit, Integrations as dIntegrations } from '@sentry/node';
 import { ExtraErrorData, RewriteFrames } from "@sentry/integrations";
 import {botToken, guildID, twitch} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
@@ -20,6 +20,9 @@ if(process.env['SENTRY_DSN']) {
       }),
       new RewriteFrames({
         prefix: "/"
+      }),
+      new dIntegrations.Http({
+        breadcrumbs: false
       })
     ],
     beforeSend : (evnt) => { 
