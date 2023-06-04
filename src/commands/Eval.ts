@@ -94,6 +94,9 @@ const EvalFunc = async (interaction : CommandInteraction) => {
     const dClient = client;
     const tClient = tmiClient;
     const sScope = sentryScope;
+    const print = async (msg: string) => {
+        await channel?.send(msg)
+    }
     const secureFunction = new Function(`
     sScope(async (scope)=>{
         scope.setTag("isEval", true);
@@ -103,8 +106,9 @@ const EvalFunc = async (interaction : CommandInteraction) => {
         scope.setTag("isEval", true);
         try {
             // Execute the code
-            const result = secureFunction();
-            await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
+            secureFunction();
+            await interaction.followUp({content: "Execution Completed", ephemeral: true})
+            //await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
         } catch(ex) {
             const err = ex as Error;
             await interaction.followUp({content: `Bad Execution [${err.name}]: \`${err.message}\``, ephemeral: true});
