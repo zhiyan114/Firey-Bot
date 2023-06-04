@@ -94,16 +94,16 @@ const EvalFunc = async (interaction : CommandInteraction) => {
     const dClient = client;
     const tClient = tmiClient;
     const sScope = sentryScope;
-    const secureCode = `
+    const secureFunction = new Function(`
     sScope(async (scope)=>{
         scope.setTag("isEval", true);
         ${code}
-    })`;
+    })`);
     sentryScope(async (scope)=>{
         scope.setTag("isEval", true);
         try {
             // Execute the code
-            const result = eval(secureCode);
+            const result = secureFunction();
             await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
         } catch(ex) {
             const err = ex as Error;
