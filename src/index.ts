@@ -20,7 +20,7 @@ if(process.env['SENTRY_DSN']) {
         depth: 5
       }),
       new RewriteFrames({
-        iteratee(frame) {
+        iteratee: (frame) => {
           const absPath = frame.filename;
           if(!absPath) return frame;
           frame.filename = `/${path.relative(__dirname, absPath).replace(/\\/g, "/")}`
