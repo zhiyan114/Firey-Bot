@@ -8,6 +8,7 @@ import { prisma } from './utils/DatabaseManager';
 import { twitchClient as tStreamClient } from './utils/twitchStream';
 import { redis as rClient } from './utils/DatabaseManager';
 import { execSync } from 'child_process';
+import path from 'path';
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
@@ -19,7 +20,12 @@ if(process.env['SENTRY_DSN']) {
         depth: 5
       }),
       new RewriteFrames({
-        prefix: "/"
+        iteratee(frame) {
+          const absPath = frame.filename;
+          if(!absPath) return frame;
+          frame.filename = `/${path.relative(__dirname, absPath).replace(/\\/g, "/")}`
+          return frame;
+        }
       }),
       new dIntegrations.Http({
         breadcrumbs: false
@@ -41,6 +47,7 @@ export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessag
 export const streamCli = new tStreamClient(twitch.channel);
 /* Internal Services */
 import { loadClientModule } from './services'
+
 
 client.on('ready', async () => {
   client.user!.setPresence({

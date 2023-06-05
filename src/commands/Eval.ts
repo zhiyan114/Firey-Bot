@@ -89,8 +89,13 @@ const EvalFunc = async (interaction : CommandInteraction) => {
     await interaction.deferReply({ ephemeral: true })
     
     const channel = interaction.channel;
-    const print = async (msg: string) => {
-        await channel?.send(msg)
+    // The type is any since this is dynmaically called by the client and we don't won't know the result at the end
+    const print = async (msg: unknown) => {
+        // Json stringify if it's an object, otherwise convert to string
+        if(typeof msg == "object") msg = JSON.stringify(msg);
+        if(msg === undefined || msg === null) msg = "undefined";
+        else msg = msg.toString();
+        await channel?.send(msg as string);
     }
 
     // Setup pre-defined variables and code execution
