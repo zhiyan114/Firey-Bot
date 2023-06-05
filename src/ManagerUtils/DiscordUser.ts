@@ -121,7 +121,19 @@ export class DiscordUser {
             })
             if(!dbUser) return await this.createNewUser();
         } catch(ex) {
-            captureException(ex)
+            // Temp Debug Data
+            let ErrorName = "Unknown";
+            if(ex instanceof Prisma.PrismaClientKnownRequestError) ErrorName = `PrismaClientKnownRequestError (${ex.code})`;
+            if(ex instanceof Prisma.PrismaClientUnknownRequestError) ErrorName = `PrismaClientUnknownRequestError (${ex.cause})`;
+            if(ex instanceof Prisma.PrismaClientRustPanicError) ErrorName = `PrismaClientRustPanicError (${ex.cause})`;
+            if(ex instanceof Prisma.PrismaClientInitializationError) ErrorName = `PrismaClientInitializationError (${ex.errorCode})`;
+            if(ex instanceof Prisma.PrismaClientValidationError) ErrorName = `PrismaClientValidationError (${ex.cause})`;
+            captureException(ex,(scope)=>{
+                scope.setContext("Prisma CTX", {
+                    ErrorName
+                })
+                return scope;
+            })
         }
     }
     /**
