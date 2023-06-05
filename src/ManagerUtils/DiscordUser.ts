@@ -121,19 +121,8 @@ export class DiscordUser {
             })
             if(!dbUser) return await this.createNewUser();
         } catch(ex) {
-            // Temp Debug Data
-            let ErrorName = "Unknown";
-            if(ex instanceof Prisma.PrismaClientKnownRequestError) ErrorName = `PrismaClientKnownRequestError (${ex.code})`;
-            if(ex instanceof Prisma.PrismaClientUnknownRequestError) ErrorName = `PrismaClientUnknownRequestError (${ex.cause})`;
-            if(ex instanceof Prisma.PrismaClientRustPanicError) ErrorName = `PrismaClientRustPanicError (${ex.cause})`;
-            if(ex instanceof Prisma.PrismaClientInitializationError) ErrorName = `PrismaClientInitializationError (${ex.errorCode})`;
-            if(ex instanceof Prisma.PrismaClientValidationError) ErrorName = `PrismaClientValidationError (${ex.cause})`;
-            captureException(ex,(scope)=>{
-                scope.setContext("Prisma CTX", {
-                    ErrorName
-                })
-                return scope;
-            })
+            if(ex instanceof Prisma.PrismaClientInitializationError) return sendLog(LogType.Error, "Prisma Threw PrismaClientInitializationError error, a manual debug is required!");
+            captureException(ex)
         }
     }
     /**
@@ -160,33 +149,21 @@ export class DiscordUser {
             })
             return true;
         } catch(ex) {
+            if(ex instanceof Prisma.PrismaClientInitializationError) {
+                sendLog(LogType.Error, "Prisma Threw PrismaClientInitializationError error, a manual debug is required!");
+                return false;
+            }
             if(ex instanceof Prisma.PrismaClientKnownRequestError) {
                 switch(ex.code) {
                     case "P2001":
-                        return false;
-                    case "P2002":
-                        return false;
-                    case "P2015": {
                         // User not found, create one
                         await this.createNewUser(data.rulesconfirmedon);
                         return true;
-                    }
-                    
+                    case "P2002":
+                        return false;
                 }
             }
-            // Temp Debug Data
-            let ErrorName = "Unknown";
-            if(ex instanceof Prisma.PrismaClientKnownRequestError) ErrorName = `PrismaClientKnownRequestError (${ex.code})`;
-            if(ex instanceof Prisma.PrismaClientUnknownRequestError) ErrorName = `PrismaClientUnknownRequestError (${ex.cause})`;
-            if(ex instanceof Prisma.PrismaClientRustPanicError) ErrorName = `PrismaClientRustPanicError (${ex.cause})`;
-            if(ex instanceof Prisma.PrismaClientInitializationError) ErrorName = `PrismaClientInitializationError (${ex.errorCode})`;
-            if(ex instanceof Prisma.PrismaClientValidationError) ErrorName = `PrismaClientValidationError (${ex.cause})`;
-            captureException(ex,(scope)=>{
-                scope.setContext("Prisma CTX", {
-                    ErrorName
-                })
-                return scope;
-            })
+            captureException(ex);
             return false;
         }
     }

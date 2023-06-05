@@ -106,6 +106,9 @@ const EvalFunc = async (interaction : CommandInteraction) => {
         'dClient',
         'tClient',
         'print',
+        'createUserData',
+        'updateUserData',
+        'updateStatus',
         code
     );
 
@@ -113,7 +116,17 @@ const EvalFunc = async (interaction : CommandInteraction) => {
         scope.setTag("isEval", true);
         try {
             // Execute the code
-            secureFunction(channel, interaction.guild, interaction.member, client, tmiClient, print);
+            secureFunction(
+                channel,
+                interaction.guild,
+                interaction.member,
+                client,
+                tmiClient,
+                print,
+                createUserData,
+                updateUserData,
+                updateStatus
+            );
             await interaction.followUp({content: "Execution Completed", ephemeral: true})
             //await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
         } catch(ex) {
