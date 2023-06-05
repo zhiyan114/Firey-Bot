@@ -24,19 +24,21 @@ if(process.env['SENTRY_DSN']) {
         iteratee: (frame) => {
           const absPath = frame.filename;
           if(!absPath) return frame;
+          // Set the base path as the dist output to match the naming artifact on sentry
           frame.filename = `/${path.relative(__dirname, absPath).replace(/\\/g, "/")}`
           return frame;
         }
       })
     ],
     beforeBreadcrumb: (breadcrumb, hint) => {
-      if(breadcrumb.category === "http" && breadcrumb.data?.startsWith('https://api.twitch.tv')) return null;
+      // Ignore Http Breadcrumbs from twitch
+      if(breadcrumb.category === "http" && breadcrumb.data?.url.startsWith('https://api.twitch.tv')) return null;
       return breadcrumb
     },
     ignoreErrors: [
       'ETIMEDOUT'
     ],
-    beforeSend : (evnt) => { 
+    beforeSend : (evnt) => {
       if(evnt.tags && evnt.tags['isEval']) return null;
       return evnt;
     },
