@@ -4,6 +4,7 @@ import { captureException } from '@sentry/node'
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { createClient } from "redis";
 import { connect, Connection } from "amqplib";
+import { sleep } from "./Asyncify";
 
 // Handle Prisma Connections
 let prisma: PrismaClient | undefined;
@@ -24,18 +25,39 @@ const redis = createClient({
   url: process.env['REDIS_CONN']
 });
 
-redis.on('error', err => {
+function tryConnect() {
+  redis.connect().then(()=>{
+    console.log("Redis connection attempted")
+  }).catch(ex=>{
+    sendLog(LogType.Error, `Unknown Redis Error Occured`)
+    captureException(ex);
+  })
+}
+
+
+redis.on('error', async err => {
+  if((err as Error).message === "Connection timeout") {
+    // Handle timeout differently
+    console.log("Connection Timeout")
+    sendLog(LogType.Warning, "Redis: Client Timeout, Reconnect in 5 seconds...");
+    await sleep(5000);
+    tryConnect();
+    return;
+  }
   captureException(err);
-  sendLog(LogType.Error, "Redis Client Thrown Exception");
+  sendLog(LogType.Error, "Redis: Client Thrown Exception");
 })
 
-redis.connect().then(()=>{
+redis.on('ready',()=>{
   console.log("Redis Connected")
-  sendLog(LogType.Info,"Redis Connection Established");
-}).catch(ex=>{
-  sendLog(LogType.Error, `Unknown Redis Error Occured`)
-  captureException(ex);
+  sendLog(LogType.Info,"Redis: Connection Established");
 })
+redis.on('reconnecting', ()=>{
+  console.log("Redis reconnecting...")
+  sendLog(LogType.Warning,"Redis: Connection Issue, Reconnecting...");
+})
+
+tryConnect();
 
 
 
