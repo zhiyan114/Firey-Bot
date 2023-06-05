@@ -10,6 +10,7 @@ import { redis as rClient } from './utils/DatabaseManager';
 import { execSync } from 'child_process';
 import path from 'path';
 
+new dIntegrations.Http().name
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
   sendLog(LogType.Info,"Sentry DSN Detected, Error Logging will be enabled")
@@ -26,11 +27,12 @@ if(process.env['SENTRY_DSN']) {
           frame.filename = `/${path.relative(__dirname, absPath).replace(/\\/g, "/")}`
           return frame;
         }
-      }),
-      new dIntegrations.Http({
-        breadcrumbs: false
       })
     ],
+    beforeBreadcrumb: (breadcrumb, hint) => {
+      if(breadcrumb.category === "http" && breadcrumb.data?.startsWith('https://api.twitch.tv')) return null;
+      return breadcrumb
+    },
     ignoreErrors: [
       'ETIMEDOUT'
     ],
