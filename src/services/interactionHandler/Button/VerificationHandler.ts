@@ -21,7 +21,6 @@ export default async function VerificationHandler(interaction: ButtonInteraction
     // Update the rule confirmation date
     await member.roles.add(newUserRoleID, "Confirmation Role");
     await user.updateUserData({
-        method: "update",
         rulesconfirmedon: new Date()
     })
     // Thank the user for the confirmation

@@ -55,7 +55,6 @@ tmiClient.on('message', async function(channel, tags, message, self){
                 username: tags['username']
             });
             await tUser.updateUser({
-                method: "update",
                 username: tags['username'],
             });
         }

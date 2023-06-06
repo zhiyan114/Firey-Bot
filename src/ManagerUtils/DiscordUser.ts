@@ -13,10 +13,6 @@ type embedMessageType = {
     fields?: APIEmbedField[]
 }
 type updateUserData = {
-    method: "create",
-    rulesconfirmedon?: Date
-} | {
-    method: "update",
     tag?: string,
     rulesconfirmedon?: Date,
     points?: number,
@@ -117,29 +113,28 @@ export class DiscordUser {
      */
     private async getUserFromDB() {
         if(!prisma) return;
-        return await prisma.members.findUnique({
-            where: {
-                id: this.user.id
-            }
-        })
+        try {
+            const dbUser = await prisma.members.findUnique({
+                where: {
+                    id: this.user.id
+                }
+            })
+            if(!dbUser) return await this.createNewUser();
+            return dbUser;
+        } catch(ex) {
+            if(ex instanceof Prisma.PrismaClientInitializationError) return sendLog(LogType.Error, "Prisma Threw PrismaClientInitializationError error, a manual debug is required!");
+            captureException(ex)
+        }
     }
     /**
-     * Add or update the user in the database directly
+     * update the user in the database directly
      * @param data The operation data
      * @returns whether the operation was successful or not
      */
     public async updateUserData(data: updateUserData) {
         if(!prisma) return;
         try {
-            let newData: members | undefined;
-            if(data.method === "create") newData = await prisma.members.create({
-                data: {
-                    id: this.user.id,
-                    tag: this.user.tag,
-                    rulesconfirmedon: data.rulesconfirmedon,
-                }
-            })
-            if(data.method === "update") newData = await prisma.members.update({
+            let newData = await prisma.members.update({
                 data: {
                     tag: data.tag,
                     rulesconfirmedon: data.rulesconfirmedon,
@@ -148,21 +143,48 @@ export class DiscordUser {
                     id: this.user.id
                 }
             })
-            if(newData) await this.updateCacheData({
+            await this.updateCacheData({
                 rulesconfirmedon: newData.rulesconfirmedon ?? undefined,
                 points: newData.points,
                 lastgrantedpoint: newData.lastgrantedpoint
             })
             return true;
         } catch(ex) {
-            if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002") return false;
-            if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2001") return false;
-            captureException(ex,{
-                tags: {
-                    code: (ex instanceof Prisma.PrismaClientKnownRequestError) ? ex.code : undefined
+            if(ex instanceof Prisma.PrismaClientInitializationError) {
+                sendLog(LogType.Error, "Prisma Threw PrismaClientInitializationError error, a manual debug is required!");
+                return false;
+            }
+            if(ex instanceof Prisma.PrismaClientKnownRequestError) {
+                switch(ex.code) {
+                    case "P2001":
+                        // User not found, create one
+                        await this.createNewUser(data.rulesconfirmedon);
+                        return true;
+                    case "P2002":
+                        return false;
+                }
+            }
+            captureException(ex);
+            return false;
+        }
+    }
+    /**
+     * create the user in the database directly
+     * @param rulesconfirmed The date which the user has confirmed the rules on
+     * @returns User data if successfully create a new user, otherwise none
+     */
+    public async createNewUser(rulesconfirmed?: Date) {
+        if(!prisma) return;
+        try {
+            return await prisma.members.create({
+                data: {
+                    id: this.user.id,
+                    tag: this.user.tag,
+                    rulesconfirmedon: rulesconfirmed,
                 }
             })
-            return false;
+        } catch(ex) {
+            captureException(ex)
         }
     }
     /**

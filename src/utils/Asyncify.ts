@@ -26,3 +26,5 @@ export const ffProbeAsync = (file: string) => new Promise<FfprobeData>(async(res
         res(data);
     })
 )
+
+export const sleep = (ms: number) => new Promise<void>((res,rej)=>setTimeout(res,ms))

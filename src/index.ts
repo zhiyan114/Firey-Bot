@@ -1,31 +1,71 @@
 // Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
-import {init as sentryInit} from '@sentry/node';
+import { init as sentryInit, Integrations as dIntegrations } from '@sentry/node';
+import { ExtraErrorData, RewriteFrames } from "@sentry/integrations";
 import {botToken, guildID, twitch} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
 import { prisma } from './utils/DatabaseManager';
 import { twitchClient as tStreamClient } from './utils/twitchStream';
 import { redis as rClient } from './utils/DatabaseManager';
+import { execSync } from 'child_process';
+import path from 'path';
 
+new dIntegrations.Http().name
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
-  sendLog(LogType.Info,"Sentry DSN Detected, Error and Performance Logging will be enabled")
+  sendLog(LogType.Info,"Sentry DSN Detected, Error Logging will be enabled")
   sentryInit({
     dsn: process.env['SENTRY_DSN'],
     integrations: [
+      new ExtraErrorData({
+        depth: 5
+      }),
+      new RewriteFrames({
+        iteratee: (frame) => {
+          const absPath = frame.filename;
+          if(!absPath) return frame;
+          // Set the base path as the dist output to match the naming artifact on sentry
+          frame.filename = `/${path.relative(__dirname, absPath).replace(/\\/g, "/")}`
+          return frame;
+        }
+      })
     ],
-    beforeSend : (evnt) => { 
+    beforeBreadcrumb: (breadcrumb, hint) => {
+      // Ignore Http Breadcrumbs from twitch
+      if(breadcrumb.category === "http" && breadcrumb.data?.url.startsWith('https://api.twitch.tv')) return null;
+      return breadcrumb
+    },
+    ignoreErrors: [
+      'ETIMEDOUT'
+    ],
+    beforeSend : (evnt) => {
       if(evnt.tags && evnt.tags['isEval']) return null;
       return evnt;
     },
+    release: execSync(`git -C ${__dirname} rev-parse HEAD`).toString().trim() // Pull Release Data
   });
 }
 
 /* Client Loader */
-export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessageReactions, Intents.GuildModeration, Intents.GuildMembers, Intents.MessageContent, Intents.GuildMessages, Intents.GuildPresences], partials: [Partials.Channel, Partials.GuildMember, Partials.User] });
+export const client = new Client({
+  intents: [
+    Intents.Guilds,
+    Intents.GuildMessageReactions,
+    Intents.GuildModeration,
+    Intents.GuildMembers,
+    Intents.MessageContent,
+    Intents.GuildMessages,
+    Intents.GuildPresences
+  ],
+  partials: [
+    Partials.Channel,
+    Partials.GuildMember,
+    Partials.User
+  ]});
 export const streamCli = new tStreamClient(twitch.channel);
 /* Internal Services */
 import { loadClientModule } from './services'
+
 
 client.on('ready', async () => {
   client.user!.setPresence({

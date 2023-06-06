@@ -2,15 +2,14 @@ import { Prisma } from '@prisma/client';
 import { captureException } from '@sentry/node';
 import { redis, prisma } from '../utils/DatabaseManager';
 import { DiscordUser, getUser } from './DiscordUser';
-export type updateData = {
-    method: "add",
-    memberid: string,
-    username: string,
-} | {
-    method: "update",
+type updateUser = {
     memberid?: string,
     username?: string,
     verified?: boolean
+}
+type createUser = {
+    memberid: string,
+    username: string,
 }
 type userData = {
     id: string,
@@ -96,29 +95,45 @@ export class TwitchUser {
      */
     private async getUserFromDB(): Promise<null | userData> {
         if(!prisma) return null;
-        return await prisma.twitch.findUnique({
-            where: {
-                id: this.userid,
-            }
-        })
+        try {
+            return await prisma.twitch.findUnique({
+                where: {
+                    id: this.userid,
+                }
+            })
+        } catch(ex) {
+            captureException(ex);
+            return null;
+        }
     }
     /**
-     * Add or Update user data from the database
-     * @param data The data to either add the user or update the user
-     * @returns {boolean} The result of the operation. False means unsuccessful, while true means successful
+     * Add a new user data to the database
+     * @param data - The new data to be added
+     * @returns User data if successfully create a new user, otherwise none
      */
-    public async updateUser(data: updateData): Promise<boolean> {
-        if(!prisma) return false;
+    public async createUser(data: createUser) {
         try {
-            // Add the user data
-            if(data.method === "add") await prisma.twitch.create({
+            return await prisma?.twitch.create({
                 data: {
                     id: this.userid,
                     memberid: data.memberid,
                     username: data.username,
                 }
             })
-            if(data.method === "update") await prisma.twitch.update({
+        } catch(ex) {
+            if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002") return;
+            captureException(ex);
+        }
+    }
+    /**
+     * Update the user data from the database
+     * @param data The data to either add the user or update the user
+     * @returns {boolean} The result of the operation. False means unsuccessful, while true means successful
+     */
+    public async updateUser(data: updateUser): Promise<boolean> {
+        if(!prisma) return false;
+        try {
+            await prisma.twitch.update({
                 data: {
                     memberid: data.memberid,
                     username: data.username,
@@ -131,7 +146,7 @@ export class TwitchUser {
             await this.updateDataCache({
                 memberid: data.memberid,
                 username: data.username,
-                verified: data.method === "update" ? data.verified : undefined
+                verified: data.verified
             })
             return true;
         } catch(ex) {
@@ -140,11 +155,7 @@ export class TwitchUser {
                 if(['P2002', 'P2001'].find(v => v === (ex as Prisma.PrismaClientKnownRequestError).code))
                     return false;
             // Some other errors, log it to sentry
-            captureException(ex,{
-                tags: {
-                    code: (ex instanceof Prisma.PrismaClientKnownRequestError) ? ex.code : undefined
-                }
-            })
+            captureException(ex);
             return false;
         }
     }

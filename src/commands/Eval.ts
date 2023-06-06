@@ -85,26 +85,50 @@ const updateStatus = async () => {
 
 /* Function Builder */
 const EvalFunc = async (interaction : CommandInteraction) => {
+    const code = interaction.options.get('code',true).value as string;
+    await interaction.deferReply({ ephemeral: true })
+    
+    const channel = interaction.channel;
+    // The type is any since this is dynmaically called by the client and we don't won't know the result at the end
+    const print = async (msg: unknown) => {
+        // Json stringify if it's an object, otherwise convert to string
+        if(typeof msg == "object") msg = JSON.stringify(msg);
+        if(msg === undefined || msg === null) msg = "undefined";
+        else msg = msg.toString();
+        await channel?.send(msg as string);
+    }
+
+    // Setup pre-defined variables and code execution
+    const secureFunction = new Function(
+        'channel',
+        'guild',
+        'member',
+        'dClient',
+        'tClient',
+        'print',
+        'createUserData',
+        'updateUserData',
+        'updateStatus',
+        code
+    );
+
     sentryScope(async (scope)=>{
         scope.setTag("isEval", true);
-        const code = interaction.options.get('code',true).value as string;
-        await interaction.deferReply({ ephemeral: true })
-        // Setup pre-defined variables
-        const channel = interaction.channel;
-        const guild = interaction.guild;
-        const member = interaction.member;
-        const dClient = client;
-        const tClient = tmiClient;
-        const secureCode = `
-        try {
-            ${code}
-        } catch(ex) {
-            channel.send({content: "ERROR: ["+ex.name+"]: "+ex.message})
-        }`;
         try {
             // Execute the code
-            const result = eval(secureCode);
-            await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
+            secureFunction(
+                channel,
+                interaction.guild,
+                interaction.member,
+                client,
+                tmiClient,
+                print,
+                createUserData,
+                updateUserData,
+                updateStatus
+            );
+            await interaction.followUp({content: "Execution Completed", ephemeral: true})
+            //await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
         } catch(ex) {
             const err = ex as Error;
             await interaction.followUp({content: `Bad Execution [${err.name}]: \`${err.message}\``, ephemeral: true});
