@@ -171,7 +171,7 @@ export class DiscordUser {
     /**
      * create the user in the database directly
      * @param rulesconfirmed The date which the user has confirmed the rules on
-     * @returns whether the operation was successful or not
+     * @returns User data if successfully create a new user, otherwise none
      */
     public async createNewUser(rulesconfirmed?: Date) {
         if(!prisma) return;
