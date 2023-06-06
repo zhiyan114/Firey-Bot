@@ -47,7 +47,21 @@ if(process.env['SENTRY_DSN']) {
 }
 
 /* Client Loader */
-export const client = new Client({ intents: [Intents.Guilds, Intents.GuildMessageReactions, Intents.GuildModeration, Intents.GuildMembers, Intents.MessageContent, Intents.GuildMessages, Intents.GuildPresences], partials: [Partials.Channel, Partials.GuildMember, Partials.User] });
+export const client = new Client({
+  intents: [
+    Intents.Guilds,
+    Intents.GuildMessageReactions,
+    Intents.GuildModeration,
+    Intents.GuildMembers,
+    Intents.MessageContent,
+    Intents.GuildMessages,
+    Intents.GuildPresences
+  ],
+  partials: [
+    Partials.Channel,
+    Partials.GuildMember,
+    Partials.User
+  ]});
 export const streamCli = new tStreamClient(twitch.channel);
 /* Internal Services */
 import { loadClientModule } from './services'
