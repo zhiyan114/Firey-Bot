@@ -120,6 +120,7 @@ export class DiscordUser {
                 }
             })
             if(!dbUser) return await this.createNewUser();
+            return dbUser;
         } catch(ex) {
             if(ex instanceof Prisma.PrismaClientInitializationError) return sendLog(LogType.Error, "Prisma Threw PrismaClientInitializationError error, a manual debug is required!");
             captureException(ex)
