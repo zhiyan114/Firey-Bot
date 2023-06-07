@@ -137,7 +137,7 @@ export class DiscordUser {
         try {
             let newData = await prisma.members.update({
                 data: {
-                    username: data?.username ?? this.user.discriminator === "0" ? this.user.username : this.user.tag,
+                    username: data ? data.username : (this.user.discriminator === "0" ? this.user.username : this.user.tag),
                     rulesconfirmedon: data?.rulesconfirmedon,
                 },
                 where: {
