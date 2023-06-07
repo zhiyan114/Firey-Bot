@@ -6,8 +6,8 @@ import { client } from "..";
 
 /**
  * Discord Invite Manager
- * @param guild the guild server to generate the invite
  * @param requestid internal id for the invite request
+ * @param guild the guild server to generate the invite
  */
 export class DiscordInvite {
     private guild: Guild;
