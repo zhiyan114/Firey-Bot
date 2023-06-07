@@ -1,5 +1,5 @@
 import { captureException } from "@sentry/node";
-import { DiscordAPIError, GuildMember, SlashCommandBuilder } from "discord.js";
+import { DiscordAPIError, SlashCommandBuilder } from "discord.js";
 import { adminRoleID } from "../config";
 import { ICommand } from "../interface";
 import { APIErrors } from "../utils/discordErrorCode";

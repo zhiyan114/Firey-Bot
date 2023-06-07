@@ -9,7 +9,6 @@ import { twitchCmdType } from '../CmdTwitch';
 import path from 'path';
 import fs from 'fs';
 import { clearTwitchCache, TwitchUser } from '../ManagerUtils/TwitchUser';
-import { DiscordUser, getUser } from '../ManagerUtils/DiscordUser';
 
 export const tmiClient = new tmi.Client({
     connection: {

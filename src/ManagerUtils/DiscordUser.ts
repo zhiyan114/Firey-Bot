@@ -3,7 +3,7 @@ import { LogType, sendLog } from "../utils/eventLogger";
 import { prisma, redis } from "../utils/DatabaseManager";
 import { APIErrors } from "../utils/discordErrorCode";
 import { captureException } from "@sentry/node";
-import { members, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { client } from "..";
 
 type embedMessageType = {
