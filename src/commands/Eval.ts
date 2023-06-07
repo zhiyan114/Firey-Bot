@@ -99,23 +99,23 @@ const EvalFunc = async (interaction : CommandInteraction) => {
         await channel?.send(msg as string);
     }
 
-    // Setup pre-defined variables and code execution
-    const secureFunction = new Function(
-        'channel',
-        'guild',
-        'member',
-        'dClient',
-        'tClient',
-        'print',
-        'createUserData',
-        'updateUserData',
-        'updateStatus',
-        code
-    );
-
     sentryScope(async (scope)=>{
         scope.setTag("isEval", true);
         try {
+            // Setup pre-defined variables and code execution
+            const secureFunction = new Function(
+                'channel',
+                'guild',
+                'member',
+                'dClient',
+                'tClient',
+                'print',
+                'createUserData',
+                'updateUserData',
+                'updateStatus',
+                code
+            );
+
             // Execute the code
             secureFunction(
                 channel,
