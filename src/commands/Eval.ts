@@ -21,7 +21,7 @@ const EvalCmd = new SlashCommandBuilder()
 /* Custom Super User Commands */
 type userDataType = {
     id: string,
-    tag: string,
+    username: string,
     rulesconfirmedon: Date | undefined,
 }
 
@@ -34,7 +34,7 @@ const createUserData = async ()=> {
         const hasVerifyRole = member.roles.cache.find(role=>role.id == newUserRoleID);
         dataToPush.push({
             id: member.user.id,
-            tag: member.user.tag,
+            username: member.user.tag,
             rulesconfirmedon: hasVerifyRole ? (new Date()) : undefined
         })
     }
@@ -54,12 +54,12 @@ const updateUserData = async() => {
                 const newUsername = member.user.discriminator === "0" ? member.user.username : member.user.tag
                 return await prisma.members.update({
                     data: {
-                        tag: newUsername,
+                        username: newUsername,
                     },
                     where: {
                         id: member.id,
                         NOT: {
-                            tag: newUsername,
+                            username: newUsername,
                         }
                     }
                 })

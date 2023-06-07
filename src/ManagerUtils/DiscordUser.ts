@@ -137,7 +137,7 @@ export class DiscordUser {
         try {
             let newData = await prisma.members.update({
                 data: {
-                    tag: data?.username ?? this.user.discriminator === "0" ? this.user.username : this.user.tag,
+                    username: data?.username ?? this.user.discriminator === "0" ? this.user.username : this.user.tag,
                     rulesconfirmedon: data?.rulesconfirmedon,
                 },
                 where: {
@@ -180,7 +180,7 @@ export class DiscordUser {
             return await prisma.members.create({
                 data: {
                     id: this.user.id,
-                    tag: this.user.discriminator === "0" ? this.user.username : this.user.tag,
+                    username: this.user.discriminator === "0" ? this.user.username : this.user.tag,
                     rulesconfirmedon: rulesconfirmed,
                 }
             })

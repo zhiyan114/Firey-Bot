@@ -64,7 +64,7 @@ export default {
                 await prisma.members.create({
                     data: {
                         id: SampleuserID,
-                        tag: "User#0000",
+                        username: "User#0000",
                         rulesconfirmedon: new Date()
                     }
                 })
@@ -85,7 +85,7 @@ export default {
                 let updateQTime = (new Date()).getTime();
                 await prisma.members.update({
                     data: {
-                        tag: "NewUser#0000"
+                        username: "NewUser#0000"
                     },
                     where: {
                         id: SampleuserID

@@ -3,7 +3,7 @@
 
 CREATE TABLE public.members (
     id VARCHAR(100) NOT NULL,
-    tag TEXT NOT NULL,
+    username TEXT NOT NULL,
     rulesConfirmedOn timestamptz,
     points integer NOT NULL DEFAULT 0,
     lastGrantedPoint timestamp NOT NULL DEFAULT NOW(),
