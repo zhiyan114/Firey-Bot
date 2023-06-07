@@ -9,6 +9,7 @@ import { twitchCmdType } from '../CmdTwitch';
 import path from 'path';
 import fs from 'fs';
 import { clearTwitchCache, TwitchUser } from '../ManagerUtils/TwitchUser';
+import { DiscordInvite } from '../ManagerUtils/DiscordInvite';
 
 export const tmiClient = new tmi.Client({
     connection: {
@@ -91,7 +92,11 @@ tmiClient.on('message', async function(channel, tags, message, self){
 let discordReminder: NodeJS.Timeout | null;
 
 const sendDiscordLink = async () => {
-    await tmiClient.say(twitch.channel,`A quick reminder that my discord server exists! You can join here: ${twitch.discordInvite}`);
+    await tmiClient.say(twitch.channel,`A quick reminder that my discord server exists! You can join here: ${
+        new DiscordInvite("twitchChat").getTempInvite({
+            reason: "Bot's Automatic Reminder Link"
+        })
+    }`);
     if(streamCli.isStreaming) discordReminder = setTimeout(sendDiscordLink, twitch.reminderInterval);
 }
 

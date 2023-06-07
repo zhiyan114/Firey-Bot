@@ -43,7 +43,6 @@ For environment variable configurations, please refer to the `.env.example` file
     * `channel` - Twitch channel name that the bot will be listening in.
     * `discordChannelID` - The channel ID in discord to send the notification to
     * `roleToPing` - The role ID to ping when stream starts
-    * `discordInvite` - Discord server invite link (keeping the link consistent)
     * `reminderInterval` - Interval to send a reminder for the discord server (in ms)
 * `noPointsChannel` - A list of channels that the points will not be awarded to
 * `enableExtra` - A list of extra services that can either be enabled or disabled
