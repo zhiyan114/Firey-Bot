@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { Channel, ChannelType, Guild, InviteCreateOptions, NewsChannel, TextChannel, VoiceChannel } from "discord.js";
+import { Channel, ChannelType, Guild, GuildInvitableChannelResolvable, InviteCreateOptions, NewsChannel, TextChannel, VoiceChannel } from "discord.js";
 import { redis } from "../utils/DatabaseManager";
 import { client } from "..";
 
@@ -67,7 +67,7 @@ export class DiscordInvite {
      * @param rawCode Whether to return an invite code or a full invite link
      * @returns The invite link or the code
      */
-    public async getTempInvite(inviteOpt?: InviteCreateOptions, rawCode?: boolean) {
+    public async getTempInvite(inviteOpt?: InviteCreateOptions, channel?: GuildInvitableChannelResolvable, rawCode?: boolean) {
         // Use the vanity code if possible
         if(this.guild.vanityURLCode) return rawCode ? this.guild.vanityURLCode : this.baseUrl + this.guild.vanityURLCode;
 
@@ -81,10 +81,12 @@ export class DiscordInvite {
         inviteOpt.reason = inviteOpt.reason ?? "Temporary Invite";
 
         // Find a valid guild channel to create invite in
-        const channel = this.guild.rulesChannel ?? 
+        channel = channel ??
+        this.guild.rulesChannel ?? 
         this.guild.publicUpdatesChannel ?? 
-        this.guild.channels.cache.find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | null | undefined ??
-        (await this.guild.channels.fetch()).find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | null | undefined;
+        // @TODO: REFACTOR THIS TO PRIORITIZE TEXTCHANNEL OVER VOICECHANNEL
+        this.guild.channels.cache.find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined ??
+        (await this.guild.channels.fetch()).find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined;
         if(!channel) throw new DiscordInviteError("No channel is associated with this server");
 
         // Create a new invite key and save it to the cache
