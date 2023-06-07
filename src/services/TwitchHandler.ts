@@ -93,7 +93,7 @@ let discordReminder: NodeJS.Timeout | null;
 
 const sendDiscordLink = async () => {
     await tmiClient.say(twitch.channel,`A quick reminder that my discord server exists! You can join here: ${
-        new DiscordInvite("twitchChat").getTempInvite({
+        await new DiscordInvite("twitchChat").getTempInvite({
             reason: "Bot's Automatic Reminder Link"
         })
     }`);

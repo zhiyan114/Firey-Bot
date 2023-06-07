@@ -5,7 +5,7 @@ import { twitchCmdType } from './index';
 const discordFunc : twitchCmdType ={
     name: "discord",
     func: async (data) => await data.client.say(data.channel,`@${data.user.username}, here is our discord invite link: ${
-        new DiscordInvite("twitchChat").getTempInvite({
+        await new DiscordInvite("twitchChat").getTempInvite({
             reason: "Twitch Chat Requested a Link"
         })
     }`),
