@@ -36,9 +36,7 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
     }
     // Update or add the user to the database
     const user = new DiscordUser(member.user);
-    await user.updateUserData({
-        tag: member.user.tag
-    })
+    await user.updateUserData()
 });
 
 /* Do some stuff when user's profile updates */
@@ -46,9 +44,7 @@ client.on('userUpdate',async (oldUser, newUser)=>{
     if(newUser.bot) return;
     const user = new DiscordUser(newUser)
     if(oldUser.tag !== newUser.tag) {
-        const userUpdated = await user.updateUserData({
-            tag: newUser.tag
-        })
+        const userUpdated = await user.updateUserData()
         if(!userUpdated) {
             const userHasVerifiedRole = (await client.guilds.cache.find(g=>g.id === guildID)?.members.fetch(newUser))?.roles.cache.find(role=>role.id === newUserRoleID);
             await user.updateUserData({

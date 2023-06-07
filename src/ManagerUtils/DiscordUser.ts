@@ -13,7 +13,8 @@ type embedMessageType = {
     fields?: APIEmbedField[]
 }
 type updateUserData = {
-    tag?: string,
+    username?: string,
+    displayName?: string;
     rulesconfirmedon?: Date,
     points?: number,
     lastgrantedpoint?: Date,
@@ -128,16 +129,16 @@ export class DiscordUser {
     }
     /**
      * update the user in the database directly
-     * @param data The operation data
+     * @param data The operation data (or info based on the provided user object if undefined)
      * @returns whether the operation was successful or not
      */
-    public async updateUserData(data: updateUserData) {
+    public async updateUserData(data?: updateUserData) {
         if(!prisma) return;
         try {
             let newData = await prisma.members.update({
                 data: {
-                    tag: data.tag,
-                    rulesconfirmedon: data.rulesconfirmedon,
+                    tag: data?.username ?? this.user.discriminator === "0" ? this.user.username : this.user.tag,
+                    rulesconfirmedon: data?.rulesconfirmedon,
                 },
                 where: {
                     id: this.user.id
@@ -158,7 +159,7 @@ export class DiscordUser {
                 switch(ex.code) {
                     case "P2001":
                         // User not found, create one
-                        await this.createNewUser(data.rulesconfirmedon);
+                        await this.createNewUser(data?.rulesconfirmedon);
                         return true;
                     case "P2002":
                         return false;
@@ -179,7 +180,7 @@ export class DiscordUser {
             return await prisma.members.create({
                 data: {
                     id: this.user.id,
-                    tag: this.user.tag,
+                    tag: this.user.discriminator === "0" ? this.user.username : this.user.tag,
                     rulesconfirmedon: rulesconfirmed,
                 }
             })

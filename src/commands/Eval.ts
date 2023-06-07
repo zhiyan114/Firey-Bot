@@ -51,14 +51,15 @@ const updateUserData = async() => {
         if(member.user.bot) continue;
         allwait.push((async()=>{
             try {
+                const newUsername = member.user.discriminator === "0" ? member.user.username : member.user.tag
                 return await prisma.members.update({
                     data: {
-                        tag: member.user.tag,
+                        tag: newUsername,
                     },
                     where: {
                         id: member.id,
                         NOT: {
-                            tag: member.user.tag,
+                            tag: newUsername,
                         }
                     }
                 })
