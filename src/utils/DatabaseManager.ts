@@ -44,7 +44,7 @@ redis.on('reconnecting', ()=>{
 redis.connect().then(()=>{
   console.log("Redis connection attempted")
 }).catch(ex=>{
-  sendLog(LogType.Error, `Unknown Redis Error Occured`)
+  sendLog(LogType.Error, `Redis: Unknown Error Occured`)
   captureException(ex);
 })
 
