@@ -84,7 +84,6 @@ export class DiscordInvite {
         channel = channel ??
         this.guild.rulesChannel ?? 
         this.guild.publicUpdatesChannel ?? 
-        // @TODO: REFACTOR THIS TO PRIORITIZE TEXTCHANNEL OVER VOICECHANNEL
         this.guild.channels.cache.find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined ??
         (await this.guild.channels.fetch()).find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined;
         if(!channel) throw new DiscordInviteError("No channel is associated with this server");
