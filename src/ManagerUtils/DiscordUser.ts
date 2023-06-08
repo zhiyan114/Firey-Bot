@@ -332,36 +332,33 @@ class UserEconomy {
      * @returns whether the user has been successfully rewarded or not
      */
     public async chatRewardPoints(text: string, ignoreCooldown?: boolean) {
-        // Get the user data
+        // Get user data and check to see if they met the cooldown eligibility
         const userData = await this.user.getCacheData();
         if(!userData) return false;
-        // 1 minute cooldown unless ignored
         if(!ignoreCooldown && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false;
+
         /*
-        Algorithm to check for the eligibility of the reward (welp, can't have a secure eligibility algorithm without it being obscurity)
-        At least it can be somewhat effective I guess. I could also remove comment to make it slightly more difficult to read, but not worth it.
+        This algorithm checks to see if the user has a message that is
+            - longer than 5 characters
+            - does not only contain numbers, special character, emoji, or links
+            - does not only have repeating characters
+        If the user is not eligible, their reward cooldown timer resets while not getting any points
         */
         const isEligible: boolean[] = [
-            // Check for the message length
-            text.length > 5,
-            // Check to see if the message only contains numbers (you can have text with numbers, but not only numbers)
-            !text.match(/^[0-9]+$/g),
-            // Check to see if the message contains only special characters (this unfortunately includes foreign language)
-            !text.match(/^[^a-zA-Z0-9]+$/g),
-            // Check to see if the message only contains discord emotes
-            !text.match(/^(:[a-zA-Z0-9_]+: ?)+$/g),
-            // Check message to see if there is any large repeating characters
-            !text.match(/(.)\1{3,}/g),
-            // Check to see if the message contains links
-            !text.match(/https?:\/\/[^\s]+/g),
+            text.length > 5, // Length check
+            !text.match(/^[0-9]+$/g), // Number Check
+            !text.match(/^[^a-zA-Z0-9]+$/g), // Special Character check
+            !text.match(/^(:[a-zA-Z0-9_]+: ?)+$/g), // Emoji check
+            !text.match(/(.)\1{3,}/g), // Repeating character check
+            !text.match(/https?:\/\/[^\s]+/g), // link check
         ];
         if(isEligible.find(e=>e === false) !== undefined) {
-            // The user is not eligible and will have a delay before another eligibility check
             await this.user.updateCacheData({
                 lastgrantedpoint: new Date()
             })
             return false;
         }
+        
         // Grant the point
         await this.grantPoints(this.rngRewardPoints(5,10));
         return true;
