@@ -9,15 +9,20 @@ import { BannerPic } from "../utils/bannerGen";
 client.on('guildMemberAdd',async (member : GuildMember) => {
     // ignore if user is a bot
     if(member.user.bot) return;
-    // Send message to channel 907121158376288307
+    const user = new DiscordUser(member.user);
+
+    // Send message to the welcome channel
     const channel = await client.channels.fetch(welcomeChannelID) as TextChannel;
-    const bannerBuffer = await (new BannerPic()).generate(member.user.tag, member.user.displayAvatarURL({size: 512}))
+    const bannerBuffer = await (new BannerPic()).generate(user.getUsername(), member.user.displayAvatarURL({size: 512}))
     await channel.send({files: [bannerBuffer]});
+
     // Send the message to the user
     const embed = new EmbedBuilder()
         .setTitle("Welcome to the server!")
         .setDescription(`Welcome to the Derg server, ${member.user.username}! Please read the rules and press the confirmation button to get full access.`)
         .setColor("#0000FF")
+
+    // Send the message
     try {
         await member.send({embeds: [embed]});
     } catch(ex : unknown) {
@@ -25,6 +30,8 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
             channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`, embeds: [embed]});
         else Sentry.captureException(ex);
     }
+
+    // Update the user count
     if(client.user) {
         client.user.setPresence({
             status: "dnd",
@@ -34,8 +41,8 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
             }]
         })
     }
+
     // Update or add the user to the database
-    const user = new DiscordUser(member.user);
     await user.updateUserData()
 });
 
@@ -43,6 +50,7 @@ client.on('guildMemberAdd',async (member : GuildMember) => {
 client.on('userUpdate',async (oldUser, newUser)=>{
     if(newUser.bot) return;
     const user = new DiscordUser(newUser)
+    
     if(oldUser.tag !== newUser.tag) {
         const userUpdated = await user.updateUserData()
         if(!userUpdated) {
