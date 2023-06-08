@@ -16,6 +16,7 @@ if(process.env['SENTRY_DSN']) {
   sendLog(LogType.Info,"Sentry DSN Detected, Error Logging will be enabled")
   sentryInit({
     dsn: process.env['SENTRY_DSN'],
+    maxValueLength: 1000,
     integrations: [
       new ExtraErrorData({
         depth: 5
