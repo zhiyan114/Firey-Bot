@@ -22,17 +22,22 @@ const PurgeCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const PurgeFunc = async (interaction : CommandInteraction) => {
+    // Setup the inital
     if(!interaction.channel) return await interaction.reply("Interaction must be executed in a server")
     const amount = interaction.options.get('amount',true).value as number;
-    const reason = interaction.options.get('reason', false)?.value as string | undefined;
     if(amount <= 0 || amount > 100) return await interaction.reply({content: 'Invalid amount!', ephemeral: true});
-    //const messages = await interaction.channel.messages.fetch({limit: amount});
+
+    // Get the option data
+    const reason = interaction.options.get('reason', false)?.value as string | undefined;
+    const User = new DiscordUser(interaction.user)
     await interaction.deferReply({ ephemeral: true })
+
+    // Start the purge
     await (interaction.channel as BaseGuildTextChannel).bulkDelete(amount);
     await interaction.followUp({content: `Successfully purged ${amount} messages!`, ephemeral: true});
-    // Do not log zhiyan114 when he purges log channel as it's to keep it clean during maintenance
+
+    // Log the purge (except if it's done by zhiyan114 in the logging channel for cleanup maintenance)
     if(interaction.channel.id === logChannelID && interaction.user.id === "233955058604179457") return;
-    const User = new DiscordUser(interaction.user)
     await User.actionLog({
         actionName: "purge",
         message: `<@${interaction.user.id}> has executed **purge** command`,

@@ -27,13 +27,19 @@ export default {
         roles: [adminRoleID]
     },
     function: async (interaction)=>{
+        // Inital Setup stuff
         if(!interaction.guild) return await interaction.reply("Interaction must be executed in a server")
         const targetMember = interaction.options.getMember('user') as GuildMember | null;
         if(!targetMember) return await interaction.reply("Invalid User has been supplied");
+
+        // Get the option data
         const reason = interaction.options.get('reason', true).value as string;
         const invite = interaction.options.get('invite', true).value as boolean;
         const targetUser = new DiscordUser(targetMember.user);
+        const issuerUser = new DiscordUser(interaction.user);
         await interaction.deferReply({ephemeral: true});
+
+        // Prepare the embed data for the target user
         const sbanfield = [
             {
                 name: "Reason",
@@ -41,7 +47,7 @@ export default {
             },
             {
                 name: "Soft Banned By",
-                value: interaction.user.tag,
+                value: issuerUser.getUsername(),
             }
         ]
         if(invite) {
@@ -51,6 +57,8 @@ export default {
                 value: inviteLink.url,
             })
         }
+
+        // Notify the user and take action
         await targetUser.sendMessage({
             title: "softban",
             message: `You have been softban from ${interaction.guild.name}!${invite ? " A re-invite link has been attached to this softban (expires in 1 week)." : ""}`,
@@ -62,7 +70,9 @@ export default {
             deleteMessageSeconds: 604800
         });
         await interaction.guild?.bans.remove(targetMember.user, "Softban purposes");
-        await (new DiscordUser(interaction.user)).actionLog({
+
+        // Log it and cleanup
+        await issuerUser.actionLog({
             actionName: "unban",
             target: targetUser,
             message: `<@${targetMember.id}> has been softban by <@${interaction.user.id}>`,

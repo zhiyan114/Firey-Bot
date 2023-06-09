@@ -181,17 +181,18 @@ export default {
         .setRequired(false)
     ),
     function: async (command)=>{
+        // Prerequisite checks
         if(!mainChannel) return await command.reply({content: "Queue server is currently down, please try again later."});
         const mqConn = await getAmqpConn();
         if(!mqConn) return;
 
-        // Pull all the options
+        // Pull all the option data
         const file = command.options.get("file", true).attachment;
         const language = command.options.get('language', false)?.value as string | undefined;
         const isPremium = command.options.get('premium', false)?.value === true;
         const initPrompt = command.options.get('prompt', false)?.value as string | undefined
-
         await command.deferReply({ephemeral: true});
+        
         // Setup Embed
         const jobID = `${command.id}${isPremium ? "_Premium" : ""}`
         const embed = getBaselineEmbed()

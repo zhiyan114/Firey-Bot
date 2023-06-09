@@ -27,13 +27,19 @@ const BanCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const BanFunc = async (interaction : CommandInteraction) => {
+    // Validation Checks
     if(!interaction.guild) return await interaction.reply("Interaction must be executed in a server")
-    const targetMember = interaction.options.getMember('user') as GuildMember | undefined;
+    const targetMember = interaction.options.getMember('user') as GuildMember | null;
     if(!targetMember) return await interaction.reply("Invalid User has been supplied");
+
+    // Get the supplied data
     const reason = interaction.options.get('reason',true).value as string;
     const deleteMessages = interaction.options.get('delete',true).value as boolean;
     const targetUser = new DiscordUser(targetMember.user);
+    const issuerUser = new DiscordUser(interaction.user);
     await interaction.deferReply({ephemeral: true});
+
+    // Notify and ban the user
     await targetUser.sendMessage({
         title: "Banned",
         color: "#ff0000",
@@ -45,7 +51,7 @@ const BanFunc = async (interaction : CommandInteraction) => {
             },
             {
                 name: "Banned By",
-                value: interaction.user.tag
+                value: issuerUser.getUsername()
             }
         ]
     })
@@ -53,7 +59,9 @@ const BanFunc = async (interaction : CommandInteraction) => {
         reason,
         deleteMessageSeconds: deleteMessages ? 604800 : undefined
     });
-    await (new DiscordUser(interaction.user)).actionLog({
+
+    // Log the action and wrap up
+    await issuerUser.actionLog({
         actionName: "ban",
         target: targetUser,
         message: `<@${targetMember.id}> has been banned by <@${interaction.user.id}>`,
