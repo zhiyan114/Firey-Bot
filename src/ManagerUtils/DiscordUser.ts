@@ -160,15 +160,10 @@ export class DiscordUser {
             })
             return true;
         } catch(ex) {
-            if(ex instanceof Prisma.PrismaClientKnownRequestError) {
-                switch(ex.code) {
-                    case "P2001":
-                        // User not found, create one
-                        await this.createNewUser(data?.rulesconfirmedon);
-                        return true;
-                    case "P2002":
-                        return false;
-                }
+            if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2025") {
+                // User not found, create one
+                await this.createNewUser(data?.rulesconfirmedon);
+                return true;
             }
             captureException(ex);
             return false;
