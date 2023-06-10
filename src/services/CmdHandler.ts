@@ -29,6 +29,7 @@ rest.put(
     Routes.applicationGuildCommands(config['clientID'], config['guildID']),
     { body: Object.values(commandList).map(cmd=>{ if(!cmd.disabled) return cmd.command.toJSON() }) },
 );
+
 // Algorithm to check if user has permission
 const hasPerm = (command: ICommand, user: GuildMember) => {
     // User perm check first

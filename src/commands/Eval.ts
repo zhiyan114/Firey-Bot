@@ -11,7 +11,7 @@ import { members, Prisma } from '@prisma/client';
 const EvalCmd = new SlashCommandBuilder()
     .setName('eval')
     .setDescription(`Evaluates a code snippet for debugging purposes; Requires the highest privilege to run.`)
-    .setDMPermission(false)
+    .setDMPermission(true)
     .addStringOption(option=>
         option.setName("code")
             .setDescription("The code to evaluate.")
