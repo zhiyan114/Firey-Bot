@@ -10,7 +10,7 @@ datasource db {
 
 model members {
   id                                 String    @id @db.VarChar(100)
-  tag                                String
+  username                           String
   rulesconfirmedon                   DateTime? @db.Timestamptz(6)
   points                             Int       @default(0)
   lastgrantedpoint                   DateTime  @default(now()) @db.Timestamp(6)

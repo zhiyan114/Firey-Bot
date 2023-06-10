@@ -1,5 +1,5 @@
 import { captureException } from "@sentry/node";
-import { DiscordAPIError, GuildMember, SlashCommandBuilder } from "discord.js";
+import { DiscordAPIError, SlashCommandBuilder } from "discord.js";
 import { adminRoleID } from "../config";
 import { ICommand } from "../interface";
 import { APIErrors } from "../utils/discordErrorCode";
@@ -25,19 +25,28 @@ export default {
         roles: [adminRoleID]
     },
     function: async(interaction)=>{
+        // Get all the option data
         const banList = interaction.guild?.bans;
-        const targetUser = interaction.options.get('user', true).user;
+        const target = interaction.options.get('user', true).user;
         const reason = interaction.options.get('reason', false);
+
+        // Sanity Check the data
         if(!banList) return await interaction.reply({content: "Command must be executed in a guild", ephemeral: true}); // Command is only registered in the main guild anyway so this shouldn't be seen anyway
-        if(!targetUser) return await interaction.reply({content: "Invalid User/User's ID", ephemeral: true});
+        if(!target) return await interaction.reply({content: "Invalid User/User's ID", ephemeral: true});
         await interaction.deferReply({ephemeral: true});
+
+        // Post-Check data
+        const targetUser = new DiscordUser(target);
+        const issuerUser = new DiscordUser(interaction.user)
         try {
-            const targetUserObj = new DiscordUser(targetUser);
-            await interaction.guild?.bans.remove(targetUser, reason?.value?.toString());
-            await (new DiscordUser(interaction.user)).actionLog({
+            // Take action
+            await interaction.guild?.bans.remove(target, reason?.value?.toString());
+
+            // Log and cleanup
+            await issuerUser.actionLog({
                 actionName: "unban",
-                target: targetUserObj,
-                message: `<@${targetUser.id}> has been unbanned by <@${interaction.user.id}>`,
+                target: targetUser,
+                message: `<@${target.id}> has been unbanned by <@${interaction.user.id}>`,
                 reason: reason?.value?.toString()
             });
             await interaction.followUp({content: "Successfully unbanned the user", ephemeral: true})

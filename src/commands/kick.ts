@@ -26,13 +26,18 @@ const KickCmd = new SlashCommandBuilder()
 
 /* Function Builder */
 const KickFunc = async (interaction : CommandInteraction) => {
-    /* Get the supplied information */
+    // Validation Checks
     const targetMember = interaction.options.getMember('user') as GuildMember | undefined;
     if(!targetMember) return await interaction.reply("Invalid User has been supplied");
+
+    // Get the supplied information
     const reason = interaction.options.get('reason',true).value as string;
     const invite = interaction.options.get('invite',true).value as boolean;
     const targetUser = new DiscordUser(targetMember.user);
+    const issuerUser = new DiscordUser(interaction.user)
     await interaction.deferReply({ephemeral: true});
+
+    // Prepare the embed data for the target user
     const kickField = [
         {
             name: "Reason",
@@ -40,7 +45,7 @@ const KickFunc = async (interaction : CommandInteraction) => {
         },
         {
             name: "Kicked By",
-            value: interaction.user.tag,
+            value: issuerUser.getUsername(),
         },
     ];
     if(invite) {
@@ -54,6 +59,8 @@ const KickFunc = async (interaction : CommandInteraction) => {
             value: inviteLink.url
         })
     }
+
+    // Notify the user and take action
     await targetUser.sendMessage({
         title: "Kicked",
         message: `You have been kicked from ${interaction.guild?.name}!${invite ? " A re-invite link has been attached to this message (expires in 1 week)." : ""}`,
@@ -61,7 +68,9 @@ const KickFunc = async (interaction : CommandInteraction) => {
         color: "#FFFF00"
     })
     await targetMember.kick(reason);
-    await (new DiscordUser(interaction.user)).actionLog({
+
+    // Log it and cleanup
+    await issuerUser.actionLog({
         actionName: "kick",
         target: targetUser,
         message: `<@${targetMember.id}> has been kicked by <@${interaction.user.id}>`,

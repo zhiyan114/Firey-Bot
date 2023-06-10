@@ -21,7 +21,7 @@ const EvalCmd = new SlashCommandBuilder()
 /* Custom Super User Commands */
 type userDataType = {
     id: string,
-    tag: string,
+    username: string,
     rulesconfirmedon: Date | undefined,
 }
 
@@ -34,7 +34,7 @@ const createUserData = async ()=> {
         const hasVerifyRole = member.roles.cache.find(role=>role.id == newUserRoleID);
         dataToPush.push({
             id: member.user.id,
-            tag: member.user.tag,
+            username: member.user.tag,
             rulesconfirmedon: hasVerifyRole ? (new Date()) : undefined
         })
     }
@@ -51,14 +51,15 @@ const updateUserData = async() => {
         if(member.user.bot) continue;
         allwait.push((async()=>{
             try {
+                const newUsername = member.user.discriminator === "0" ? member.user.username : member.user.tag
                 return await prisma.members.update({
                     data: {
-                        tag: member.user.tag,
+                        username: newUsername,
                     },
                     where: {
                         id: member.id,
                         NOT: {
-                            tag: member.user.tag,
+                            username: newUsername,
                         }
                     }
                 })
@@ -98,23 +99,23 @@ const EvalFunc = async (interaction : CommandInteraction) => {
         await channel?.send(msg as string);
     }
 
-    // Setup pre-defined variables and code execution
-    const secureFunction = new Function(
-        'channel',
-        'guild',
-        'member',
-        'dClient',
-        'tClient',
-        'print',
-        'createUserData',
-        'updateUserData',
-        'updateStatus',
-        code
-    );
-
     sentryScope(async (scope)=>{
         scope.setTag("isEval", true);
         try {
+            // Setup pre-defined variables and code execution
+            const secureFunction = new Function(
+                'channel',
+                'guild',
+                'member',
+                'dClient',
+                'tClient',
+                'print',
+                'createUserData',
+                'updateUserData',
+                'updateStatus',
+                code
+            );
+
             // Execute the code
             secureFunction(
                 channel,
