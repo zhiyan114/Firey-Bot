@@ -9,7 +9,9 @@ import { sleep } from "./Asyncify";
 // Handle Prisma Connections
 let prisma: PrismaClient | undefined;
 try {
-  prisma = new PrismaClient();
+  prisma = new PrismaClient({
+    errorFormat: "minimal" // Sentry will be used to capture errors instead
+  });
   console.log("Prisma Connected...");
   sendLog(LogType.Info,"Prisma Connection Established");
 } catch(ex) {
