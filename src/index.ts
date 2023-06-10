@@ -10,13 +10,13 @@ import { redis as rClient } from './utils/DatabaseManager';
 import { execSync } from 'child_process';
 import path from 'path';
 
-new dIntegrations.Http().name
+
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
   sendLog(LogType.Info,"Sentry DSN Detected, Error Logging will be enabled")
   sentryInit({
     dsn: process.env['SENTRY_DSN'],
-    maxValueLength: 1000,
+    maxValueLength: 500,
     integrations: [
       new ExtraErrorData({
         depth: 5
@@ -32,8 +32,17 @@ if(process.env['SENTRY_DSN']) {
       })
     ],
     beforeBreadcrumb: (breadcrumb, hint) => {
-      // Ignore Http Breadcrumbs from twitch
-      if(breadcrumb.category === "http" && breadcrumb.data?.url.startsWith('https://api.twitch.tv')) return null;
+      // List of urls to ignore
+      const ignoreUrl = [
+        "https://api.twitch.tv",
+        "https://discord.com",
+        "https://cdn.discordapp.com"
+      ]
+
+      // Ignore Http Breadcrumbs from the blacklisted url
+      if(breadcrumb.category === "http" && 
+      ignoreUrl.filter(url=>breadcrumb.data?.url.startsWith(url)).length > 0) return null;
+
       return breadcrumb
     },
     ignoreErrors: [
