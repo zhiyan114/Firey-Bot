@@ -43,10 +43,26 @@ const hasPerm = (command: ICommand, user: GuildMember) => {
 // Handles command interactions
 client.on('interactionCreate', async (interaction : Interaction) => {
     if (interaction.isCommand()) {
+        // Command Sanity Check
         const command = commandList[interaction.commandName];
         if (!command) return;
-        if (!interaction.member) return;
-        if (!hasPerm(command, interaction.member as GuildMember)) {interaction.reply({content: "Permission Denied", ephemeral: true}); return;};
+        
+        // Get the member object
+        let member: (GuildMember | null | undefined) = interaction.member as GuildMember | null;
+        if (!member) {
+            // Grab the guild object
+            const guild = client.guilds.cache.find(srv => srv.id === config.guildID) ??
+            client.guilds.cache.first();
+            if(!guild) {interaction.reply("Bot does not have a guild"); return;};
+            
+            // Grab the member object
+            member = guild.members.cache.find(user=>user.id === interaction.user.id) ??
+            await guild.members.fetch(interaction.user.id);
+            if(!member) {interaction.reply("You're not in the correct server or the bot was misconfigured"); return;};
+        }
+        
+        // Check perms and then run
+        if (!hasPerm(command, member)) {interaction.reply({content: "Permission Denied", ephemeral: true}); return;};
         await command.function(interaction);
     }
 })
