@@ -18,12 +18,12 @@ const GetPointsFunc = async (interaction : CommandInteraction) => {
     await interaction.deferReply({ephemeral: true});
 
     // Setup the embed and send it
-    const userData = await new DiscordUser(interaction.user).getCacheData();
+    const userData = new DiscordUser(interaction.user);
     const embed = new EmbedBuilder();
     embed.setTitle(`Your Points`);
     embed.setColor("#00FFFF");
-    embed.setDescription(userData?.points?.toString() ?? "0 (chat to get your first points)");
-    embed.setAuthor({name: interaction.user.tag, iconURL: interaction.user.avatarURL() ?? interaction.user.defaultAvatarURL});
+    embed.setDescription((await userData.getCacheData())?.points?.toString() ?? "0 (chat to get your first points)");
+    embed.setAuthor({name: userData.getUsername(), iconURL: interaction.user.avatarURL() ?? interaction.user.defaultAvatarURL});
     embed.setTimestamp();
     await interaction.followUp({embeds:[embed], ephemeral: true});
 }
