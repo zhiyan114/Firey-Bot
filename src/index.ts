@@ -46,7 +46,8 @@ if(process.env['SENTRY_DSN']) {
       return breadcrumb
     },
     ignoreErrors: [
-      'ETIMEDOUT'
+      'ETIMEDOUT',
+      'EADDRINUSE'
     ],
     beforeSend : (evnt) => {
       if(evnt.tags && evnt.tags['isEval']) return null;
