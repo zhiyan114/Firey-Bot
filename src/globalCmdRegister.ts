@@ -11,9 +11,10 @@ import { botToken, clientID } from "./config";
 
 
 // This is paired with eval command
-export default () => {
+export default async (print?: ((text: string)=>void)) => {
+    print = print ?? console.log;
     /* Load all the internal commands */
-    console.log("Loading commands...")
+    print("Loading commands...")
     const commandList : RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
     const cmdDir = path.join(__dirname, './', 'commands');
     for(let file of fs.readdirSync(cmdDir)) {
@@ -24,11 +25,11 @@ export default () => {
         }
     }
     // Enable/Update the command globally
-    console.log(`${commandList.length} commands enabled! Registering Commands...`)
+    print(`${commandList.length} commands enabled! Registering Commands...`)
     const rest = new REST({ version: '10' }).setToken(botToken);
-    rest.put(
+    await rest.put(
         Routes.applicationCommands(clientID),
         { body: commandList },
-    ).then(k=>console.log("Done"))
-    
+    )
+    print("Done")
 }

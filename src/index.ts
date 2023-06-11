@@ -1,13 +1,6 @@
-// Check to see if we only require to register command globally
-import reg from './globalCmdRegister'
-if(process.env['REGISTERCMD'] === "1") {
-  reg();
-  process.exit(0);
-}
-
 // Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
-import { init as sentryInit } from '@sentry/node';
+import { init as sentryInit, Integrations as dIntegrations } from '@sentry/node';
 import { ExtraErrorData, RewriteFrames } from "@sentry/integrations";
 import {botToken, guildID, twitch} from './config';
 import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
@@ -16,6 +9,7 @@ import { twitchClient as tStreamClient } from './utils/twitchStream';
 import { redis as rClient } from './utils/DatabaseManager';
 import { execSync } from 'child_process';
 import path from 'path';
+
 
 // Load sentry if key exists
 if(process.env['SENTRY_DSN']) {
