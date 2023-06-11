@@ -9,7 +9,7 @@ import { prisma } from '../utils/DatabaseManager';
 /* Command Builder */
 const GetPointsCmd = new SlashCommandBuilder()
     .setName('getpoints')
-    .setDescription(`Show your total points publically or privately`)
+    .setDescription(`Show your total points privately`)
 
 /* Function Builder */
 const GetPointsFunc = async (interaction : CommandInteraction) => {
