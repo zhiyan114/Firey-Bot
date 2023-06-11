@@ -1,4 +1,4 @@
-import { AttachmentBuilder, DiscordAPIError, EmbedBuilder, Message, SlashCommandBuilder, TextChannel } from "discord.js";
+import { AttachmentBuilder, DiscordAPIError, EmbedBuilder, Message, SlashCommandBuilder } from "discord.js";
 import { ICommand } from "../interface";
 import { getAmqpConn, isAmqpConnected } from "../utils/DatabaseManager";
 import { randomUUID } from "crypto";

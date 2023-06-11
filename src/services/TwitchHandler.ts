@@ -2,8 +2,7 @@ import tmi from 'tmi.js';
 import { generalChannelID, twitch } from '../config';
 import { prisma } from '../utils/DatabaseManager';
 import { LogType, sendLog } from '../utils/eventLogger';
-import { streamCli } from '../index';
-import {client as botClient} from '../index'
+import {client as botClient, streamCli} from '../index'
 import { EmbedBuilder, TextChannel } from 'discord.js';
 import { twitchCmdType } from '../CmdTwitch';
 import path from 'path';

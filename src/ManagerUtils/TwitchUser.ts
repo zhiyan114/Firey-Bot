@@ -170,8 +170,8 @@ export class TwitchUser {
  * This function clears all the cache that is created by this class
  */
 export const clearTwitchCache = async () => {
+    let oldCursor = 0;
     while(true) {
-        let oldCursor = 0;
         // get all the values
         const {cursor,keys} = await redis.scan(oldCursor,{
             MATCH: "discorduser:*",

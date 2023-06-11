@@ -1,11 +1,11 @@
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
 import { ICommand } from '../interface';
-import * as config from '../config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { client } from '../index';
 import { ChannelType, GuildMember, Interaction } from 'discord.js'
+import { botToken, clientID, guildID } from '../config';
 
 // Internal Interface
 interface ICommandList {
@@ -24,9 +24,9 @@ for(let file of fs.readdirSync(cmdDir)) {
 }
 
 // Add the commands to the server
-const rest = new REST({ version: '10' }).setToken(config['botToken']);
+const rest = new REST({ version: '10' }).setToken(botToken);
 rest.put(
-    Routes.applicationGuildCommands(config['clientID'], config['guildID']),
+    Routes.applicationGuildCommands(clientID, guildID),
     { body: Object.values(commandList).map(cmd=>{ if(!cmd.disabled) return cmd.command.toJSON() }) },
 );
 

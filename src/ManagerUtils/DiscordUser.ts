@@ -339,15 +339,15 @@ class UserEconomy {
             - does not only have repeating characters
         If the user is not eligible, their reward cooldown timer resets while not getting any points
         */
-        const isEligible: boolean[] = [
+        const isNotEligible: boolean[] = [
             text.length > 5, // Length check
-            !text.match(/^[0-9]+$/g), // Number Check
-            !text.match(/^[^a-zA-Z0-9]+$/g), // Special Character check
-            !text.match(/^(:[a-zA-Z0-9_]+: ?)+$/g), // Emoji check
-            !text.match(/(.)\1{3,}/g), // Repeating character check
-            !text.match(/https?:\/\/[^\s]+/g), // link check
+            (/^[0-9]+$/g).test(text), // Number Check
+            (/^[^a-zA-Z0-9]+$/g).test(text), // Special Character check
+            (/^(:[a-zA-Z0-9_]+: ?)+$/g).test(text), // Emoji check
+            (/(.)\1{3,}/g).test(text), // Repeating character check
+            (/https?:\/\/[^\s]+/g).test(text), // link check
         ];
-        if(isEligible.find(e=>e === false) !== undefined) {
+        if(isNotEligible.find(e=>e === true) !== undefined) {
             await this.user.updateCacheData({
                 lastgrantedpoint: new Date()
             })
