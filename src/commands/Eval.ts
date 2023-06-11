@@ -12,7 +12,7 @@ import globalCmdRegister from '../globalCmdRegister'
 const EvalCmd = new SlashCommandBuilder()
     .setName('eval')
     .setDescription(`Evaluates a code snippet for debugging purposes; Requires the highest privilege to run.`)
-    .setDMPermission(true)
+    .setDMPermission(false)
     .addStringOption(option=>
         option.setName("code")
             .setDescription("The code to evaluate.")

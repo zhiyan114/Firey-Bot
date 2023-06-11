@@ -23,6 +23,7 @@ export default {
     command: new SlashCommandBuilder()
     .setName('test')
     .setDescription(`Bot's Service Testing Utility`)
+    .setDMPermission(false)
     .addIntegerOption(opt=>
         opt.setName("service")
             .setDescription("Select the service to test")
