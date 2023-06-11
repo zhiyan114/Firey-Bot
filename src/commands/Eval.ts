@@ -7,7 +7,6 @@ import { ICommand } from '../interface';
 import { tmiClient } from '../services/TwitchHandler';
 import { withScope as sentryScope } from '@sentry/node';
 import { members, Prisma } from '@prisma/client';
-import globalCmdRegister from '../globalCmdRegister'
 /* Command Builder */
 const EvalCmd = new SlashCommandBuilder()
     .setName('eval')
@@ -114,7 +113,6 @@ const EvalFunc = async (interaction : CommandInteraction) => {
                 'createUserData',
                 'updateUserData',
                 'updateStatus',
-                'globalCmdRegister',
                 code
             );
 
@@ -128,8 +126,7 @@ const EvalFunc = async (interaction : CommandInteraction) => {
                 print,
                 createUserData,
                 updateUserData,
-                updateStatus,
-                globalCmdRegister
+                updateStatus
             );
             await interaction.followUp({content: "Execution Completed", ephemeral: true})
             //await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
