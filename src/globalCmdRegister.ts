@@ -22,7 +22,7 @@ for(let file of fs.readdirSync(cmdDir)) {
 }
 
 // Enable/Update the command globally
-console.log("Registering Commands...")
+console.log(`${commandList.length} commands enabled! Registering Commands...`)
 const rest = new REST({ version: '10' }).setToken(botToken);
 rest.put(
     Routes.applicationCommands(clientID),
