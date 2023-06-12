@@ -1,5 +1,5 @@
 import './CmdHandler';
-import './EconomyHandler';
+import './MessageHandler';
 import './interactionHandler/';
 import './UserHandler';
 import './TwitchHandler';
