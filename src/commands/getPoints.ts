@@ -1,4 +1,4 @@
-import { ApplicationCommandType, CommandInteraction, ContextMenuCommandBuilder, EmbedBuilder, UserContextMenuCommandInteraction } from 'discord.js';
+import { ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, UserContextMenuCommandInteraction } from 'discord.js';
 import { ICommand } from '../interface';
 import { DiscordUser } from '../ManagerUtils/DiscordUser';
 import { prisma } from '../utils/DatabaseManager';

@@ -1,26 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 import { LogType, sendLog } from "./eventLogger";
 import { captureException } from '@sentry/node'
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { createClient } from "redis";
 import { connect, Connection } from "amqplib";
-import { sleep } from "./Asyncify";
 
 // Handle Prisma Connections
-let prisma: PrismaClient | undefined;
-try {
-  prisma = new PrismaClient({
-    errorFormat: "minimal" // Sentry will be used to capture errors instead
-  });
-  console.log("Prisma Connected...");
-  sendLog(LogType.Info,"Prisma Connection Established");
-} catch(ex) {
-  if(ex instanceof PrismaClientKnownRequestError) sendLog(LogType.Error, `Database Connection Error: ${ex.code} occurred`);
-  else {
-    sendLog(LogType.Error, `Unknown Prisma Error Occured`)
-    captureException(ex);
-  }
-}
+const prisma: PrismaClient = new PrismaClient({
+  errorFormat: "minimal" // Sentry will be used to capture errors instead
+});
+
+prisma.$connect().then(()=>sendLog(LogType.Info, "Prisma Connection Established")).catch(ex=>captureException(ex))
 
 // Handle Redis Connection
 const redis = createClient({
