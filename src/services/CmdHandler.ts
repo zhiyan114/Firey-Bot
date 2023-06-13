@@ -45,10 +45,10 @@ const hasPerm = (command: ICommand, user: GuildMember) => {
 // Handles command interactions
 client.on('interactionCreate', async (interaction : Interaction) => {
     if (interaction.isCommand()) {
-
         // User and Command Sanity Check
-        if(interaction.user.bot) {interaction.reply("Bot user are not allow to execute commands"); return;};
-        if(interaction.isUserContextMenuCommand() && interaction.targetUser.bot) {interaction.reply("Commands cannot be executed on a bot user"); return;};
+        if(interaction.user.bot) {interaction.reply({content: "Bot user are not allow to execute commands", ephemeral: true}); return;};
+        if(interaction.isUserContextMenuCommand() && interaction.targetUser.bot) 
+            {interaction.reply({content: "Commands cannot be executed on a bot user", ephemeral: true}); return;};
         const command = commandList[interaction.commandName];
         if (!command) return;
 
@@ -57,7 +57,7 @@ client.on('interactionCreate', async (interaction : Interaction) => {
         
         // Get the member
         const member = interaction.member;
-        if(!member) {interaction.reply("You're not in the correct server or the bot was misconfigured"); return;};
+        if(!member) {interaction.reply({content: "You're not in the correct server or the bot was misconfigured", ephemeral: true}); return;};
         
         // Check perms and then run
         if (!hasPerm(command, member as GuildMember)) {interaction.reply({content: "Permission Denied", ephemeral: true}); return;};
