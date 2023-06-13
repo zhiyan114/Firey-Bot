@@ -23,12 +23,14 @@ for(let file of fs.readdirSync(cmdDir)) {
     }
 }
 
-// Add the commands to the server
+// Add the commands to the server (**DISABLED BECAUSE OF THE USE OF GLOBAL COMMAND**)
+/*
 const rest = new REST({ version: '10' }).setToken(botToken);
 rest.put(
     Routes.applicationGuildCommands(clientID, guildID),
     { body: Object.values(commandList).map(cmd=>{ if(!cmd.disabled) return cmd.command.toJSON() }) },
 );
+*/
 
 // Algorithm to check if user has permission
 const hasPerm = (command: ICommand, user: GuildMember) => {
@@ -43,7 +45,10 @@ const hasPerm = (command: ICommand, user: GuildMember) => {
 // Handles command interactions
 client.on('interactionCreate', async (interaction : Interaction) => {
     if (interaction.isCommand()) {
-        // Command Sanity Check
+
+        // User and Command Sanity Check
+        if(interaction.user.bot) {interaction.reply("Bot user are not allow to execute commands"); return;};
+        if(interaction.isUserContextMenuCommand() && interaction.targetUser.bot) {interaction.reply("Commands cannot be executed on a bot user"); return;};
         const command = commandList[interaction.commandName];
         if (!command) return;
 
