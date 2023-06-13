@@ -2,6 +2,8 @@ import { Prisma } from '@prisma/client';
 import { captureException } from '@sentry/node';
 import { redis, prisma } from '../utils/DatabaseManager';
 import { DiscordUser, getUser } from './DiscordUser';
+import { createHash } from "crypto";
+
 type updateUser = {
     memberid?: string,
     username?: string,
@@ -28,7 +30,10 @@ export class TwitchUser {
     private cachekey: string;
     constructor(userid: string) {
         this.userid = userid;
-        this.cachekey = `twitchuserdata:${this.userid}`
+
+        // Use the first 6 digit of sha512 as user key
+        const userHash = createHash("sha512").update(userid).digest("hex");
+        this.cachekey = `twchuser:${userHash.slice(0,6)}`
     }
     /**
      * Standard way of retrieving twitch user data

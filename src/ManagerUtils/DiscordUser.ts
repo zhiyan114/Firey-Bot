@@ -5,6 +5,7 @@ import { APIErrors } from "../utils/discordErrorCode";
 import { captureException } from "@sentry/node";
 import { Prisma } from "@prisma/client";
 import { client } from "..";
+import { createHash } from "crypto";
 
 type embedMessageType = {
     title: string;
@@ -47,7 +48,10 @@ export class DiscordUser {
     constructor(user: User) {
         if(user.bot) throw Error("The discord user cannot be a bot");
         this.user = user;
-        this.cachekey = `discorduser:${user.id}`;
+
+        // Use the first 6 digit of sha512 as user key
+        const userHash = createHash("sha512").update(user.id).digest("hex");
+        this.cachekey = `discuser:${userHash.slice(0,6)}`;
         this.economy = new UserEconomy(this, user.id, this.cachekey);
     }
     /**
