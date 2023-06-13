@@ -19,7 +19,7 @@ const GetPointsFunc = async (interaction : UserContextMenuCommandInteraction) =>
     const embed = new EmbedBuilder();
     embed.setTitle(`Total Points`);
     embed.setColor("#00FFFF");
-    embed.setDescription((await targetData.getCacheData())?.points?.toString() ?? "0 (chat to get your first points)");
+    embed.setDescription((await targetData.getCacheData())?.points?.toString() ?? "-1");
     embed.setAuthor({name: targetData.getUsername(), iconURL: interaction.targetUser.avatarURL() ?? interaction.targetUser.defaultAvatarURL});
     embed.setTimestamp();
     await interaction.followUp({embeds:[embed], ephemeral: true});
