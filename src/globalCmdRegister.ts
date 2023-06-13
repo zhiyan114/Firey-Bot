@@ -6,7 +6,7 @@
 import path from "path";
 import fs from 'fs';
 import { ICommand } from "./interface";
-import { REST, RESTPostAPIChatInputApplicationCommandsJSONBody, Routes } from "discord.js";
+import { REST, RESTPostAPIChatInputApplicationCommandsJSONBody, RESTPostAPIContextMenuApplicationCommandsJSONBody, Routes } from "discord.js";
 import { botToken, clientID } from "./config";
 
 
@@ -15,7 +15,7 @@ export default async (print?: ((text: string)=>void)) => {
     print = print ?? console.log;
     /* Load all the internal commands */
     print("Loading commands...")
-    const commandList : RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
+    const commandList : (RESTPostAPIChatInputApplicationCommandsJSONBody | RESTPostAPIContextMenuApplicationCommandsJSONBody)[] = [];
     const cmdDir = path.join(__dirname, './', 'commands');
     for(let file of fs.readdirSync(cmdDir)) {
         if (file.endsWith('.js')) {
