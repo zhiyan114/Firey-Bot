@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, ContextMenuCommandBuilder, MessageContextMenuCommandInteraction, UserContextMenuCommandInteraction } from 'discord.js';
 
 // Supply the role/user ID here for the whitelisted users
 export type commandPermOptions = {
@@ -8,8 +8,8 @@ export type commandPermOptions = {
 }
 
 export type ICommand = {
-    command: SlashCommandBuilder;
+    command: SlashCommandBuilder | ContextMenuCommandBuilder;
     permissions?: commandPermOptions;
-    function: (interaction: CommandInteraction) => Promise<void>;
+    function: (interaction: CommandInteraction | UserContextMenuCommandInteraction | MessageContextMenuCommandInteraction) => Promise<void>;
     disabled?: boolean;
 }

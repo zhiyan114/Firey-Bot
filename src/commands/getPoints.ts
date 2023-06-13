@@ -1,29 +1,26 @@
-// @TODO: Show individual's balance privately?
-
-import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ApplicationCommandType, CommandInteraction, ContextMenuCommandBuilder, EmbedBuilder, UserContextMenuCommandInteraction } from 'discord.js';
 import { ICommand } from '../interface';
 import { DiscordUser } from '../ManagerUtils/DiscordUser';
 import { prisma } from '../utils/DatabaseManager';
 
 /* Command Builder */
-const GetPointsCmd = new SlashCommandBuilder()
-    .setName('getpoints')
-    .setDescription(`Show your total points privately`)
+const GetPointsCmd = new ContextMenuCommandBuilder()
+    .setName('points')
+    .setType(ApplicationCommandType.User)
 
 /* Function Builder */
-const GetPointsFunc = async (interaction : CommandInteraction) => {
+const GetPointsFunc = async (interaction : UserContextMenuCommandInteraction) => {
     // Do the usual command init
     if(!prisma) return await interaction.reply({content: "Unfortunately the database is not connected, please report this issue.", ephemeral: true});
     await interaction.deferReply({ephemeral: true});
 
     // Setup the embed and send it
-    const userData = new DiscordUser(interaction.user);
+    const targetData = new DiscordUser(interaction.targetUser);
     const embed = new EmbedBuilder();
-    embed.setTitle(`Your Points`);
+    embed.setTitle(`Total Points`);
     embed.setColor("#00FFFF");
-    embed.setDescription((await userData.getCacheData())?.points?.toString() ?? "0 (chat to get your first points)");
-    embed.setAuthor({name: userData.getUsername(), iconURL: interaction.user.avatarURL() ?? interaction.user.defaultAvatarURL});
+    embed.setDescription((await targetData.getCacheData())?.points?.toString() ?? "0 (chat to get your first points)");
+    embed.setAuthor({name: targetData.getUsername(), iconURL: interaction.targetUser.avatarURL() ?? interaction.targetUser.defaultAvatarURL});
     embed.setTimestamp();
     await interaction.followUp({embeds:[embed], ephemeral: true});
 }
