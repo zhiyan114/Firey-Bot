@@ -7,10 +7,14 @@ RUN npm install -g npm@latest
 RUN apt-get update
 RUN apt-get install python3 make g++ git -y
 
-# Setup and install node packages
+# Copy over files
 COPY package.json package-lock.json ./
+COPY tsconfig.json prisma/ ./
+COPY src/ ./src/
+COPY .git/ ./.git/
+
+# Install and build node packages
 RUN npm install
-COPY . .
 RUN npm run build
 
 # Exposed web server port
