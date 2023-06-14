@@ -1,10 +1,26 @@
+version: '3'
+
 services:
   bot:
     build: .
+    container_name: firey-bot
     ports:
       - "${WEBSERVER_PORT}:${WEBSERVER_PORT}"
+    environment:
+      - CLIENTID
+      - CLIENTSECRET
+      - BOTTOKEN
+      - WEBSERVER_FQDN
+      - WEBSERVER_PORT
+      - WEBSERVER_HTTPS_CERTIFICATE
+      - WEBSERVER_HTTPS_KEY
+      - SENTRY_DSN
+      - POSTGRESQL_CONN
+      - TWITCH_TOKEN
+      - AMQP_CONN
+    depends_on:
+      - redis
   redis:
     image: redis:alpine
     ports:
       - "6379:6379"
-  
