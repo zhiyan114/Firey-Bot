@@ -28,6 +28,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 #        cache: 'npm'
+    - name: Setup Sentry CLI
+      uses: mathieu-bour/setup-sentry-cli@v1.3.0
     - run: npm i
     - run: npm run lint
     - run: npm run build --if-present
