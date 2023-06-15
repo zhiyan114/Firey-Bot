@@ -16,7 +16,7 @@ on:
 jobs:
   RegBuild:
     runs-on: ubuntu-latest
-    environment: Standard Env
+    environment: standard
     strategy:
       matrix:
         node-version: [16.x]
