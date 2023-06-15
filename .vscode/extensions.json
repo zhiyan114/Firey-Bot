@@ -6,6 +6,10 @@
 		"Prisma.prisma"
 	],
 	"unwantedRecommendations": [
-		
+		"eamodio.gitlens",
+		"firefox-devtools.vscode-firefox-debug",
+		"ms-edgedevtools.vscode-edge-devtools",
+		"GoogleCloudTools.cloudcode",
+		"eamodio.gitlens"
 	]
 }
