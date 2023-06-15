@@ -1,81 +1,72 @@
-import { PrismaClient } from "@prisma/client";
-import { LogType, sendLog } from "./eventLogger";
-import { captureException } from '@sentry/node'
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
-import { createClient } from "redis";
-import { connect, Connection } from "amqplib";
-import { sleep } from "./Asyncify";
+import { PrismaClient } from "@prisma/client"
+import { LogType, sendLog } from "./eventLogger"
+import { captureException } from "@sentry/node"
+import { createClient } from "redis"
+import { connect, Connection } from "amqplib"
 
 // Handle Prisma Connections
-let prisma: PrismaClient | undefined;
-try {
-  prisma = new PrismaClient();
-  console.log("Prisma Connected...");
-  sendLog(LogType.Info,"Prisma Connection Established");
-} catch(ex) {
-  if(ex instanceof PrismaClientKnownRequestError) sendLog(LogType.Error, `Database Connection Error: ${ex.code} occurred`);
-  else {
-    sendLog(LogType.Error, `Unknown Prisma Error Occured`)
-    captureException(ex);
-  }
-}
+const prisma: PrismaClient = new PrismaClient({
+  errorFormat: "minimal" // Sentry will be used to capture errors instead
+})
+
+prisma.$connect().then(()=>sendLog(LogType.Info, "Prisma Connection Established")).catch(ex=>captureException(ex))
 
 // Handle Redis Connection
 const redis = createClient({
-  url: process.env['REDIS_CONN']
-});
-
-
-redis.on('error', async err => {
-  if((err as Error).message === "Connection timeout") return;
-  captureException(err);
-  sendLog(LogType.Error, "Redis: Client Thrown Exception");
+  url: (process.env["ISDOCKER"] && !process.env["REDIS_CONN"]) ? "redis://redis:6379" : process.env["REDIS_CONN"],
 })
 
-redis.on('ready',()=>{
+
+redis.on("error", async err => {
+  if((err as Error).message === "Connection timeout") return
+  captureException(err)
+  sendLog(LogType.Error, "Redis: Client Thrown Exception")
+})
+
+redis.on("ready",()=>{
   console.log("Redis Connected")
-  sendLog(LogType.Info,"Redis: Connection Established");
+  sendLog(LogType.Info,"Redis: Connection Established")
 })
-redis.on('reconnecting', ()=>{
+redis.on("reconnecting", ()=>{
   console.log("Redis reconnecting...")
-  sendLog(LogType.Warning,"Redis: Connection Issue, Reconnecting...");
+  sendLog(LogType.Warning,"Redis: Connection Issue, Reconnecting...")
 })
 
 redis.connect().then(()=>{
   console.log("Redis connection attempted")
 }).catch(ex=>{
-  sendLog(LogType.Error, `Redis: Unknown Error Occured`)
-  captureException(ex);
+  sendLog(LogType.Error, "Redis: Unknown Error Occured")
+  captureException(ex)
 })
 
 
 
 // Handle amqplib connection. I know it's not a database.
-let amqpConn: undefined | Connection;
-let amqpIsConnected: boolean = false;
+let amqpConn: undefined | Connection
+let amqpIsConnected = false
 // This algorithm will handle the connection and reconnection when needed
 const init = async() => {
-  if(!process.env['AMQP_CONN']) return;
-  amqpConn = await connect(process.env['AMQP_CONN']);
-  amqpConn.on('error',err=> {
-    if((err as Error).message !== "Connection closing") captureException(err);
+  if(!process.env["AMQP_CONN"]) return
+  amqpConn = await connect(process.env["AMQP_CONN"])
+  amqpConn.on("error",err=> {
+    if((err as Error).message !== "Connection closing") captureException(err)
   })
-  amqpConn.on('close',()=>{
+  amqpConn.on("close",()=>{
     sendLog(LogType.Warning, "AMQP Server disconnected, reconnecting in 5 seconds...")
-    amqpIsConnected = false;
-    setTimeout(init, 5000);
+    amqpIsConnected = false
+    setTimeout(init, 5000)
   })
-  amqpIsConnected = true;
-  sendLog(LogType.Info, "AMQP Server Connected");
+  amqpIsConnected = true
+  sendLog(LogType.Info, "AMQP Server Connected")
 }
 
 const getAmqpConn = async () => {
-  if(amqpConn) return amqpConn;
-  await init();
-  return amqpConn;
+  if(amqpConn) return amqpConn
+  await init()
+  return amqpConn
 }
-const getAmqpConnSync = () => amqpConn;
-const isAmqpConnected = () => amqpIsConnected;
+const getAmqpConnSync = () => amqpConn
+const isAmqpConnected = () => amqpIsConnected
 
 // Export all the component
 export {prisma, redis, getAmqpConn, getAmqpConnSync, isAmqpConnected}

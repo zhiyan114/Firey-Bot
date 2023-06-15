@@ -16,6 +16,7 @@ export default {
 * function - this key should be configured with a function that takes in one parameter with type `CommandInteraction`
 * disabled - this key is optional and should be configured with a boolean value. If the value is set to `true`, the command will not initialize during runtime.
 
+**Critical: Must set `setDMPermission` to false for privileged commands**
 
 ## Example Usage/Template
 
@@ -26,6 +27,7 @@ import { ICommand } from "../interface";
 export default {
     command: new SlashCommandBuilder()
     .setName('commandname')
+    .setDMPermission(false)
     .setDescription(`CommandDesc`),
     permissions: {
         roles: ["RoleID"],

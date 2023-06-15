@@ -1,4 +1,4 @@
-import { ChatUserstate, Client } from "tmi.js";
+import { ChatUserstate, Client } from "tmi.js"
 export type stringObject = {
     [key: string]: string
 }
