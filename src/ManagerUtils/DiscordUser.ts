@@ -1,11 +1,11 @@
-import { APIEmbedField, ColorResolvable, DiscordAPIError, EmbedBuilder, User } from "discord.js"
-import { LogType, sendLog } from "../utils/eventLogger"
-import { prisma, redis } from "../utils/DatabaseManager"
-import { APIErrors } from "../utils/discordErrorCode"
-import { captureException } from "@sentry/node"
-import { Prisma } from "@prisma/client"
-import { client } from ".."
-import { createHash } from "crypto"
+import { APIEmbedField, ColorResolvable, DiscordAPIError, EmbedBuilder, User } from "discord.js";
+import { LogType, sendLog } from "../utils/eventLogger";
+import { prisma, redis } from "../utils/DatabaseManager";
+import { APIErrors } from "../utils/discordErrorCode";
+import { captureException } from "@sentry/node";
+import { Prisma } from "@prisma/client";
+import { client } from "..";
+import { createHash } from "crypto";
 
 type embedMessageType = {
     title: string;
@@ -35,24 +35,24 @@ type ActionLogOpt = {
 
 
 
-export const getUser = async(id: string) => await client.users.fetch(id)
+export const getUser = async(id: string) => await client.users.fetch(id);
 
 export class DiscordUser {
-  private user: User
-  private cachekey: string
-  public economy: UserEconomy
+  private user: User;
+  private cachekey: string;
+  public economy: UserEconomy;
   /**
     * This class is used to manage discord users
     * @param user The discord user object or userid
     */
   constructor(user: User) {
-    if(user.bot) throw Error("The discord user cannot be a bot")
-    this.user = user
+    if(user.bot) throw Error("The discord user cannot be a bot");
+    this.user = user;
 
     // Use the first 6 digit of sha512 as user key
-    const userHash = createHash("sha512").update(user.id).digest("hex")
-    this.cachekey = `discuser:${userHash.slice(0,6)}`
-    this.economy = new UserEconomy(this, user.id, this.cachekey)
+    const userHash = createHash("sha512").update(user.id).digest("hex");
+    this.cachekey = `discuser:${userHash.slice(0,6)}`;
+    this.economy = new UserEconomy(this, user.id, this.cachekey);
   }
   /**
     * Check if the user has confirm the rules or not
@@ -60,15 +60,15 @@ export class DiscordUser {
     */
   public async isVerified() {
     // check to see if the user is already in the discord server and has the said role.
-    if((await this.getCacheData())?.rulesconfirmedon) return true
-    return false
+    if((await this.getCacheData())?.rulesconfirmedon) return true;
+    return false;
   }
   /**
      * Returns a boolean if the user has already been cached in redis
      * @returns {boolean} if the user exists
      */
   public async cacheExists(): Promise<boolean> {
-    return await redis.exists(this.cachekey) > 0
+    return await redis.exists(this.cachekey) > 0;
   }
   /**
      * Returns all the user data stored in the cache (or freshly from database)
@@ -78,23 +78,23 @@ export class DiscordUser {
     // Check if the record already exist in redis
     if(await this.cacheExists()) {
       // Pull it up and use it
-      const data = await redis.hGetAll(this.cachekey)
+      const data = await redis.hGetAll(this.cachekey);
       return {
         rulesconfirmedon: data.rulesconfirmedon ? new Date(data.rulesconfirmedon) : undefined,
         points: data.points ? Number(data.points) : undefined,
         lastgrantedpoint: data.lastgrantedpoint ? new Date(data.lastgrantedpoint) : undefined,
-      }
+      };
     }
     // Data doesn't exist in redis, Update the cache
-    const dbData = await this.getUserFromDB()
-    if(!dbData) return
+    const dbData = await this.getUserFromDB();
+    if(!dbData) return;
     const finalData: cacheData = {
       rulesconfirmedon: dbData.rulesconfirmedon ?? undefined,
       points: dbData.points,
       lastgrantedpoint: dbData.lastgrantedpoint,
-    }
-    await this.updateCacheData(finalData)
-    return finalData
+    };
+    await this.updateCacheData(finalData);
+    return finalData;
   }
   /**
      * Update the current cache with new data (use updateUserData instead)
@@ -103,31 +103,31 @@ export class DiscordUser {
      */
   public async updateCacheData(newData: cacheData) {
     // Clear out all the undefined and null objects
-    const filteredData: {[key: string]: string} = {}
-    if(newData.rulesconfirmedon !== undefined) filteredData["rulesconfirmedon"] = newData.rulesconfirmedon.toString()
-    if(newData.points !== undefined) filteredData["points"] = newData.points.toString()
-    if(newData.lastgrantedpoint !== undefined) filteredData["lastgrantedpoint"] = newData.lastgrantedpoint.toString()
+    const filteredData: {[key: string]: string} = {};
+    if(newData.rulesconfirmedon !== undefined) filteredData["rulesconfirmedon"] = newData.rulesconfirmedon.toString();
+    if(newData.points !== undefined) filteredData["points"] = newData.points.toString();
+    if(newData.lastgrantedpoint !== undefined) filteredData["lastgrantedpoint"] = newData.lastgrantedpoint.toString();
     // Update the cache   
-    await redis.hSet(this.cachekey, filteredData)
+    await redis.hSet(this.cachekey, filteredData);
     // set redis expire key in 5 hours
-    await redis.expire(this.cachekey, 18000)
-    return
+    await redis.expire(this.cachekey, 18000);
+    return;
   }
   /**
      * Get the user data from the database directly, should only be used when the cache didn't have the data.
      */
   private async getUserFromDB() {
-    if(!prisma) return
+    if(!prisma) return;
     try {
       const dbUser = await prisma.members.findUnique({
         where: {
           id: this.user.id
         }
-      })
-      if(!dbUser) return await this.createNewUser()
-      return dbUser
+      });
+      if(!dbUser) return await this.createNewUser();
+      return dbUser;
     } catch(ex) {
-      captureException(ex)
+      captureException(ex);
     }
   }
 
@@ -136,8 +136,8 @@ export class DiscordUser {
      * @returns The current username
      */
   public getUsername() {
-    if(this.user.discriminator === "0") return this.user.username
-    return this.user.tag
+    if(this.user.discriminator === "0") return this.user.username;
+    return this.user.tag;
   }
 
   /**
@@ -146,7 +146,7 @@ export class DiscordUser {
      * @returns whether the operation was successful or not
      */
   public async updateUserData(data?: updateUserData) {
-    if(!prisma) return
+    if(!prisma) return;
     try {
       const newData = await prisma.members.update({
         data: {
@@ -156,21 +156,21 @@ export class DiscordUser {
         where: {
           id: this.user.id
         }
-      })
+      });
       await this.updateCacheData({
         rulesconfirmedon: newData.rulesconfirmedon ?? undefined,
         points: newData.points,
         lastgrantedpoint: newData.lastgrantedpoint
-      })
-      return true
+      });
+      return true;
     } catch(ex) {
       if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2025") {
         // User not found, create one
-        await this.createNewUser(data?.rulesconfirmedon)
-        return true
+        await this.createNewUser(data?.rulesconfirmedon);
+        return true;
       }
-      captureException(ex)
-      return false
+      captureException(ex);
+      return false;
     }
   }
   /**
@@ -179,7 +179,7 @@ export class DiscordUser {
      * @returns User data if successfully create a new user, otherwise none
      */
   public async createNewUser(rulesconfirmed?: Date) {
-    if(!prisma) return
+    if(!prisma) return;
     try {
       return await prisma.members.create({
         data: {
@@ -187,9 +187,9 @@ export class DiscordUser {
           username: this.getUsername(),
           rulesconfirmedon: rulesconfirmed,
         }
-      })
+      });
     } catch(ex) {
-      captureException(ex)
+      captureException(ex);
     }
   }
   /**
@@ -200,8 +200,8 @@ export class DiscordUser {
   public async sendMessage(messageOption: embedMessageType | string): Promise<boolean> {
     try {
       if(typeof(messageOption) === "string") {
-        await this.user.send(messageOption)
-        return true
+        await this.user.send(messageOption);
+        return true;
       }
       const embed = new EmbedBuilder()
         .setTitle(messageOption.title)
@@ -210,13 +210,13 @@ export class DiscordUser {
         .setTimestamp()
         .setFooter({
           text: "Notification Service"
-        })
-      if(messageOption.fields) embed.setFields(messageOption.fields)
-      await this.user.send({embeds:[embed]})
-      return true
+        });
+      if(messageOption.fields) embed.setFields(messageOption.fields);
+      await this.user.send({embeds:[embed]});
+      return true;
     } catch(ex) {
-      if(!(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)) captureException(ex)
-      return false
+      if(!(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)) captureException(ex);
+      return false;
     }
   }
     
@@ -237,11 +237,11 @@ export class DiscordUser {
         reason: opt.reason,
         metadata: opt.metadata
       }
-    })
+    });
     await sendLog(LogType.Interaction, opt.message, {
       reason: opt.reason,
       ...opt.metadata
-    })
+    });
   }
 }
 
@@ -253,13 +253,13 @@ export class DiscordUser {
  * @param user the user object that will help the class function, specifically, access and manage cache data
  */
 class UserEconomy {
-  private userid: string
-  private user: DiscordUser
-  private cacheKey: string
+  private userid: string;
+  private user: DiscordUser;
+  private cacheKey: string;
   constructor(user: DiscordUser, userid: string, cacheKey: string) {
-    this.user = user
-    this.userid = userid
-    this.cacheKey = cacheKey
+    this.user = user;
+    this.userid = userid;
+    this.cacheKey = cacheKey;
   }
   /**
      * Generate a random amount of points between a range
@@ -268,9 +268,9 @@ class UserEconomy {
      * @returns the result of the RNG value
      */
   public rngRewardPoints(min: number, max: number) {
-    min = Math.ceil(min)
-    max = Math.floor(max)
-    return Math.floor(Math.random() * (max - min + 1)) + min
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
   /**
      * Grant the user certain amount of points
@@ -279,7 +279,7 @@ class UserEconomy {
      * @returns whether the points has been successfully granted or not
      */
   public async grantPoints(points: number) {
-    if(!prisma) return false
+    if(!prisma) return false;
     // User exist and condition passes, grant the user the points
     const newData = await prisma.members.update({
       data: {
@@ -289,12 +289,12 @@ class UserEconomy {
       where: {
         id: this.userid
       }
-    })
+    });
     await this.user.updateCacheData({
       points: newData.points,
       lastgrantedpoint: newData.lastgrantedpoint
-    })
-    return true
+    });
+    return true;
   }
   /**
      * Deduct certain amount of points from the user
@@ -304,11 +304,11 @@ class UserEconomy {
      * @returns if the operation was successful or not
      */
   public async deductPoints(points: number, allowNegative?: boolean) {
-    if(!prisma) return false
+    if(!prisma) return false;
     // Check if user are allowed to have negative balance
     if(!allowNegative) {
-      const cacheData = await this.user.getCacheData()
-      if (!(cacheData?.points) || cacheData.points < points) return false
+      const cacheData = await this.user.getCacheData();
+      if (!(cacheData?.points) || cacheData.points < points) return false;
     }
     // User has enough, deduct it
     const newData = await prisma.members.update({
@@ -318,11 +318,11 @@ class UserEconomy {
       where: {
         id: this.userid,
       }
-    })
+    });
     await this.user.updateCacheData({
       points: newData.points
-    })
-    return true
+    });
+    return true;
   }
   /**
      * Internal Algorithm that automatically reward the user with points when they chat
@@ -332,9 +332,9 @@ class UserEconomy {
      */
   public async chatRewardPoints(text: string, ignoreCooldown?: boolean) {
     // Get user data and check to see if they met the cooldown eligibility
-    const userData = await this.user.getCacheData()
-    if(!userData) return false
-    if(!ignoreCooldown && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false
+    const userData = await this.user.getCacheData();
+    if(!userData) return false;
+    if(!ignoreCooldown && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false;
 
     /*
         This algorithm checks to see if the user has a message that is
@@ -350,19 +350,19 @@ class UserEconomy {
       (/^(:[a-zA-Z0-9_]+: ?)+$/g).test(text), // Emoji check
       (/(.)\1{3,}/g).test(text), // Repeating character check
       (/https?:\/\/[^\s]+/g).test(text), // link check
-    ]
+    ];
     if(isNotEligible.find(e=>e === true) !== undefined) {
       await this.user.updateCacheData({
         lastgrantedpoint: new Date()
-      })
-      return false
+      });
+      return false;
     }
         
     // Grant the point
-    await this.grantPoints(this.rngRewardPoints(5,10))
-    return true
+    await this.grantPoints(this.rngRewardPoints(5,10));
+    return true;
   }
   public async getBalance() {
-    return Number(await redis.hGet(this.cacheKey,"points") ?? (await this.user.getCacheData())?.points ?? "0")
+    return Number(await redis.hGet(this.cacheKey,"points") ?? (await this.user.getCacheData())?.points ?? "0");
   }
 }

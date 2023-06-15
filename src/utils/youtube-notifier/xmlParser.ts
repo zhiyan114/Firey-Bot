@@ -1,15 +1,15 @@
-'use strict'
+'use strict';
 /**
  * Module dependencies.
  */
-import xml2js from 'xml2js'
-import { Response } from 'express'
-import YouTubeNotifier from './index'
+import xml2js from 'xml2js';
+import { Response } from 'express';
+import YouTubeNotifier from './index';
 
 /**
  * Constants
  */
-const regexp = /^(text\/xml|application\/([\w!#$%&*`\-.^~]+\+)?xml)$/i
+const regexp = /^(text\/xml|application\/([\w!#$%&*`\-.^~]+\+)?xml)$/i;
 
 /**
  * Test whether request has body
@@ -21,7 +21,7 @@ const regexp = /^(text\/xml|application\/([\w!#$%&*`\-.^~]+\+)?xml)$/i
  * @return {*}
  */
 function xmlbodyparser(req: any, res: Response, notifier: YouTubeNotifier) {
-  let data = ''
+  let data = '';
 
   const parser = new xml2js.Parser({
     async: false,
@@ -29,7 +29,7 @@ function xmlbodyparser(req: any, res: Response, notifier: YouTubeNotifier) {
     normalize: true,
     normalizeTags: true,
     trim: true,
-  })
+  });
 
   /**
    * @param {Error} err
@@ -37,28 +37,28 @@ function xmlbodyparser(req: any, res: Response, notifier: YouTubeNotifier) {
    */
   function responseHandler(err: any, xml: unknown) {
     if (err) {
-      err.status = 400
-      return notifier._onRequest(req, res)
+      err.status = 400;
+      return notifier._onRequest(req, res);
     }
 
-    req.body = xml || req.body
-    req.rawBody = data
-    notifier._onRequest(req, res)
+    req.body = xml || req.body;
+    req.rawBody = data;
+    notifier._onRequest(req, res);
   }
 
-  if (req._body) return notifier._onRequest(req, res)
+  if (req._body) return notifier._onRequest(req, res);
 
-  req.body = req.body || {}
+  req.body = req.body || {};
 
-  if (!hasBody(req) || !regexp.test(mime(req))) return notifier._onRequest(req, res)
+  if (!hasBody(req) || !regexp.test(mime(req))) return notifier._onRequest(req, res);
 
-  req._body = true
+  req._body = true;
 
   // Explicitly cast incoming to string
-  req.setEncoding('utf-8')
+  req.setEncoding('utf-8');
   req.on('data', (chunk: string) => {
-    data += chunk
-  })
+    data += chunk;
+  });
   // ! saxParser is not DEFINED, fix later once the issue is found !
   // In case `parseString` callback never was called, ensure response is sent
   //parser.saxParser.onend = () => {
@@ -70,11 +70,11 @@ function xmlbodyparser(req: any, res: Response, notifier: YouTubeNotifier) {
   req.on('end', () => {
     // Invalid xml, length required
     if (data.trim().length === 0) {
-      return notifier._onRequest(req, res)
+      return notifier._onRequest(req, res);
     }
 
-    parser.parseString(data, responseHandler)
-  })
+    parser.parseString(data, responseHandler);
+  });
 }
 
 /**
@@ -85,9 +85,9 @@ function xmlbodyparser(req: any, res: Response, notifier: YouTubeNotifier) {
  * @return boolean
  */
 function hasBody(req: any) {
-  const encoding = 'transfer-encoding' in req.headers
-  const length = 'content-length' in req.headers && req.headers['content-length'] !== '0'
-  return encoding || length
+  const encoding = 'transfer-encoding' in req.headers;
+  const length = 'content-length' in req.headers && req.headers['content-length'] !== '0';
+  return encoding || length;
 }
 
 /**
@@ -98,8 +98,8 @@ function hasBody(req: any) {
  * @return string
  */
 function mime(req: any) {
-  const str = req.headers['content-type'] || ''
-  return str.split(';')[0]
+  const str = req.headers['content-type'] || '';
+  return str.split(';')[0];
 }
 
-export default xmlbodyparser
+export default xmlbodyparser;

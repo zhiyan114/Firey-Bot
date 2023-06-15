@@ -48,8 +48,8 @@
     "type": "git",
     "url": "git+https://github.com/zhiyan114/Firey-Bot.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["discord", "bot", "firey", "fireybot"],
+  "author": "zhiyan114",
   "license": "GPLv3",
   "bugs": {
     "url": "https://github.com/zhiyan114/Firey-Bot/issues"

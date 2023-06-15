@@ -1,9 +1,9 @@
 /* Command Builder */
-import { SlashCommandBuilder } from "@discordjs/builders"
-import { CommandInteraction, BaseGuildTextChannel, TextChannel } from "discord.js"
-import { adminRoleID, logChannelID }  from "../config"
-import { ICommand } from "../interface"
-import { DiscordUser } from "../ManagerUtils/DiscordUser"
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { CommandInteraction, BaseGuildTextChannel, TextChannel } from "discord.js";
+import { adminRoleID, logChannelID }  from "../config";
+import { ICommand } from "../interface";
+import { DiscordUser } from "../ManagerUtils/DiscordUser";
 const PurgeCmd = new SlashCommandBuilder()
   .setName("purge")
   .setDescription("Purge messages from a channel")
@@ -17,27 +17,27 @@ const PurgeCmd = new SlashCommandBuilder()
     opt.setName("reason")
       .setDescription("The reason for the purge")
       .setRequired(false)
-  )
+  );
 
 
 /* Function Builder */
 const PurgeFunc = async (interaction : CommandInteraction) => {
   // Setup the inital
-  if(!interaction.channel) return await interaction.reply("Interaction must be executed in a server")
-  const amount = interaction.options.get("amount",true).value as number
-  if(amount <= 0 || amount > 100) return await interaction.reply({content: "Invalid amount!", ephemeral: true})
+  if(!interaction.channel) return await interaction.reply("Interaction must be executed in a server");
+  const amount = interaction.options.get("amount",true).value as number;
+  if(amount <= 0 || amount > 100) return await interaction.reply({content: "Invalid amount!", ephemeral: true});
 
   // Get the option data
-  const reason = interaction.options.get("reason", false)?.value as string | undefined
-  const User = new DiscordUser(interaction.user)
-  await interaction.deferReply({ ephemeral: true })
+  const reason = interaction.options.get("reason", false)?.value as string | undefined;
+  const User = new DiscordUser(interaction.user);
+  await interaction.deferReply({ ephemeral: true });
 
   // Start the purge
-  await (interaction.channel as BaseGuildTextChannel).bulkDelete(amount)
-  await interaction.followUp({content: `Successfully purged ${amount} messages!`, ephemeral: true})
+  await (interaction.channel as BaseGuildTextChannel).bulkDelete(amount);
+  await interaction.followUp({content: `Successfully purged ${amount} messages!`, ephemeral: true});
 
   // Log the purge (except if it's done by zhiyan114 in the logging channel for cleanup maintenance)
-  if(interaction.channel.id === logChannelID && interaction.user.id === "233955058604179457") return
+  if(interaction.channel.id === logChannelID && interaction.user.id === "233955058604179457") return;
   await User.actionLog({
     actionName: "purge",
     message: `<@${interaction.user.id}> has executed **purge** command`,
@@ -46,8 +46,8 @@ const PurgeFunc = async (interaction : CommandInteraction) => {
       channel: `<#${(interaction.channel as TextChannel).id}>`,
       amount: amount.toString()
     }
-  })
-}
+  });
+};
 
 export default {
   command: PurgeCmd,
@@ -56,4 +56,4 @@ export default {
   },
   function: PurgeFunc,
   disabled: false,
-} as ICommand
+} as ICommand;

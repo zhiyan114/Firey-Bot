@@ -1,7 +1,7 @@
-import { createHash } from "crypto"
-import { Channel, ChannelType, Guild, GuildInvitableChannelResolvable, InviteCreateOptions, NewsChannel, TextChannel, VoiceChannel } from "discord.js"
-import { redis } from "../utils/DatabaseManager"
-import { client } from ".."
+import { createHash } from "crypto";
+import { Channel, ChannelType, Guild, GuildInvitableChannelResolvable, InviteCreateOptions, NewsChannel, TextChannel, VoiceChannel } from "discord.js";
+import { redis } from "../utils/DatabaseManager";
+import { client } from "..";
 
 
 /**
@@ -10,20 +10,20 @@ import { client } from ".."
  * @param guild the guild server to generate the invite
  */
 export class DiscordInvite {
-  private guild: Guild
-  private redisKey: string
-  private baseUrl = "https://discord.gg/"
+  private guild: Guild;
+  private redisKey: string;
+  private baseUrl = "https://discord.gg/";
 
   constructor(requestid?: string, guild?: Guild) {
     // Set the provided guild or the first one on the cache if this is a single server bot
-    guild = guild ?? client.guilds.cache.first()
-    if(!guild) throw new DiscordInviteError("No guild is available for the bot")
-    this.guild = guild
+    guild = guild ?? client.guilds.cache.first();
+    if(!guild) throw new DiscordInviteError("No guild is available for the bot");
+    this.guild = guild;
 
     // Key is made up of DiscInv:{First 6 digit of a sha512-hashed guild ID}:{First 6 digit of a sha512-hashed requestid or none if parm is null}
-    const guildHash = this.getHash(guild.id, 6)
-    const requestidHash = requestid ? `:${this.getHash(requestid, 6)}` : ""
-    this.redisKey = `DiscInv:${guildHash}${requestidHash}`
+    const guildHash = this.getHash(guild.id, 6);
+    const requestidHash = requestid ? `:${this.getHash(requestid, 6)}` : "";
+    this.redisKey = `DiscInv:${guildHash}${requestidHash}`;
   }
 
   /**
@@ -34,11 +34,11 @@ export class DiscordInvite {
      */
   private getHash(data: string, length?: number) {
     // Ignore the length parameter if the length size is invalid
-    if(length && (length < 1 || length > 128)) length = undefined
+    if(length && (length < 1 || length > 128)) length = undefined;
 
     // Generate sha512 hash from the data
-    const hashedData = createHash("sha512").update(data).digest("hex")
-    return length ? hashedData.slice(0,length) : hashedData
+    const hashedData = createHash("sha512").update(data).digest("hex");
+    return length ? hashedData.slice(0,length) : hashedData;
   }
 
   /**
@@ -48,16 +48,16 @@ export class DiscordInvite {
      * @returns whether the channel is eligible or not
      */
   private isInviteChannel(channel?: Channel | null) {
-    if(!channel) return false
+    if(!channel) return false;
 
     const validChannel = [
       ChannelType.GuildText,
       ChannelType.GuildVoice,
       ChannelType.GuildAnnouncement
-    ].find(ch=> ch === channel.type)
+    ].find(ch=> ch === channel.type);
 
-    if(!validChannel) return false
-    return true
+    if(!validChannel) return false;
+    return true;
   }
 
   /**
@@ -69,30 +69,30 @@ export class DiscordInvite {
      */
   public async getTempInvite(inviteOpt?: InviteCreateOptions, channel?: GuildInvitableChannelResolvable, rawCode?: boolean) {
     // Use the vanity code if possible
-    if(this.guild.vanityURLCode) return rawCode ? this.guild.vanityURLCode : this.baseUrl + this.guild.vanityURLCode
+    if(this.guild.vanityURLCode) return rawCode ? this.guild.vanityURLCode : this.baseUrl + this.guild.vanityURLCode;
 
     // Use the cached invite key if it exists
-    const cache = await redis.GET(this.redisKey)
-    if(cache) return rawCode ? cache : this.baseUrl + cache
+    const cache = await redis.GET(this.redisKey);
+    if(cache) return rawCode ? cache : this.baseUrl + cache;
 
     // Configure default inviteOpt if it does not exist
-    if(!inviteOpt) inviteOpt = {}
-    inviteOpt.maxAge = inviteOpt.maxAge ?? 86400
-    inviteOpt.reason = inviteOpt.reason ?? "Temporary Invite"
+    if(!inviteOpt) inviteOpt = {};
+    inviteOpt.maxAge = inviteOpt.maxAge ?? 86400;
+    inviteOpt.reason = inviteOpt.reason ?? "Temporary Invite";
 
     // Find a valid guild channel to create invite in
     channel = channel ??
         this.guild.rulesChannel ?? 
         this.guild.publicUpdatesChannel ?? 
         this.guild.channels.cache.find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined ??
-        (await this.guild.channels.fetch()).find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined
-    if(!channel) throw new DiscordInviteError("No channel is associated with this server")
+        (await this.guild.channels.fetch()).find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined;
+    if(!channel) throw new DiscordInviteError("No channel is associated with this server");
 
     // Create a new invite key and save it to the cache
-    const inviteLink = await this.guild.invites.create(channel, inviteOpt)
-    await redis.SET(this.redisKey, inviteLink.code)
-    await redis.EXPIRE(this.redisKey, inviteOpt.maxAge)
-    return rawCode ? inviteLink.code : inviteLink.url
+    const inviteLink = await this.guild.invites.create(channel, inviteOpt);
+    await redis.SET(this.redisKey, inviteLink.code);
+    await redis.EXPIRE(this.redisKey, inviteOpt.maxAge);
+    return rawCode ? inviteLink.code : inviteLink.url;
   }
 
 }
@@ -100,7 +100,7 @@ export class DiscordInvite {
 
 export class DiscordInviteError extends Error {
   constructor(msg: string) {
-    super(msg)
-    this.name = "DiscordInviteError"
+    super(msg);
+    this.name = "DiscordInviteError";
   }
 }

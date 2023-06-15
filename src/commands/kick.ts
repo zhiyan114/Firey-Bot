@@ -1,8 +1,8 @@
-import { SlashCommandBuilder } from "@discordjs/builders"
-import { CommandInteraction, GuildMember, TextChannel } from "discord.js"
-import { adminRoleID, welcomeChannelID }  from "../config"
-import { ICommand } from "../interface"
-import { DiscordUser } from "../ManagerUtils/DiscordUser"
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { CommandInteraction, GuildMember, TextChannel } from "discord.js";
+import { adminRoleID, welcomeChannelID }  from "../config";
+import { ICommand } from "../interface";
+import { DiscordUser } from "../ManagerUtils/DiscordUser";
 /* Command Builder */
 const KickCmd = new SlashCommandBuilder()
   .setName("kick")
@@ -22,20 +22,20 @@ const KickCmd = new SlashCommandBuilder()
     option.setName("invite")
       .setDescription("Whether or not to include a one-time use invite link for the user to join back.")
       .setRequired(true)
-  )
+  );
 
 /* Function Builder */
 const KickFunc = async (interaction : CommandInteraction) => {
   // Validation Checks
-  const targetMember = interaction.options.getMember("user") as GuildMember | undefined
-  if(!targetMember) return await interaction.reply("Invalid User has been supplied")
+  const targetMember = interaction.options.getMember("user") as GuildMember | undefined;
+  if(!targetMember) return await interaction.reply("Invalid User has been supplied");
 
   // Get the supplied information
-  const reason = interaction.options.get("reason",true).value as string
-  const invite = interaction.options.get("invite",true).value as boolean
-  const targetUser = new DiscordUser(targetMember.user)
-  const issuerUser = new DiscordUser(interaction.user)
-  await interaction.deferReply({ephemeral: true})
+  const reason = interaction.options.get("reason",true).value as string;
+  const invite = interaction.options.get("invite",true).value as boolean;
+  const targetUser = new DiscordUser(targetMember.user);
+  const issuerUser = new DiscordUser(interaction.user);
+  await interaction.deferReply({ephemeral: true});
 
   // Prepare the embed data for the target user
   const kickField = [
@@ -47,17 +47,17 @@ const KickFunc = async (interaction : CommandInteraction) => {
       name: "Kicked By",
       value: issuerUser.getUsername(),
     },
-  ]
+  ];
   if(invite) {
     const inviteLink = await (interaction.guild?.channels.cache.find(channel => channel.id === welcomeChannelID) as TextChannel).createInvite({
       maxAge: 604800,
       maxUses: 1,
       reason: "Moderator attached invitation link for this kick action"
-    })
+    });
     kickField.push({
       name: "Invite Link",
       value: inviteLink.url
-    })
+    });
   }
 
   // Notify the user and take action
@@ -66,8 +66,8 @@ const KickFunc = async (interaction : CommandInteraction) => {
     message: `You have been kicked from ${interaction.guild?.name}!${invite ? " A re-invite link has been attached to this message (expires in 1 week)." : ""}`,
     fields: kickField,
     color: "#FFFF00"
-  })
-  await targetMember.kick(reason)
+  });
+  await targetMember.kick(reason);
 
   // Log it and cleanup
   await issuerUser.actionLog({
@@ -75,9 +75,9 @@ const KickFunc = async (interaction : CommandInteraction) => {
     target: targetUser,
     message: `<@${targetMember.id}> has been kicked by <@${interaction.user.id}>`,
     reason
-  })
-  await interaction.followUp({content: "User has been successfully kicked!", ephemeral: true})
-}
+  });
+  await interaction.followUp({content: "User has been successfully kicked!", ephemeral: true});
+};
 
 export default {
   command: KickCmd,
@@ -86,4 +86,4 @@ export default {
   },
   function: KickFunc,
   disabled: false,
-} as ICommand
+} as ICommand;

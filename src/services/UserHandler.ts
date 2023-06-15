@@ -1,34 +1,34 @@
-import { EmbedBuilder, GuildMember, TextChannel, DiscordAPIError, ActivityType } from "discord.js"
-import * as Sentry from "@sentry/node"
-import { welcomeChannelID, guildID, newUserRoleID } from "../config"
-import { client } from "../index"
-import { APIErrors } from "../utils/discordErrorCode"
-import { DiscordUser } from "../ManagerUtils/DiscordUser"
-import { BannerPic } from "../utils/bannerGen"
+import { EmbedBuilder, GuildMember, TextChannel, DiscordAPIError, ActivityType } from "discord.js";
+import * as Sentry from "@sentry/node";
+import { welcomeChannelID, guildID, newUserRoleID } from "../config";
+import { client } from "../index";
+import { APIErrors } from "../utils/discordErrorCode";
+import { DiscordUser } from "../ManagerUtils/DiscordUser";
+import { BannerPic } from "../utils/bannerGen";
 
 client.on("guildMemberAdd",async (member : GuildMember) => {
   // ignore if user is a bot
-  if(member.user.bot) return
-  const user = new DiscordUser(member.user)
+  if(member.user.bot) return;
+  const user = new DiscordUser(member.user);
 
   // Send message to the welcome channel
-  const channel = await client.channels.fetch(welcomeChannelID) as TextChannel
-  const bannerBuffer = await (new BannerPic()).generate(user.getUsername(), member.user.displayAvatarURL({size: 512}))
-  await channel.send({files: [bannerBuffer]})
+  const channel = await client.channels.fetch(welcomeChannelID) as TextChannel;
+  const bannerBuffer = await (new BannerPic()).generate(user.getUsername(), member.user.displayAvatarURL({size: 512}));
+  await channel.send({files: [bannerBuffer]});
 
   // Send the message to the user
   const embed = new EmbedBuilder()
     .setTitle("Welcome to the server!")
     .setDescription(`Welcome to the Derg server, ${member.user.username}! Please read the rules and press the confirmation button to get full access.`)
-    .setColor("#0000FF")
+    .setColor("#0000FF");
 
   // Send the message
   try {
-    await member.send({embeds: [embed]})
+    await member.send({embeds: [embed]});
   } catch(ex : unknown) {
     if(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)
-      channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`, embeds: [embed]})
-    else Sentry.captureException(ex)
+      channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`, embeds: [embed]});
+    else Sentry.captureException(ex);
   }
 
   // Update the user count
@@ -39,28 +39,28 @@ client.on("guildMemberAdd",async (member : GuildMember) => {
         name: `with ${client.guilds.cache.find(g=>g.id===guildID)?.memberCount} cuties :3`,
         type: ActivityType.Competing,
       }]
-    })
+    });
   }
 
   // Update or add the user to the database
-  await user.updateUserData()
-})
+  await user.updateUserData();
+});
 
 /* Do some stuff when user's profile updates */
 client.on("userUpdate",async (oldUser, newUser)=>{
-  if(newUser.bot) return
-  const user = new DiscordUser(newUser)
+  if(newUser.bot) return;
+  const user = new DiscordUser(newUser);
     
   if(oldUser.tag !== newUser.tag) {
-    const userUpdated = await user.updateUserData()
+    const userUpdated = await user.updateUserData();
     if(!userUpdated) {
-      const userHasVerifiedRole = (await client.guilds.cache.find(g=>g.id === guildID)?.members.fetch(newUser))?.roles.cache.find(role=>role.id === newUserRoleID)
+      const userHasVerifiedRole = (await client.guilds.cache.find(g=>g.id === guildID)?.members.fetch(newUser))?.roles.cache.find(role=>role.id === newUserRoleID);
       await user.updateUserData({
         rulesconfirmedon: userHasVerifiedRole ? new Date() : undefined
-      })
+      });
     }
   }
-})
+});
 
 /* Do some member leave stuff, which is nothing. */
 /*
@@ -69,12 +69,12 @@ client.on("userUpdate",async (oldUser, newUser)=>{
     deleted.
 */
 client.on("guildMemberRemove", ()=>{
-  if(!client.user) return
+  if(!client.user) return;
   client.user.setPresence({
     status: "dnd",
     activities: [{
       name: `with ${client.guilds.cache.find(g=>g.id===guildID)?.memberCount} cuties :3`,
       type: ActivityType.Competing,
     }]
-  })
-})
+  });
+});
