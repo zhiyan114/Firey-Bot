@@ -16,6 +16,7 @@ on:
 jobs:
   RegBuild:
     runs-on: ubuntu-latest
+    environment: standard
     strategy:
       matrix:
         node-version: [16.x]
@@ -38,6 +39,10 @@ jobs:
       run: npm run build
     # Only run "npm run sentryinit" on dev branch (since this is the branch that'll be used in production, ironic right?)
     - name: sentryinit
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
       run: |
         if [ "${{ github.ref }}" = "refs/heads/dev" ]; then
           npm run sentryinit
