@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { ActivityType, CommandInteraction } from "discord.js";
+import { ActionRowBuilder, ActivityType, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, TextChannel } from "discord.js";
 import { guildID, newUserRoleID } from "../config";
 import { prisma } from "../utils/DatabaseManager";
 import {client} from "../index";
@@ -8,6 +8,7 @@ import { tmiClient } from "../services/TwitchHandler";
 import { withScope as sentryScope } from "@sentry/node";
 import { members, Prisma } from "@prisma/client";
 import globalCmdRegister from "../globalCmdRegister";
+
 /* Command Builder */
 const EvalCmd = new SlashCommandBuilder()
   .setName("eval")
@@ -26,66 +27,88 @@ type userDataType = {
     rulesconfirmedon: Date | undefined,
 }
 
-// Manually add all the missing users to the database
-const createUserData = async ()=> {
-  if(!prisma) return;
-  const dataToPush: userDataType[] = [];
-  const guild = client.guilds.cache.find(g=>g.id == guildID);
-  if(!guild) return;
-  for(const [,member] of await guild.members.fetch()) {
-    if(member.user.bot) continue;
-    const hasVerifyRole = member.roles.cache.find(role=>role.id == newUserRoleID);
-    dataToPush.push({
-      id: member.user.id,
-      username: member.user.tag,
-      rulesconfirmedon: hasVerifyRole ? (new Date()) : undefined
+// Custom eval execution utility
+const utils = {
+  // Manually add all the missing users to the database
+  createUserData: async ()=> {
+    if(!prisma) return;
+    const dataToPush: userDataType[] = [];
+    const guild = client.guilds.cache.find(g=>g.id == guildID);
+    if(!guild) return;
+    for(const [,member] of await guild.members.fetch()) {
+      if(member.user.bot) continue;
+      const hasVerifyRole = member.roles.cache.find(role=>role.id == newUserRoleID);
+      dataToPush.push({
+        id: member.user.id,
+        username: member.user.tag,
+        rulesconfirmedon: hasVerifyRole ? (new Date()) : undefined
+      });
+    }
+    await prisma.members.createMany({
+      data: dataToPush,
+      skipDuplicates: true,
     });
-  }
-  await prisma.members.createMany({
-    data: dataToPush,
-    skipDuplicates: true,
-  });
-};
-// Manually update all the out-of-date users to the database
-const updateUserData = async() => {
-  if(!prisma) return;
-  const allwait: Promise<members | undefined>[] = [];
-  const guild = client.guilds.cache.find(g=>g.id == guildID);
-  if(!guild) return;
-  for(const [,member] of await guild.members.fetch()) {
-    if(member.user.bot) continue;
-    allwait.push((async()=>{
-      try {
-        const newUsername = member.user.discriminator === "0" ? member.user.username : member.user.tag;
-        return await prisma.members.update({
-          data: {
-            username: newUsername,
-          },
-          where: {
-            id: member.id,
-            NOT: {
-              username: newUsername,
-            }
-          }
-        });
-      } catch(ex){
-        if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code == "P2025") return;
-        throw ex;
-      }
-    })());
-  }
-  await Promise.all(allwait);
-};
+  },
 
-// Manually reset the bot's status in-case it was removed from discord's backend
-const updateStatus = async () => {
-  client.user?.setPresence({
-    status: "dnd",
-    activities: [{
-      name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
-      type: ActivityType.Competing,
-    }]
-  });
+  // Manually update all the out-of-date users to the database
+  updateUserData: async() => {
+    if(!prisma) return;
+    const allwait: Promise<members | undefined>[] = [];
+    const guild = client.guilds.cache.find(g=>g.id == guildID);
+    if(!guild) return;
+    for(const [,member] of await guild.members.fetch()) {
+      if(member.user.bot) continue;
+      allwait.push((async()=>{
+        try {
+          const newUsername = member.user.discriminator === "0" ? member.user.username : member.user.tag;
+          return await prisma.members.update({
+            data: {
+              username: newUsername,
+            },
+            where: {
+              id: member.id,
+              NOT: {
+                username: newUsername,
+              }
+            }
+          });
+        } catch(ex){
+          if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code == "P2025") return;
+          throw ex;
+        }
+      })());
+    }
+    await Promise.all(allwait);
+  },
+
+  // Manually reset the bot's status in-case it was removed from discord's backend
+  updateStatus: async () => {
+    client.user?.setPresence({
+      status: "dnd",
+      activities: [{
+        name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
+        type: ActivityType.Competing,
+      }]
+    });
+  },
+
+  // Create Verify Button
+  createVerifyBtn: async (channel: TextChannel) => {
+    const embed = new EmbedBuilder()
+      .setTitle("Rule Verification")
+      .setColor("#00FF00")
+      .setDescription("Please press the **confirm** button below to confirm that you have read the rules above");
+    const row = new ActionRowBuilder<ButtonBuilder>();
+    row.addComponents(new ButtonBuilder()
+      .setCustomId("RuleConfirm")
+      .setLabel("Confirm")
+      .setStyle(ButtonStyle.Success)
+    );
+    await channel.send({embeds:[embed], components:[row]});
+  },
+
+  // Global Command Register
+  globalCmdRegister,
 };
 
 
@@ -115,10 +138,7 @@ const EvalFunc = async (interaction : CommandInteraction) => {
         "dClient",
         "tClient",
         "print",
-        "createUserData",
-        "updateUserData",
-        "updateStatus",
-        "globalCmdRegister",
+        "utils",
         code
       );
 
@@ -130,10 +150,7 @@ const EvalFunc = async (interaction : CommandInteraction) => {
         client,
         tmiClient,
         print,
-        createUserData,
-        updateUserData,
-        updateStatus,
-        globalCmdRegister
+        utils
       );
       await interaction.followUp({content: "Execution Completed", ephemeral: true});
       //await interaction.followUp({content: `Execution Result: \`${result}\``, ephemeral: true});
