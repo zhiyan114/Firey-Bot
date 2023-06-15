@@ -29,6 +29,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
 #        cache: 'npm'
     - run: npm i
+    - run: npm run lint
     - run: npm run build --if-present
     # Only run "npm run sentryinit" on dev branch (since this is the branch that'll be used in production, ironic right?)
     - run: |
