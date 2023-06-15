@@ -21,6 +21,7 @@ services:
       - REDIS_CONN
     depends_on:
       - redis
+    restart: on-failure
   redis:
     image: redis:alpine
     ports:
