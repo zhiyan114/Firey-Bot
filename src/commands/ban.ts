@@ -1,8 +1,8 @@
-import { SlashCommandBuilder } from "@discordjs/builders"
-import { CommandInteraction, GuildMember } from "discord.js"
-import { adminRoleID }  from "../config"
-import { ICommand } from "../interface"
-import { DiscordUser } from "../ManagerUtils/DiscordUser"
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { CommandInteraction, GuildMember } from "discord.js";
+import { adminRoleID }  from "../config";
+import { ICommand } from "../interface";
+import { DiscordUser } from "../ManagerUtils/DiscordUser";
 
 /* Command Builder */
 const BanCmd = new SlashCommandBuilder()
@@ -23,21 +23,21 @@ const BanCmd = new SlashCommandBuilder()
     option.setName("delete")
       .setDescription("Delete all messages from the user banned user.")
       .setRequired(true)
-  )
+  );
 
 /* Function Builder */
 const BanFunc = async (interaction : CommandInteraction) => {
   // Validation Checks
-  if(!interaction.guild) return await interaction.reply("Interaction must be executed in a server")
-  const targetMember = interaction.options.getMember("user") as GuildMember | null
-  if(!targetMember) return await interaction.reply("Invalid User has been supplied")
+  if(!interaction.guild) return await interaction.reply("Interaction must be executed in a server");
+  const targetMember = interaction.options.getMember("user") as GuildMember | null;
+  if(!targetMember) return await interaction.reply("Invalid User has been supplied");
 
   // Get the supplied data
-  const reason = interaction.options.get("reason",true).value as string
-  const deleteMessages = interaction.options.get("delete",true).value as boolean
-  const targetUser = new DiscordUser(targetMember.user)
-  const issuerUser = new DiscordUser(interaction.user)
-  await interaction.deferReply({ephemeral: true})
+  const reason = interaction.options.get("reason",true).value as string;
+  const deleteMessages = interaction.options.get("delete",true).value as boolean;
+  const targetUser = new DiscordUser(targetMember.user);
+  const issuerUser = new DiscordUser(interaction.user);
+  await interaction.deferReply({ephemeral: true});
 
   // Notify and ban the user
   await targetUser.sendMessage({
@@ -54,11 +54,11 @@ const BanFunc = async (interaction : CommandInteraction) => {
         value: issuerUser.getUsername()
       }
     ]
-  })
+  });
   await targetMember.ban({
     reason,
     deleteMessageSeconds: deleteMessages ? 604800 : undefined
-  })
+  });
 
   // Log the action and wrap up
   await issuerUser.actionLog({
@@ -66,9 +66,9 @@ const BanFunc = async (interaction : CommandInteraction) => {
     target: targetUser,
     message: `<@${targetMember.id}> has been banned by <@${interaction.user.id}>`,
     reason
-  })
-  await interaction.followUp({content: "User has been successfully banned!", ephemeral: true})
-}
+  });
+  await interaction.followUp({content: "User has been successfully banned!", ephemeral: true});
+};
 
 export default {
   command: BanCmd,
@@ -77,4 +77,4 @@ export default {
   },
   function: BanFunc,
   disabled: false,
-} as ICommand
+} as ICommand;

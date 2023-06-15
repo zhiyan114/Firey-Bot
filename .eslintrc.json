@@ -20,6 +20,10 @@
             "error",
             2
         ],
+        "semi": [
+            "error",
+            "always"
+        ],
         "no-async-promise-executor": "off",
         "@typescript-eslint/no-var-requires": "off",
         "no-constant-condition": "off"

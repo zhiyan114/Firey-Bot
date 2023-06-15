@@ -1,4 +1,4 @@
-import { prisma } from "../../../utils/DatabaseManager"
+import { prisma } from "../../../utils/DatabaseManager";
 import { ButtonInteraction, GuildMember } from "discord.js";
 import { sendLog, LogType } from "../../../utils/eventLogger";
 import { newUserRoleID } from "../../../config";
@@ -11,10 +11,10 @@ export default async function VerificationHandler(interaction: ButtonInteraction
     return;
   }
   if(!prisma) {
-    await interaction.reply({content: "The database is unavailable, please contact zhiyan114 about this.", ephemeral: true})
+    await interaction.reply({content: "The database is unavailable, please contact zhiyan114 about this.", ephemeral: true});
     return;
   }
-  const user = new DiscordUser(interaction.user)
+  const user = new DiscordUser(interaction.user);
   const member = interaction.member as GuildMember;
   if(member.roles.cache.has(newUserRoleID) && await user.isVerified())
     return await interaction.reply({content: "You've already confirmed the rules.", ephemeral: true});
@@ -22,7 +22,7 @@ export default async function VerificationHandler(interaction: ButtonInteraction
   await member.roles.add(newUserRoleID, "Confirmation Role");
   await user.updateUserData({
     rulesconfirmedon: new Date()
-  })
+  });
   // Thank the user for the confirmation
   await interaction.reply({content: "Thank you for confirming the rules.", ephemeral: true});
   await sendLog(LogType.Interaction, `<@${interaction.user.id}> confirmed the rules.`);

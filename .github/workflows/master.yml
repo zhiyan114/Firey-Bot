@@ -5,12 +5,6 @@ name: Node.js CI
 
 on:
   push:
-    branches:
-      - '*'
-      - '*/*'
-      - '**'
-      - '!master'
-  pull_request:
     branches: [ master ]
 
 jobs:
@@ -33,17 +27,11 @@ jobs:
       uses: mathieu-bour/setup-sentry-cli@v1.3.0
     - name: install package
       run: npm i
-    - name: lint check
-      run: npm run lint
-    - name: build
+    - name: build it
       run: npm run build
-    # Only run "npm run sentryinit" on dev branch (since this is the branch that'll be used in production, ironic right?)
-    - name: sentryinit
+    - name: Publish artifact to sentry
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
         SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-      run: |
-        if [ "${{ github.ref }}" = "refs/heads/dev" ]; then
-          npm run sentryinit
-        fi
+      run: npm run sentryinit

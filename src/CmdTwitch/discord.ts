@@ -1,6 +1,6 @@
-import { DiscordInvite } from "../ManagerUtils/DiscordInvite"
-import { generalChannelID } from "../config"
-import { twitchCmdType } from "./index"
+import { DiscordInvite } from "../ManagerUtils/DiscordInvite";
+import { generalChannelID } from "../config";
+import { twitchCmdType } from "./index";
 
 const discordFunc : twitchCmdType ={
   name: "discord",
@@ -10,6 +10,6 @@ const discordFunc : twitchCmdType ={
     }, generalChannelID)
   }`),
   disabled: false
-}
+};
 
-export default discordFunc
+export default discordFunc;

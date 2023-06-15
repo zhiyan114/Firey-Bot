@@ -1,7 +1,7 @@
-import { GuildMember, SlashCommandBuilder, TextChannel } from "discord.js"
-import { adminRoleID, welcomeChannelID } from "../config"
-import { ICommand } from "../interface"
-import { DiscordUser } from "../ManagerUtils/DiscordUser"
+import { GuildMember, SlashCommandBuilder, TextChannel } from "discord.js";
+import { adminRoleID, welcomeChannelID } from "../config";
+import { ICommand } from "../interface";
+import { DiscordUser } from "../ManagerUtils/DiscordUser";
 
 export default {
   command: new SlashCommandBuilder()
@@ -28,16 +28,16 @@ export default {
   },
   function: async (interaction)=>{
     // Inital Setup stuff
-    if(!interaction.guild) return await interaction.reply("Interaction must be executed in a server")
-    const targetMember = interaction.options.getMember("user") as GuildMember | null
-    if(!targetMember) return await interaction.reply("Invalid User has been supplied")
+    if(!interaction.guild) return await interaction.reply("Interaction must be executed in a server");
+    const targetMember = interaction.options.getMember("user") as GuildMember | null;
+    if(!targetMember) return await interaction.reply("Invalid User has been supplied");
 
     // Get the option data
-    const reason = interaction.options.get("reason", true).value as string
-    const invite = interaction.options.get("invite", true).value as boolean
-    const targetUser = new DiscordUser(targetMember.user)
-    const issuerUser = new DiscordUser(interaction.user)
-    await interaction.deferReply({ephemeral: true})
+    const reason = interaction.options.get("reason", true).value as string;
+    const invite = interaction.options.get("invite", true).value as boolean;
+    const targetUser = new DiscordUser(targetMember.user);
+    const issuerUser = new DiscordUser(interaction.user);
+    await interaction.deferReply({ephemeral: true});
 
     // Prepare the embed data for the target user
     const sbanfield = [
@@ -49,13 +49,13 @@ export default {
         name: "Soft Banned By",
         value: issuerUser.getUsername(),
       }
-    ]
+    ];
     if(invite) {
-      const inviteLink = await (interaction.guild?.channels.cache.find(channel => channel.id === welcomeChannelID) as TextChannel).createInvite({maxAge: 604800, maxUses: 1, reason: "Moderator attached invitation link for this softban action"})
+      const inviteLink = await (interaction.guild?.channels.cache.find(channel => channel.id === welcomeChannelID) as TextChannel).createInvite({maxAge: 604800, maxUses: 1, reason: "Moderator attached invitation link for this softban action"});
       sbanfield.push({
         name: "Invite Link",
         value: inviteLink.url,
-      })
+      });
     }
 
     // Notify the user and take action
@@ -64,12 +64,12 @@ export default {
       message: `You have been softban from ${interaction.guild.name}!${invite ? " A re-invite link has been attached to this softban (expires in 1 week)." : ""}`,
       color: "#FFA500",
       fields: sbanfield
-    })
+    });
     await targetMember.ban({
       reason,
       deleteMessageSeconds: 604800
-    })
-    await interaction.guild?.bans.remove(targetMember.user, "Softban purposes")
+    });
+    await interaction.guild?.bans.remove(targetMember.user, "Softban purposes");
 
     // Log it and cleanup
     await issuerUser.actionLog({
@@ -77,8 +77,8 @@ export default {
       target: targetUser,
       message: `<@${targetMember.id}> has been softban by <@${interaction.user.id}>`,
       reason
-    })
-    await interaction.followUp({content: "User has been successfully softban!", ephemeral: true})
+    });
+    await interaction.followUp({content: "User has been successfully softban!", ephemeral: true});
   },
   disabled: false,
-} as ICommand
+} as ICommand;
