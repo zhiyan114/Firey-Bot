@@ -16,6 +16,7 @@ on:
 jobs:
   RegBuild:
     runs-on: ubuntu-latest
+    environment: Standard Env
     strategy:
       matrix:
         node-version: [16.x]
@@ -30,11 +31,15 @@ jobs:
 #        cache: 'npm'
     - name: Setup Sentry CLI
       uses: mathieu-bour/setup-sentry-cli@v1.3.0
-    - run: npm i
-    - run: npm run lint
-    - run: npm run build --if-present
+    - name: install package
+      run: npm i
+    - name: lint check
+      run: npm run lint
+    - name: build
+      run: npm run build
     # Only run "npm run sentryinit" on dev branch (since this is the branch that'll be used in production, ironic right?)
-    - run: |
+    - name: sentryinit
+      run: |
         if [ "${{ github.ref }}" = "refs/heads/dev" ]; then
           npm run sentryinit
         fi
