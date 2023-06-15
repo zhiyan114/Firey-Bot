@@ -1,5 +1,5 @@
 import { EmbedBuilder, GuildMember, TextChannel, DiscordAPIError, ActivityType } from "discord.js";
-import * as Sentry from "@sentry/node";
+import { captureException } from "@sentry/node";
 import { welcomeChannelID, guildID, newUserRoleID } from "../config";
 import { client } from "../index";
 import { APIErrors } from "../utils/discordErrorCode";
@@ -28,7 +28,7 @@ client.on("guildMemberAdd",async (member : GuildMember) => {
   } catch(ex : unknown) {
     if(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)
       channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`, embeds: [embed]});
-    else Sentry.captureException(ex);
+    else captureException(ex);
   }
 
   // Update the user count

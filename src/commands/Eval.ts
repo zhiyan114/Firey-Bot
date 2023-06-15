@@ -30,7 +30,9 @@ type userDataType = {
 const createUserData = async ()=> {
   if(!prisma) return;
   const dataToPush: userDataType[] = [];
-  for(const [_,member] of await (client.guilds.cache.find(g=>g.id == guildID)!).members.fetch()) {
+  const guild = client.guilds.cache.find(g=>g.id == guildID);
+  if(!guild) return;
+  for(const [,member] of await guild.members.fetch()) {
     if(member.user.bot) continue;
     const hasVerifyRole = member.roles.cache.find(role=>role.id == newUserRoleID);
     dataToPush.push({
@@ -48,7 +50,9 @@ const createUserData = async ()=> {
 const updateUserData = async() => {
   if(!prisma) return;
   const allwait: Promise<members | undefined>[] = [];
-  for(const [_,member] of await (client.guilds.cache.find(g=>g.id == guildID)!).members.fetch()) {
+  const guild = client.guilds.cache.find(g=>g.id == guildID);
+  if(!guild) return;
+  for(const [,member] of await guild.members.fetch()) {
     if(member.user.bot) continue;
     allwait.push((async()=>{
       try {
@@ -75,13 +79,13 @@ const updateUserData = async() => {
 
 // Manually reset the bot's status in-case it was removed from discord's backend
 const updateStatus = async () => {
-    client.user!.setPresence({
-      status: "dnd",
-      activities: [{
-        name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
-        type: ActivityType.Competing,
-      }]
-    });
+  client.user?.setPresence({
+    status: "dnd",
+    activities: [{
+      name: `with ${client.guilds.cache.find(g=>g.id==guildID)?.memberCount} cuties :3`,
+      type: ActivityType.Competing,
+    }]
+  });
 };
 
 
