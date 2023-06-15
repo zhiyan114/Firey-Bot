@@ -1,21 +1,21 @@
 // Components
-import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from 'discord.js';
-import { init as sentryInit, Integrations as dIntegrations } from '@sentry/node';
-import { ExtraErrorData, RewriteFrames } from "@sentry/integrations";
-import {botToken, guildID, twitch} from './config';
-import { initailizeLogger, sendLog, LogType } from './utils/eventLogger';
-import { prisma } from './utils/DatabaseManager';
-import { twitchClient as tStreamClient } from './utils/twitchStream';
-import { redis as rClient } from './utils/DatabaseManager';
-import { execSync } from 'child_process';
-import path from 'path';
+import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from "discord.js"
+import { init as sentryInit, Integrations as dIntegrations } from "@sentry/node"
+import { ExtraErrorData, RewriteFrames } from "@sentry/integrations"
+import {botToken, guildID, twitch} from "./config"
+import { initailizeLogger, sendLog, LogType } from "./utils/eventLogger"
+import { prisma } from "./utils/DatabaseManager"
+import { twitchClient as tStreamClient } from "./utils/twitchStream"
+import { redis as rClient } from "./utils/DatabaseManager"
+import { execSync } from "child_process"
+import path from "path"
 
 
 // Load sentry if key exists
-if(process.env['SENTRY_DSN']) {
+if(process.env["SENTRY_DSN"]) {
   sendLog(LogType.Info,"Sentry DSN Detected, Error Logging will be enabled")
   sentryInit({
-    dsn: process.env['SENTRY_DSN'],
+    dsn: process.env["SENTRY_DSN"],
     maxValueLength: 500,
     integrations: [
       new ExtraErrorData({
@@ -23,11 +23,11 @@ if(process.env['SENTRY_DSN']) {
       }),
       new RewriteFrames({
         iteratee: (frame) => {
-          const absPath = frame.filename;
-          if(!absPath) return frame;
+          const absPath = frame.filename
+          if(!absPath) return frame
           // Set the base path as the dist output to match the naming artifact on sentry
           frame.filename = `/${path.relative(__dirname, absPath).replace(/\\/g, "/")}`
-          return frame;
+          return frame
         }
       })
     ],
@@ -41,20 +41,20 @@ if(process.env['SENTRY_DSN']) {
 
       // Ignore Http Breadcrumbs from the blacklisted url
       if(breadcrumb.category === "http" && 
-      ignoreUrl.filter(url=>breadcrumb.data?.url.startsWith(url)).length > 0) return null;
+      ignoreUrl.filter(url=>breadcrumb.data?.url.startsWith(url)).length > 0) return null
 
       return breadcrumb
     },
     ignoreErrors: [
-      'ETIMEDOUT',
-      'EADDRINUSE'
+      "ETIMEDOUT",
+      "EADDRINUSE"
     ],
     beforeSend : (evnt) => {
-      if(evnt.tags && evnt.tags['isEval']) return null;
-      return evnt;
+      if(evnt.tags && evnt.tags["isEval"]) return null
+      return evnt
     },
     release: execSync(`git -C ${__dirname} rev-parse HEAD`).toString().trim() // Pull Release Data
-  });
+  })
 }
 
 /* Client Loader */
@@ -72,13 +72,13 @@ export const client = new Client({
     Partials.Channel,
     Partials.GuildMember,
     Partials.User
-  ]});
-export const streamCli = new tStreamClient(twitch.channel);
+  ]})
+export const streamCli = new tStreamClient(twitch.channel)
 /* Internal Services */
-import { loadClientModule } from './services'
+import { loadClientModule } from "./services"
 
 
-client.on('ready', async () => {
+client.on("ready", async () => {
   client.user!.setPresence({
     status: "dnd",
     activities: [{
@@ -86,25 +86,25 @@ client.on('ready', async () => {
       type: ActivityType.Competing,
     }]
   })
-  await initailizeLogger(client);
-  await loadClientModule(client);
-  await sendLog(LogType.Info, "Discord.js client has been initialized!");
-  console.log(`Logged in as ${client.user!.tag}!`);
-});
+  await initailizeLogger(client)
+  await loadClientModule(client)
+  await sendLog(LogType.Info, "Discord.js client has been initialized!")
+  console.log(`Logged in as ${client.user!.tag}!`)
+})
 
 // Gracefully close setup
 const quitSignalHandler = async () => {
-  console.log("Closing Service...");
+  console.log("Closing Service...")
   // Close Prisma ORM Connections
-  if(prisma) await prisma.$disconnect();
+  if(prisma) await prisma.$disconnect()
   // Close Redis Connections
-  if(rClient.isOpen) await rClient.disconnect();
-  console.log("Closed...");
-  process.exit(0);
+  if(rClient.isOpen) await rClient.disconnect()
+  console.log("Closed...")
+  process.exit(0)
 }
-process.on('SIGINT', quitSignalHandler)
-process.on('SIGTERM', quitSignalHandler)
-process.on('SIGQUIT', quitSignalHandler)
+process.on("SIGINT", quitSignalHandler)
+process.on("SIGTERM", quitSignalHandler)
+process.on("SIGQUIT", quitSignalHandler)
 
 // Start the client
-client.login(botToken);
+client.login(botToken)
