@@ -1,6 +1,9 @@
 # Add the node 18.x on ubuntu
 FROM node:18.3.0-bullseye-slim
+
+# Setup the environment?
 WORKDIR /source/
+ENV ISDOCKER=true
 
 # Install/upgrade some packages
 RUN npm install -g npm@latest

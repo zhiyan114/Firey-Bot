@@ -13,10 +13,7 @@ prisma.$connect().then(()=>sendLog(LogType.Info, "Prisma Connection Established"
 
 // Handle Redis Connection
 const redis = createClient({
-  socket: {
-    host: "redis",
-    port: 6379,
-  }
+  url: (process.env["ISDOCKER"] && !process.env['REDIS_CONN']) ? "redis://redis:6379" : process.env['REDIS_CONN'],
 });
 
 

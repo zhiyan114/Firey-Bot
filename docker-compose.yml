@@ -18,6 +18,7 @@ services:
       - POSTGRESQL_CONN
       - TWITCH_TOKEN
       - AMQP_CONN
+      - REDIS_CONN
     depends_on:
       - redis
   redis:
