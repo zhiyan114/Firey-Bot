@@ -92,7 +92,7 @@ const initListener = () =>
       await ch.assertQueue(receiveQName, {durable: true});
       ch.on("close", async()=>{
         mainChannel = undefined;
-        while(!isAmqpConnected()) await new Promise<void>((res,rej)=>setTimeout(res, 3000));
+        while(!isAmqpConnected()) await new Promise<void>((res)=>setTimeout(res, 3000));
         initListener();
       });
       // Handle all the receiving events

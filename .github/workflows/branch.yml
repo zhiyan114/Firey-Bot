@@ -14,7 +14,7 @@ on:
     branches: [ master ]
 
 jobs:
-  RegBuild:
+  BuildTest:
     runs-on: ubuntu-latest
     strategy:
       matrix:

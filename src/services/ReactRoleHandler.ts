@@ -21,7 +21,7 @@ export default async (client : Client) => {
   const guild = client.guilds.cache.find(opt=>opt.id === guildID);
   if(!guild) return;
   const message = await (guild.channels.cache.find(opt=>opt.id ===reactionRole.channelID) as TextChannel).messages.fetch(reactionRole.messageID);
-  const deleteFilter = (reaction : MessageReaction, _ : User) => filterEmotes.includes(reaction.emoji.id ?? "0"); // If ID is somehow undefined, we'll feed it 0, which essentially means nothing
+  const deleteFilter = (reaction : MessageReaction) => filterEmotes.includes(reaction.emoji.id ?? "0"); // If ID is somehow undefined, we'll feed it 0, which essentially means nothing
   const collector = message.createReactionCollector({filter: deleteFilter, dispose: true});
   collector.on("collect", async (react : MessageReaction, user : User) => {
     const member = guild.members.cache.find(opt=>opt.id === user.id);

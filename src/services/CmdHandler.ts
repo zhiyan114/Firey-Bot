@@ -1,11 +1,11 @@
-import { REST } from "@discordjs/rest";
-import { Routes } from "discord-api-types/v10";
+//import { REST } from "@discordjs/rest";
+//import { Routes } from "discord-api-types/v10";
 import { ICommand } from "../interface";
 import * as fs from "fs";
 import * as path from "path";
 import { client } from "../index";
 import { ChannelType, GuildMember, Interaction } from "discord.js";
-import { botToken, clientID, guildID } from "../config";
+//import { botToken, clientID, guildID } from "../config";
 
 // Internal Interface
 interface ICommandList {

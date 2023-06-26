@@ -1,0 +1,15 @@
+{
+	"recommendations": [
+		"ms-azuretools.vscode-docker",
+		"dbaeumer.vscode-eslint",
+		"esbenp.prettier-vscode",
+		"Prisma.prisma"
+	],
+	"unwantedRecommendations": [
+		"eamodio.gitlens",
+		"firefox-devtools.vscode-firefox-debug",
+		"ms-edgedevtools.vscode-edge-devtools",
+		"GoogleCloudTools.cloudcode",
+		"eamodio.gitlens"
+	]
+}

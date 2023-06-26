@@ -27,7 +27,7 @@ type PromptConfirmOptions = {
 export const PromptConfirmation = (
   classObj: TextChannel | CommandInteraction,
   options: PromptConfirmOptions,
-) => new Promise<boolean>(async(res,rej) =>
+) => new Promise<boolean>(async(res) =>
 {
   const yesBTNID = randomUUID();
   const noBTNID = randomUUID();

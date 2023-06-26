@@ -12,6 +12,6 @@ export type tmiTypes = {
 }
 export type twitchCmdType = {
     name: string; // Command Name
-    func(data: tmiTypes): Promise<any>; // Command execution
+    func(data: tmiTypes): Promise<unknown>; // Command execution
     disabled?: boolean; // Is the command disabled
 }

@@ -1,6 +1,6 @@
 // Components
 import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from "discord.js";
-import { init as sentryInit, Integrations as dIntegrations } from "@sentry/node";
+import { init as sentryInit } from "@sentry/node";
 import { ExtraErrorData, RewriteFrames } from "@sentry/integrations";
 import {botToken, guildID, twitch} from "./config";
 import { initailizeLogger, sendLog, LogType } from "./utils/eventLogger";
@@ -31,7 +31,7 @@ if(process.env["SENTRY_DSN"]) {
         }
       })
     ],
-    beforeBreadcrumb: (breadcrumb, hint) => {
+    beforeBreadcrumb: (breadcrumb) => {
       // List of urls to ignore
       const ignoreUrl = [
         "https://api.twitch.tv",
@@ -79,7 +79,7 @@ import { loadClientModule } from "./services";
 
 
 client.on("ready", async () => {
-  client.user!.setPresence({
+  client.user?.setPresence({
     status: "dnd",
     activities: [{
       name: `with ${client.guilds.cache.find(g=>g.id===guildID)?.memberCount} cuties :3`,
@@ -89,7 +89,7 @@ client.on("ready", async () => {
   await initailizeLogger(client);
   await loadClientModule(client);
   await sendLog(LogType.Info, "Discord.js client has been initialized!");
-  console.log(`Logged in as ${client.user!.tag}!`);
+  console.log(`Logged in as ${client.user?.tag}!`);
 });
 
 // Gracefully close setup

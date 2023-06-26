@@ -32,7 +32,7 @@ export async function initailizeLogger(channel : Client) : Promise<void> {
   }
   // Configure the discord log channel
   logChannel = await channel.channels.fetch(logChannelID) as TextChannel;
-  for(const log of pendingLogs!) {
+  for(const log of pendingLogs ?? []) {
     await sendLog(log.type, log.message, log.metadata);
   }
   pendingLogs = null;
