@@ -189,6 +189,8 @@ export class DiscordUser {
         }
       });
     } catch(ex) {
+      // Idek, we'll just ignore it for now
+      if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002") return;
       captureException(ex);
     }
   }
