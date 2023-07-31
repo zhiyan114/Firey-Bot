@@ -39,10 +39,18 @@ const PurgeFunc = async (interaction : CommandInteraction) => {
     await (interaction.channel as BaseGuildTextChannel).bulkDelete(amount);
     await interaction.followUp({content: `Successfully purged ${amount} messages!`, ephemeral: true});
   } catch(ex) {
-    if(ex instanceof DiscordAPIError && ex.code === APIErrors.BULK_DELETE_MESSAGE_TOO_OLD) return await interaction.followUp({
-      content: "Cannot purge messages that are older than 14 days old",
-      ephemeral: true
-    });
+    if(ex instanceof DiscordAPIError) {
+      if(ex.code === APIErrors.BULK_DELETE_MESSAGE_TOO_OLD) return await interaction.followUp({
+        content: "Cannot purge messages that are older than 14 days old",
+        ephemeral: true
+      });
+      
+      if(ex.code === APIErrors.UNKNOWN_MESSAGE) return await interaction.followUp({
+        content: "Attempted to delete invalid message, please run the command again",
+        ephemeral: true
+      });
+    }
+    
     captureException(ex);
     return await interaction.followUp({
       content: "Exception occur while purging message. The error has been logged.",
