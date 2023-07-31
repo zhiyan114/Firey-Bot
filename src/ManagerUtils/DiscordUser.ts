@@ -151,6 +151,7 @@ export class DiscordUser {
       const newData = await prisma.members.update({
         data: {
           username: data ? data.username : this.getUsername(),
+          displayname: data ? data.displayName : this.user.displayName,
           rulesconfirmedon: data?.rulesconfirmedon,
         },
         where: {
@@ -185,6 +186,7 @@ export class DiscordUser {
         data: {
           id: this.user.id,
           username: this.getUsername(),
+          displayname: this.user.displayName,
           rulesconfirmedon: rulesconfirmed,
         }
       });

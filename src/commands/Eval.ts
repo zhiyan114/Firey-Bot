@@ -64,11 +64,19 @@ const utils = {
           return await prisma.members.update({
             data: {
               username: newUsername,
+              displayname: member.user.displayName
             },
             where: {
               id: member.id,
               NOT: {
-                username: newUsername,
+                OR: [
+                  {
+                    username: newUsername
+                  },
+                  {
+                    displayname: member.user.displayName
+                  }
+                ]
               }
             }
           });
