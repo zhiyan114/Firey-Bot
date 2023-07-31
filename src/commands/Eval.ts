@@ -68,16 +68,18 @@ const utils = {
             },
             where: {
               id: member.id,
-              NOT: {
-                OR: [
-                  {
+              OR: [
+                {
+                  NOT: {
                     username: newUsername
                   },
-                  {
+                },
+                {
+                  NOT: {
                     displayname: member.user.displayName
                   }
-                ]
-              }
+                }
+              ]
             }
           });
         } catch(ex){

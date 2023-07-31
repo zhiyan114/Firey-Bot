@@ -17,8 +17,10 @@ const redis = createClient({
 });
 
 
-redis.on("error", async err => {
-  if((err as Error).message === "Connection timeout") return;
+redis.on("error", async (err: Error) => {
+  if(err.message === "Connection timeout") return;
+  if(err.message === "getaddrinfo ENOTFOUND redis") return;
+  
   captureException(err);
   sendLog(LogType.Error, "Redis: Client Thrown Exception");
 });

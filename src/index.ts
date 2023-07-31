@@ -1,5 +1,5 @@
 // Components
-import { Client, GatewayIntentBits as Intents, Partials, ActivityType } from "discord.js";
+import { Client, GatewayIntentBits as Intents, Partials, ActivityType, DiscordAPIError } from "discord.js";
 import { init as sentryInit } from "@sentry/node";
 import { ExtraErrorData, RewriteFrames } from "@sentry/integrations";
 import {botToken, guildID, twitch} from "./config";
@@ -31,6 +31,7 @@ if(process.env["SENTRY_DSN"]) {
         }
       })
     ],
+
     beforeBreadcrumb: (breadcrumb) => {
       // List of urls to ignore
       const ignoreUrl = [
@@ -45,12 +46,18 @@ if(process.env["SENTRY_DSN"]) {
 
       return breadcrumb;
     },
+
     ignoreErrors: [
       "ETIMEDOUT",
-      "EADDRINUSE"
+      "EADDRINUSE",
+      "ENOTFOUND"
     ],
-    beforeSend : (evnt) => {
+    beforeSend : (evnt, hint) => {
       if(evnt.tags && evnt.tags["isEval"]) return null;
+
+      const ex = hint.originalException;
+      if(ex instanceof DiscordAPIError && ex.code === APIErrors.UNKNOWN_INTERACTION) return null;
+
       return evnt;
     },
     release: execSync(`git -C ${__dirname} rev-parse HEAD`).toString().trim() // Pull Release Data
@@ -76,6 +83,7 @@ export const client = new Client({
 export const streamCli = new tStreamClient(twitch.channel);
 /* Internal Services */
 import { loadClientModule } from "./services";
+import { APIErrors } from "./utils/discordErrorCode";
 
 
 client.on("ready", async () => {

@@ -1,9 +1,11 @@
 /* Command Builder */
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { CommandInteraction, BaseGuildTextChannel, TextChannel } from "discord.js";
+import { CommandInteraction, BaseGuildTextChannel, TextChannel, DiscordAPIError } from "discord.js";
 import { adminRoleID, logChannelID }  from "../config";
 import { ICommand } from "../interface";
 import { DiscordUser } from "../ManagerUtils/DiscordUser";
+import {APIErrors} from "../utils/discordErrorCode";
+import { captureException } from "@sentry/node";
 const PurgeCmd = new SlashCommandBuilder()
   .setName("purge")
   .setDescription("Purge messages from a channel")
@@ -33,8 +35,29 @@ const PurgeFunc = async (interaction : CommandInteraction) => {
   await interaction.deferReply({ ephemeral: true });
 
   // Start the purge
-  await (interaction.channel as BaseGuildTextChannel).bulkDelete(amount);
-  await interaction.followUp({content: `Successfully purged ${amount} messages!`, ephemeral: true});
+  try {
+    await (interaction.channel as BaseGuildTextChannel).bulkDelete(amount);
+    await interaction.followUp({content: `Successfully purged ${amount} messages!`, ephemeral: true});
+  } catch(ex) {
+    if(ex instanceof DiscordAPIError) {
+      if(ex.code === APIErrors.BULK_DELETE_MESSAGE_TOO_OLD) return await interaction.followUp({
+        content: "Cannot purge messages that are older than 14 days old",
+        ephemeral: true
+      });
+      
+      if(ex.code === APIErrors.UNKNOWN_MESSAGE) return await interaction.followUp({
+        content: "Attempted to delete invalid message, please run the command again",
+        ephemeral: true
+      });
+    }
+    
+    captureException(ex);
+    return await interaction.followUp({
+      content: "Exception occur while purging message. The error has been logged.",
+      ephemeral: true
+    });
+  }
+  
 
   // Log the purge (except if it's done by zhiyan114 in the logging channel for cleanup maintenance)
   if(interaction.channel.id === logChannelID && interaction.user.id === "233955058604179457") return;
