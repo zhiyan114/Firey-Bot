@@ -6,9 +6,7 @@ import {client} from "../index";
 import { ICommand } from "../interface";
 import { tmiClient } from "../services/TwitchHandler";
 import { withScope as sentryScope } from "@sentry/node";
-import { members, Prisma } from "@prisma/client";
 import globalCmdRegister from "../globalCmdRegister";
-
 /* Command Builder */
 const EvalCmd = new SlashCommandBuilder()
   .setName("eval")
@@ -53,42 +51,21 @@ const utils = {
   // Manually update all the out-of-date users to the database
   updateUserData: async() => {
     if(!prisma) return;
-    const allwait: Promise<members | undefined>[] = [];
     const guild = client.guilds.cache.find(g=>g.id == guildID);
     if(!guild) return;
+
     for(const [,member] of await guild.members.fetch()) {
       if(member.user.bot) continue;
-      allwait.push((async()=>{
-        try {
-          const newUsername = member.user.discriminator === "0" ? member.user.username : member.user.tag;
-          return await prisma.members.update({
-            data: {
-              username: newUsername,
-              displayname: member.user.displayName
-            },
-            where: {
-              id: member.id,
-              OR: [
-                {
-                  NOT: {
-                    username: newUsername
-                  },
-                },
-                {
-                  NOT: {
-                    displayname: member.user.displayName
-                  }
-                }
-              ]
-            }
-          });
-        } catch(ex){
-          if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code == "P2025") return;
-          throw ex;
+      await prisma.members.update({
+        data: {
+          username: member.user.username,
+          displayname: member.user.displayName,
+        },
+        where: {
+          id: member.user.id,
         }
-      })());
+      });
     }
-    await Promise.all(allwait);
   },
 
   // Manually reset the bot's status in-case it was removed from discord's backend

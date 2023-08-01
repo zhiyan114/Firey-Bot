@@ -4,4 +4,4 @@ LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
 LOGGER = logging.getLogger(__name__)
 
 # Keep it disable when not debugging
-#logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT, filename="whisper.log")
+# logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT, filename="whisper.log")
