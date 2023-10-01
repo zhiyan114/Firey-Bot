@@ -67,6 +67,9 @@ export default (client : Client) => {
 
 
   notifier.on("notified", (data : NotifiedEvent) =>{
+    // There's no clear documentation so we'll make an assumption that published = ts video uploaded (or ts of the callback being invoked) and updated = when video metadata is edited
+    if(data.published.getTime() < (new Date().getTime()) - 2592000000 || data.updated.getTime() < (new Date().getTime()) - 2592000000)
+      return;
     NotificationChannel.send({ content: `<@&${conf.pingRoleID}> New Video is out!! Check it out here: ${data.video.link}` });
   });
 
