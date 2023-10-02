@@ -54,16 +54,16 @@ interface NotifiedEvent {
   published: Date;
   updated: Date;
 }
-
+const pathURL = "/UwU_API/youtube/callback/";
 export default (client : Client) => {
   const NotificationChannel = client.channels.cache.find(channel => channel.id === conf.guildChannelID) as TextChannel;
   let timeoutEvent : NodeJS.Timeout;
   const notifier = new YouTubeNotifier({
-    hubCallback: `${isHttpsMode ? "https" : "http"}://${webConf.FQDN}${webConf.Port ? `:${webConf.Port}` : ""}/youtube/callback`,
+    hubCallback: `${isHttpsMode ? "https" : "http"}://${webConf.FQDN}${webConf.Port ? `:${webConf.Port}` : ""}${pathURL}`,
     middleware: true,
-    secret: "NotifierSecret_aos9z8vh2na68z8df7aa982jahfg6738",
+    secret: process.env["YTSECRET"] ?? "NotifierSecret_ShouldNotBeExposed",
   });
-  restServer.use("/youtube/callback", notifier.listener());
+  restServer.use(pathURL, notifier.listener());
 
 
   notifier.on("notified", (data : NotifiedEvent) =>{
