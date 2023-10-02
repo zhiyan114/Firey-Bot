@@ -54,7 +54,7 @@ interface NotifiedEvent {
   published: Date;
   updated: Date;
 }
-const pathURL = "/UwU_API/youtube/callback/";
+const pathURL = "/UwU/youtube/callback/";
 export default (client : Client) => {
   const NotificationChannel = client.channels.cache.find(channel => channel.id === conf.guildChannelID) as TextChannel;
   let timeoutEvent : NodeJS.Timeout;

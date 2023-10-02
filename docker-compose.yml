@@ -19,6 +19,7 @@ services:
       - TWITCH_TOKEN
       - AMQP_CONN
       - REDIS_CONN
+      - YTSECRET
     depends_on:
       - redis
     restart: on-failure
