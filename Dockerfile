@@ -1,5 +1,5 @@
 # Add the node 18.x on ubuntu
-FROM node:18.3.0-bullseye-slim
+FROM node:18.18.0-buster-slim
 
 # Setup the environment?
 WORKDIR /source/
