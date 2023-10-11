@@ -207,6 +207,7 @@ export default {
         await saveToDisk(file.url, fName);
         return await ffProbeAsync(fName);
       } catch(ex) {
+        captureException(ex);
         return;
       }
     })();

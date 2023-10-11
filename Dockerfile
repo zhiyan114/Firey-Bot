@@ -8,7 +8,7 @@ ENV ISDOCKER=true
 # Install/upgrade some packages
 RUN npm install -g npm@latest
 RUN apt-get update
-RUN apt-get install python3 make g++ git fonts-noto -y
+RUN apt-get install python3 make g++ git fonts-noto ffmpeg -y
 
 # Install npm packages
 COPY package.json package-lock.json ./
