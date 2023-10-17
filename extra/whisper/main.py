@@ -22,7 +22,7 @@ if(sentryData is not None):
 
 def SaveFileToDisk(url: str) -> str:
     # Get the file name
-    fileName = url.split("/")[-1]
+    # fileName = url.split("/")[-1]
 
     # Create a temp directory
     tempDir = os.path.join(os.getcwd(), "temp")
@@ -30,7 +30,7 @@ def SaveFileToDisk(url: str) -> str:
         os.mkdir(tempDir)
 
     # Create a temp file
-    tempFile = os.path.join(tempDir, str(uuid.uuid4()) + fileName)
+    tempFile = os.path.join(tempDir, str(uuid.uuid4()))
 
     # Download the file
     r = requests.get(url, stream=True)
