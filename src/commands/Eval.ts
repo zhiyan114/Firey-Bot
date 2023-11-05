@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { ActionRowBuilder, ActivityType, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, TextChannel } from "discord.js";
+import { ActionRowBuilder, ActivityType, ButtonBuilder, ButtonStyle, ColorResolvable, CommandInteraction, EmbedBuilder, TextChannel } from "discord.js";
 import { guildID, newUserRoleID } from "../config";
 import { prisma } from "../utils/DatabaseManager";
 import {client} from "../index";
@@ -96,8 +96,18 @@ const utils = {
 
   // Global Command Register
   globalCmdRegister,
-};
 
+  // Send Embed Messages
+  sendEmbedMessage: async( text: string, channelid: string, title: string | null = null, color: ColorResolvable | null = null) => {
+    const embed = new EmbedBuilder()
+      .setTitle(title)
+      .setColor(color)
+      .setDescription(text);
+    ((await client.channels.fetch(channelid)) as TextChannel).send({
+      embeds: [embed]
+    });
+  }
+};
 
 /* Function Builder */
 const EvalFunc = async (interaction : CommandInteraction) => {
