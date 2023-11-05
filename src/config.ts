@@ -22,7 +22,6 @@ export const youtubeNotification = {
 };
 export const reactionRole = {
   reactionLists: {
-    "907314933648199700": "908723067067437076",
     "941368077856161885": "946613137031974963"
   },
   channelID: "908719210040008755",
