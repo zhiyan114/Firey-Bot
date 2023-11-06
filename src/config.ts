@@ -21,17 +21,18 @@ export const youtubeNotification = {
   pingRoleID: "946613137031974963"
 };
 export const reactionRole = {
+  //  "EmoteID": "RoleID"
   reactionLists: {
     "941368077856161885": "946613137031974963"
   },
   channelID: "908719210040008755",
-  messageID: "970021524763471893"
+  messageID: "1170876856745070682"
 };
 export const twitch = {
   prefix: "!",
   channel: "fireythealiendragon",
   discordChannelID: "908120379766231070",
-  roleToPing: "908723067067437076",
+  roleToPing: "everyone",
   reminderInterval: 1800000, // 30 minutes
 };
 // List of channels to not grant points on (Channel ID)

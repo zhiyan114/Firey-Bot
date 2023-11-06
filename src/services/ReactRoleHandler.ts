@@ -21,6 +21,12 @@ export default async (client : Client) => {
   const guild = client.guilds.cache.find(opt=>opt.id === guildID);
   if(!guild) return;
   const message = await (guild.channels.cache.find(opt=>opt.id ===reactionRole.channelID) as TextChannel).messages.fetch(reactionRole.messageID);
+
+  // Check and see if there's already reaction made to the message. If not, add it
+  if(message.reactions.cache.size < filterEmotes.length)
+    for(const emoteID of filterEmotes) 
+      await message.react(emoteID);
+
   const deleteFilter = (reaction : MessageReaction) => filterEmotes.includes(reaction.emoji.id ?? "0"); // If ID is somehow undefined, we'll feed it 0, which essentially means nothing
   const collector = message.createReactionCollector({filter: deleteFilter, dispose: true});
   collector.on("collect", async (react : MessageReaction, user : User) => {
