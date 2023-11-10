@@ -119,7 +119,7 @@ streamCli.on("start",async (streamData)=>{
     .setDescription(`Currently streaming **${streamData.game_name}** with ${streamData.viewer_count} viewers`)
     .setURL(streamUrl)
     .setImage(streamData.thumbnail_url);
-  await channel.send({content: `<@&${twitch.roleToPing}> Derg is streaming right now, come join!`, embeds: [embed]});
+  await channel.send({content: `<@${twitch.roleToPing}> Derg is streaming right now, come join!`, embeds: [embed]});
     
 });
 streamCli.on("end", async()=>{
