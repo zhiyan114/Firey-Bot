@@ -11,15 +11,15 @@ RUN apt-get install python3 make g++ git -y
 COPY package.json package-lock.json ./
 RUN npm install
 
-# Copy over rest of the essential files
+# Copy all build files and build
 COPY tsconfig.json prisma/ ./
 COPY scripts/ ./scripts
 RUN chmod +x ./scripts/*
 COPY src/ ./src/
-COPY .git/ ./.git/
-
-# Build the necessary executable file
 RUN npm run build
+
+# Passthrough git to keep commit hash up to date
+COPY .git/ ./.git/
 RUN echo $(git -C /source/ rev-parse HEAD) > "commitHash"
 
 # Perform build cleanup (or post-build stuff)
