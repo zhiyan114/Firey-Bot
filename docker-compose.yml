@@ -20,6 +20,9 @@ services:
       - AMQP_CONN
       - REDIS_CONN
       - YTSECRET
+      - SENTRY_AUTH_TOKEN
+      - SENTRY_ORG
+      - SENTRY_PROJECT
     depends_on:
       - redis
     restart: on-failure
