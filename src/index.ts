@@ -7,8 +7,8 @@ import { initailizeLogger, sendLog, LogType } from "./utils/eventLogger";
 import { prisma } from "./utils/DatabaseManager";
 import { twitchClient as tStreamClient } from "./utils/twitchStream";
 import { redis as rClient } from "./utils/DatabaseManager";
-import { execSync } from "child_process";
 import path from "path";
+import { existsSync, readFileSync } from "fs";
 
 
 // Load sentry if key exists
@@ -60,7 +60,7 @@ if(process.env["SENTRY_DSN"]) {
 
       return evnt;
     },
-    release: execSync(`git -C ${__dirname} rev-parse HEAD`).toString().trim() // Pull Release Data
+    release: existsSync("commitHash") ? readFileSync("commitHash").toString() : undefined // Pull Release Data
   });
 }
 

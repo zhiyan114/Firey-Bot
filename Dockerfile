@@ -1,14 +1,11 @@
-# Add the node 18.x on ubuntu
-FROM node:18.18.0-buster-slim
-
-# Setup the environment?
+# Setup build image
+FROM node:20-buster-slim as buildenv
 WORKDIR /source/
-ENV ISDOCKER=true
-
-# Install/upgrade some packages
 RUN npm install -g npm@latest
+
+# Install system build tools
 RUN apt-get update
-RUN apt-get install python3 make g++ git fonts-noto ffmpeg -y
+RUN apt-get install python3 make g++ git -y
 
 # Install npm packages
 COPY package.json package-lock.json ./
@@ -19,10 +16,33 @@ COPY tsconfig.json prisma/ ./
 COPY src/ ./src/
 COPY .git/ ./.git/
 
-# Build the package
+# Build the necessary executable file
 RUN npm run build
+RUN echo $(git -C /source/ rev-parse HEAD) > "commitHash"
+
+# Perform build cleanup (or post-build stuff)
+RUN npm prune --production
+
+
+
+# Setup production image
+FROM node:20-buster-slim
+
+# Setup the environment?
+WORKDIR /app/
+ENV ISDOCKER=true
+
+# Install/upgrade some system packages
+RUN npm install -g npm@latest
+RUN apt-get update
+RUN apt-get install fonts-noto ffmpeg -y
+
+# Copy files from the build env
+COPY --from=buildenv /source/dist /app/
+COPY --from=buildenv /source/node_modules /app/node_modules/
+COPY --from=buildenv /source/commitHash /app/commitHash
 
 # Exposed web server port
 EXPOSE ${WEBSERVER_PORT}
 
-CMD ["npm", "run", "start"]
+CMD "node index.js"
