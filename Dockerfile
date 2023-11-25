@@ -13,6 +13,7 @@ RUN npm install
 
 # Copy over rest of the essential files
 COPY tsconfig.json prisma/ ./
+COPY scripts/ ./scripts
 COPY src/ ./src/
 COPY .git/ ./.git/
 
@@ -21,6 +22,7 @@ RUN npm run build
 RUN echo $(git -C /source/ rev-parse HEAD) > "commitHash"
 
 # Perform build cleanup (or post-build stuff)
+RUN scripts/sentryDeploy.sh
 RUN npm prune --production
 
 

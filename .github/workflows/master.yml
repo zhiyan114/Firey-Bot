@@ -29,9 +29,9 @@ jobs:
       run: npm i
     - name: build it
       run: npm run build
-    - name: Publish artifact to sentry
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-        SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-      run: npm run sentryinit
+    # - name: Publish artifact to sentry
+    #   env:
+    #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    #     SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+    #     SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+    #   run: npm run sentryinit
