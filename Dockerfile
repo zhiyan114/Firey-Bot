@@ -14,6 +14,7 @@ RUN npm install
 # Copy over rest of the essential files
 COPY tsconfig.json prisma/ ./
 COPY scripts/ ./scripts
+RUN chmod +x ./scripts/*
 COPY src/ ./src/
 COPY .git/ ./.git/
 
