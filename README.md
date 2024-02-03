@@ -47,3 +47,4 @@ For environment variable configurations, please refer to the `.env.example` file
 * `noPointsChannel` - A list of channels that the points will not be awarded to
 * `enableExtra` - A list of extra services that can either be enabled or disabled
     * `whisper` - OpenAI Speech To Text Transcriber
+    * `userReport` - Enables user to report software bug via sentry user-feedback
