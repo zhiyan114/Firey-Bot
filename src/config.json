@@ -1,0 +1,38 @@
+{
+    "guildID": "906899666656956436",
+    "adminRoleID": "908090260087513098",
+    "newUserRoleID": "907768073442983966",
+    "welcomeChannelID": "907121158376288307",
+    "logChannelID": "971584951076147261",
+    "generalChannelID": "908069392384933938",
+    "noPointsChannel": [
+        "907121158376288307"
+    ],
+    "youtube": {
+        "youtubeChannelID": "UCKsRmVfwU-IkVWhfiSVp1ig",
+        "guildChannelID": "912150616908890142",
+        "pingRoleID": "946613137031974963"
+    },
+    "twitch": {
+        "prefix": "!",
+        "channel": "fireythealiendragon",
+        "notification": {
+            "channelID": "908120379766231070",
+            "roleToPing" : "everyone",
+            "inviteRemindExpire": 1800000
+        }
+    },
+    "reactRoles": {
+        "reactionLists": [
+            {
+                "EmoteID": "941368077856161885",
+                "RoleID": "946613137031974963"
+            }
+        ],
+        "channelID": "908719210040008755"
+    },
+    "enableExtra": {
+        "whisper": true,
+        "userReport": false
+    }
+}
