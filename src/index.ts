@@ -3,7 +3,6 @@ import { extraErrorDataIntegration, rewriteFramesIntegration } from "@sentry/int
 import { DiscordAPIError } from "discord.js";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
-import { LogType, sendLog } from "./utils/eventLogger";
 import path from "path";
 import { existsSync, readFileSync } from "fs";
 
@@ -11,7 +10,6 @@ import { existsSync, readFileSync } from "fs";
  * Initalize Sentry to catch those pesky creatures ^w^
  */
 if(process.env["SENTRY_DSN"]) {
-  sendLog(LogType.Info,"Sentry DSN Detected, Error Logging will be enabled");
   sentryInit({
     dsn: process.env["SENTRY_DSN"],
     maxValueLength: 500,
