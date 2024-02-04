@@ -9,7 +9,7 @@ export default {
     .setDMPermission(false)
     .setDescription(`Report any bugs that are happening to the bot`),
   function: async (command)=>{
-        return;
+    return;
   },
   disabled: process.env["SENTRY_DSN"] && enableExtra.userReport,
 } as ICommand;

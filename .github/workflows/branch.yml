@@ -25,6 +25,6 @@ jobs:
     - name: install package
       run: npm i
     - name: lint check
-      run: npm run lint
+      run: npm run lint:check
     - name: build
       run: npm run build
