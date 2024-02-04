@@ -1,4 +1,4 @@
-import { init as sentryInit } from "@sentry/node";
+import { init as sentryInit, Integrations } from "@sentry/node";
 import { extraErrorDataIntegration, rewriteFramesIntegration } from "@sentry/integrations";
 import { DiscordAPIError } from "discord.js";
 import { APIErrors } from "./utils/discordErrorCode";
@@ -6,6 +6,16 @@ import { Prisma } from "@prisma/client";
 import path from "path";
 import { existsSync, readFileSync } from "fs";
 import { DiscordClient } from "./core/DiscordClient";
+
+
+/**
+ * Setup our beloved client stuff
+ */
+
+if(!process.env["BOTTOKEN"])
+  throw new Error("No token provided");
+
+const CoreClient = new DiscordClient();
 
 
 /**
@@ -28,7 +38,8 @@ if(process.env["SENTRY_DSN"]) {
           frame.filename = `/${path.relative(__dirname, absPath).replace(/\\/g, "/")}`;
           return frame;
         }
-      })
+      }),
+      new Integrations.Prisma({client: CoreClient.prisma})
     ],
   
     beforeBreadcrumb: (breadcrumb) => {
@@ -68,9 +79,6 @@ if(process.env["SENTRY_DSN"]) {
  * Let's start our beloved client
  */
 
-if(!process.env["BOTTOKEN"])
-  throw new Error("No token provided");
-
-new DiscordClient()
+CoreClient
   .start(process.env["BOTTOKEN"])
   .then(()=>console.log("Bot started"));
