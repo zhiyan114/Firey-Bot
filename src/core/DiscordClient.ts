@@ -6,22 +6,6 @@ import { connect, Connection } from "amqplib";
 import { eventLogger } from "../utils/eventLogger";
 
 
-const mainIntents = [
-  GatewayIntentBits.Guilds,
-  GatewayIntentBits.GuildMessageReactions,
-  GatewayIntentBits.GuildModeration,
-  GatewayIntentBits.GuildMembers,
-  GatewayIntentBits.MessageContent,
-  GatewayIntentBits.GuildMessages,
-  GatewayIntentBits.GuildPresences
-];
-
-const mainPartials = [
-  Partials.Channel,
-  Partials.GuildMember,
-  Partials.User
-];
-
 export class DiscordClient extends Client {
   config = config;
   prisma: PrismaClient;
@@ -31,8 +15,20 @@ export class DiscordClient extends Client {
 
   constructor() {
     super({
-      intents: mainIntents,
-      partials: mainPartials
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.GuildModeration,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildPresences
+      ],
+      partials: [
+        Partials.Channel,
+        Partials.GuildMember,
+        Partials.User
+      ]
     });
 
     // Initalize components
@@ -62,5 +58,9 @@ export class DiscordClient extends Client {
         type: ActivityType.Competing,
       }]
     });
+  }
+
+  private async registerCommands() {
+
   }
 }
