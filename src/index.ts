@@ -41,6 +41,10 @@ if(process.env["SENTRY_DSN"]) {
       }),
       new Integrations.Prisma({client: CoreClient.prisma})
     ],
+
+    _experiments: {
+      metricsAggregator: true,
+    },
   
     beforeBreadcrumb: (breadcrumb) => {
       // List of urls to ignore

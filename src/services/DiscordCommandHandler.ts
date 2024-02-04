@@ -3,6 +3,7 @@
 import { ChannelType, CommandInteraction, REST, Routes } from "discord.js";
 import { banCommand } from "../commands/discord";
 import { baseCommand } from "../core/baseCommand";
+import { metrics } from "@sentry/node";
 
 
 export class DiscordCommandHandler {
@@ -52,7 +53,13 @@ export class DiscordCommandHandler {
 
     }
 
-    // Execute command, assuming all the checks are passed
+    // Execute command, assuming all the checks are passed (and track their usages)
+    metrics.increment("discord.command.executed", 1, {
+      timestamp: new Date().getTime(),
+      tags: {
+        command: interaction.commandName
+      }
+    });
     await command.execute(interaction);
   }
 }
