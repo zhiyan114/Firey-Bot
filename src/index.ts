@@ -5,10 +5,13 @@ import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
 import path from "path";
 import { existsSync, readFileSync } from "fs";
+import { DiscordClient } from "./core/DiscordClient";
+
 
 /**
  * Initalize Sentry to catch those pesky creatures ^w^
  */
+
 if(process.env["SENTRY_DSN"]) {
   sentryInit({
     dsn: process.env["SENTRY_DSN"],
@@ -59,3 +62,15 @@ if(process.env["SENTRY_DSN"]) {
     release: existsSync("commitHash") ? readFileSync("commitHash").toString() : undefined // Pull Release Data
   });
 }
+
+
+/**
+ * Let's start our beloved client
+ */
+
+if(!process.env["BOTTOKEN"])
+  throw new Error("No token provided");
+
+new DiscordClient()
+  .start(process.env["BOTTOKEN"])
+  .then(()=>console.log("Bot started"));
