@@ -6,6 +6,18 @@ import { connect, Connection } from "amqplib";
 import { eventLogger } from "../utils/eventLogger";
 
 
+/**
+ * Integrated Discord Client
+ * @class DiscordClient
+ * @property {PrismaClient} prisma - Prisma ORM Client
+ * @property {RedisClientType} redis - Redis Client
+ * @property {Connection} amqp - AMQP Connection
+ * @property {eventLogger} logger - Event Logger
+ * @property {config} config - Configuration
+ * @method start - Start the client
+ * @method dispose - Stop the client and dispose the resources
+ * @method updateStatus - Update the status of the bot
+ */
 export class DiscordClient extends Client {
   config = config;
   prisma: PrismaClient;
@@ -50,6 +62,14 @@ export class DiscordClient extends Client {
     this.updateStatus();
   }
 
+  public async dispose() {
+    // Close all connections
+    await this.prisma.$disconnect();
+    await this.redis.disconnect();
+    if(this.amqp) await this.amqp.close();
+    await this.destroy();
+  }
+
   public updateStatus() {
     this.user?.setPresence({
       status: "dnd",
@@ -58,9 +78,5 @@ export class DiscordClient extends Client {
         type: ActivityType.Competing,
       }]
     });
-  }
-
-  private async registerCommands() {
-
   }
 }

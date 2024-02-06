@@ -86,3 +86,15 @@ if(process.env["SENTRY_DSN"]) {
 CoreClient
   .start(process.env["BOTTOKEN"])
   .then(()=>console.log("Bot started"));
+
+async function quitSignalHandler() {
+  await CoreClient.dispose();
+  process.exit(0);
+}
+
+
+
+process.on("SIGINT", quitSignalHandler);
+process.on("SIGTERM", quitSignalHandler);
+process.on("SIGQUIT", quitSignalHandler);
+  
