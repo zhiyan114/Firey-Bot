@@ -59,12 +59,12 @@ export class DiscordClient extends Client {
     
     // Initialize Events
     this.events = {
-      discord: new DiscordEvents(this),
-      redis: new RedisEvents(this),
       amqp: new AMQPEvents(this)
     };
-    this.events.discord.registerEvents();
-    this.events.redis.registerEvents();
+    new DiscordEvents(this)
+      .registerEvents();
+    new RedisEvents(this)
+      .registerEvents();
   }
 
   public async start(token: string) {
@@ -81,7 +81,10 @@ export class DiscordClient extends Client {
     // Close all connections
     await this.prisma.$disconnect();
     await this.redis.disconnect();
-    if(this.amqp) await this.amqp.close();
+    if(this.amqp) {
+      this.events.amqp.noAutoReconnect = true;
+      await this.amqp.close();
+    }
     await this.destroy();
   }
 

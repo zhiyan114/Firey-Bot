@@ -10,6 +10,8 @@ import { connect } from "amqplib";
  */
 export class AMQPEvents extends baseEvent {
   client: DiscordClient;
+  noAutoReconnect = false;
+
   constructor(client: DiscordClient) {
     super();
     this.client = client;
@@ -40,8 +42,8 @@ export class AMQPEvents extends baseEvent {
       type: "Warning",
       message: "AMQP Server disconnected, reconnecting in 5 seconds..."
     });
-
-    setTimeout(this.reconnect.bind(this), 5000);
+    if(!this.noAutoReconnect)
+      setTimeout(this.reconnect.bind(this), 5000);
   }
 
   private async reconnect() {
