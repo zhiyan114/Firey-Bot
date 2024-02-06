@@ -4,6 +4,9 @@ import { PrismaClient } from "@prisma/client";
 import { RedisClientType, createClient } from "redis";
 import { connect, Connection } from "amqplib";
 import { eventLogger } from "../utils/eventLogger";
+import { DiscordEvents } from "../events/discordEvents";
+import { RedisEvents } from "../events/redisEvents";
+import { AMQPEvents } from "../events/amqpEvents";
 
 
 /**
@@ -24,6 +27,7 @@ export class DiscordClient extends Client {
   redis: RedisClientType;
   amqp?: Connection;
   logger: eventLogger;
+  events;
 
   constructor() {
     super({
@@ -52,12 +56,23 @@ export class DiscordClient extends Client {
     this.prisma = new PrismaClient({
       errorFormat: "minimal"
     });
+    
+    // Initialize Events
+    this.events = {
+      discord: new DiscordEvents(this),
+      redis: new RedisEvents(this),
+      amqp: new AMQPEvents(this)
+    };
+    this.events.discord.registerEvents();
+    this.events.redis.registerEvents();
   }
 
   public async start(token: string) {
     await this.login(token);
-    if(process.env["AMQP_CONN"])
+    if(process.env["AMQP_CONN"]) {
       this.amqp = await connect(process.env["AMQP_CONN"]);
+      this.events.amqp.registerEvents();
+    }
     await this.prisma.$connect();
     this.updateStatus();
   }
