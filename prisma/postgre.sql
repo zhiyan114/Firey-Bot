@@ -1,5 +1,10 @@
--- Inital SQL Table Creation v2
--- Combined economy column to members table
+-- Inital SQL Table Creation v3
+-- Simple Key/Value internal store
+
+CREATE TABLE public.config (
+    key TEXT PRIMARY KEY,
+    value TEXT
+);
 
 CREATE TABLE public.members (
     id VARCHAR(100) NOT NULL,
