@@ -11,7 +11,6 @@ import { init as sentryInit, Integrations } from "@sentry/node";
 import { extraErrorDataIntegration, rewriteFramesIntegration } from "@sentry/integrations";
 import { Prisma } from "@prisma/client";
 import path from "path";
-import { existsSync, readFileSync } from "fs";
 
 
 /**
@@ -160,7 +159,7 @@ export class DiscordClient extends Client {
         if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null;
         return evnt;
       },
-      release: existsSync("commitHash") ? readFileSync("commitHash").toString() : undefined // Pull Release Data
+      release: process.env['commitHash']
     });
   }
 }

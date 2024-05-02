@@ -1,9 +1,10 @@
 import { DiscordClient } from "./core/DiscordClient";
 import { TwitchClient } from "./core/TwitchClient";
+import { existsSync, readFileSync } from "fs";
 
 
 /**
- * Setup our beloved client stuff
+ * Start up checks
  */
 
 if(!process.env["BOTTOKEN"])
@@ -11,8 +12,22 @@ if(!process.env["BOTTOKEN"])
 if(!process.env["TWITCH_TOKEN"])
   throw new Error("No twitch token provided");
 
+if(!process.env["commitHash"]) {
+  // Try to load the commit hash via file
+  if(existsSync("commitHash"))
+    process.env["commitHash"] = readFileSync("commitHash").toString();
+  else
+    console.warn("No commit hash found!");
+}
+
+
+/**
+ * Setup our beloved client stuff
+ */
+
 const CoreClient = new DiscordClient();
 const twitchClient = new TwitchClient(CoreClient, process.env["TWITCH_TOKEN"]);
+
 
 /**
  * Let's start our beloved client
@@ -27,6 +42,9 @@ twitchClient
   .then(()=>console.log("Twitch client started"));
 
 
+/**
+ * Handle cleanups
+ */
 async function quitSignalHandler() {
   await CoreClient.dispose();
   await twitchClient.dispose();
