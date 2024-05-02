@@ -1,3 +1,5 @@
+// @TODO: Refactor this to use the new codebase...
+
 import { createHash } from "crypto";
 import { Channel, ChannelType, Guild, GuildInvitableChannelResolvable, InviteCreateOptions, NewsChannel, TextChannel, VoiceChannel } from "discord.js";
 import { redis } from "../utils/DatabaseManager";
