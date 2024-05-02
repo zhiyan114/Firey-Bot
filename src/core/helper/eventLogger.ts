@@ -1,5 +1,5 @@
 import { ColorResolvable, EmbedBuilder, TextChannel } from "discord.js";
-import { DiscordClient } from "../core/DiscordClient";
+import { DiscordClient } from "../DiscordClient";
 
 
 export interface LogData {

@@ -2,8 +2,7 @@
 
 import { createHash } from "crypto";
 import { Channel, ChannelType, Guild, GuildInvitableChannelResolvable, InviteCreateOptions, NewsChannel, TextChannel, VoiceChannel } from "discord.js";
-import { redis } from "../utils/DatabaseManager";
-import { client } from "..";
+import { DiscordClient } from "../DiscordClient";
 
 
 /**
@@ -13,11 +12,13 @@ import { client } from "..";
  */
 export class DiscordInvite {
   private guild: Guild;
+  private client: DiscordClient;
   private redisKey: string;
   private baseUrl = "https://discord.gg/";
 
-  constructor(requestid?: string, guild?: Guild) {
+  constructor(client: DiscordClient, requestid?: string, guild?: Guild) {
     // Set the provided guild or the first one on the cache if this is a single server bot
+    this.client = client;
     guild = guild ?? client.guilds.cache.first();
     if(!guild) throw new DiscordInviteError("No guild is available for the bot");
     this.guild = guild;
@@ -74,7 +75,7 @@ export class DiscordInvite {
     if(this.guild.vanityURLCode) return rawCode ? this.guild.vanityURLCode : this.baseUrl + this.guild.vanityURLCode;
 
     // Use the cached invite key if it exists
-    const cache = await redis.GET(this.redisKey);
+    const cache = await this.client.redis.GET(this.redisKey);
     if(cache) return rawCode ? cache : this.baseUrl + cache;
 
     // Configure default inviteOpt if it does not exist
@@ -92,8 +93,8 @@ export class DiscordInvite {
 
     // Create a new invite key and save it to the cache
     const inviteLink = await this.guild.invites.create(channel, inviteOpt);
-    await redis.SET(this.redisKey, inviteLink.code);
-    await redis.EXPIRE(this.redisKey, inviteOpt.maxAge);
+    await this.client.redis.SET(this.redisKey, inviteLink.code);
+    await this.client.redis.EXPIRE(this.redisKey, inviteOpt.maxAge);
     return rawCode ? inviteLink.code : inviteLink.url;
   }
 

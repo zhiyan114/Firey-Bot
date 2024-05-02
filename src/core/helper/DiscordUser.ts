@@ -1,11 +1,9 @@
 import { APIEmbedField, ColorResolvable, DiscordAPIError, EmbedBuilder, User } from "discord.js";
-import { LogType, sendLog } from "../utils/eventLogger";
-import { prisma, redis } from "../utils/DatabaseManager";
-import { APIErrors } from "../utils/discordErrorCode";
+import { APIErrors } from "../../utils/discordErrorCode";
 import { captureException } from "@sentry/node";
 import { Prisma } from "@prisma/client";
-import { client } from "..";
 import { createHash } from "crypto";
+import { DiscordClient } from "../DiscordClient";
 
 type embedMessageType = {
     title: string;
@@ -34,20 +32,19 @@ type ActionLogOpt = {
 }
 
 
-
-export const getUser = async(id: string) => await client.users.fetch(id);
-
 export class DiscordUser {
   private user: User;
+  public client: DiscordClient;
   private cachekey: string;
   public economy: UserEconomy;
   /**
     * This class is used to manage discord users
     * @param user The discord user object or userid
     */
-  constructor(user: User) {
+  constructor(client: DiscordClient, user: User) {
     if(user.bot) throw Error("The discord user cannot be a bot");
     this.user = user;
+    this.client = client;
 
     // Use the first 6 digit of sha512 as user key
     const userHash = createHash("sha512").update(user.id).digest("hex");
@@ -68,7 +65,7 @@ export class DiscordUser {
      * @returns {boolean} if the user exists
      */
   public async cacheExists(): Promise<boolean> {
-    return await redis.exists(this.cachekey) > 0;
+    return await this.client.redis.exists(this.cachekey) > 0;
   }
   /**
      * Returns all the user data stored in the cache (or freshly from database)
@@ -78,7 +75,7 @@ export class DiscordUser {
     // Check if the record already exist in redis
     if(await this.cacheExists()) {
       // Pull it up and use it
-      const data = await redis.hGetAll(this.cachekey);
+      const data = await this.client.redis.hGetAll(this.cachekey);
       return {
         rulesconfirmedon: data.rulesconfirmedon ? new Date(data.rulesconfirmedon) : undefined,
         points: data.points ? Number(data.points) : undefined,
@@ -108,18 +105,17 @@ export class DiscordUser {
     if(newData.points !== undefined) filteredData["points"] = newData.points.toString();
     if(newData.lastgrantedpoint !== undefined) filteredData["lastgrantedpoint"] = newData.lastgrantedpoint.toString();
     // Update the cache   
-    await redis.hSet(this.cachekey, filteredData);
+    await this.client.redis.hSet(this.cachekey, filteredData);
     // set redis expire key in 5 hours
-    await redis.expire(this.cachekey, 18000);
+    await this.client.redis.expire(this.cachekey, 18000);
     return;
   }
   /**
      * Get the user data from the database directly, should only be used when the cache didn't have the data.
      */
   private async getUserFromDB() {
-    if(!prisma) return;
     try {
-      const dbUser = await prisma.members.findUnique({
+      const dbUser = await this.client.prisma.members.findUnique({
         where: {
           id: this.user.id
         }
@@ -146,9 +142,8 @@ export class DiscordUser {
      * @returns whether the operation was successful or not
      */
   public async updateUserData(data?: updateUserData) {
-    if(!prisma) return;
     try {
-      const newData = await prisma.members.update({
+      const newData = await this.client.prisma.members.update({
         data: {
           username: data ? data.username : this.getUsername(),
           displayname: data ? data.displayName : this.user.displayName,
@@ -180,9 +175,8 @@ export class DiscordUser {
      * @returns User data if successfully create a new user, otherwise none
      */
   public async createNewUser(rulesconfirmed?: Date) {
-    if(!prisma) return;
     try {
-      return await prisma.members.create({
+      return await this.client.prisma.members.create({
         data: {
           id: this.user.id,
           username: this.getUsername(),
@@ -233,7 +227,7 @@ export class DiscordUser {
     * @param metadata Additional data to be added for sendLog
     */
   public async actionLog(opt: ActionLogOpt) {
-    await prisma?.modlog.create({
+    await this.client.prisma.modlog.create({
       data: {
         targetid: opt.target?.user.id,
         moderatorid: this.user.id,
@@ -242,8 +236,9 @@ export class DiscordUser {
         metadata: opt.metadata
       }
     });
-    await sendLog(LogType.Interaction, opt.message, {
-      reason: opt.reason,
+    await this.client.logger.sendLog({
+      type: "Interaction",
+      message: opt.message,
       ...opt.metadata
     });
   }
@@ -283,9 +278,8 @@ class UserEconomy {
      * @returns whether the points has been successfully granted or not
      */
   public async grantPoints(points: number) {
-    if(!prisma) return false;
     // User exist and condition passes, grant the user the points
-    const newData = await prisma.members.update({
+    const newData = await this.user.client.prisma.members.update({
       data: {
         lastgrantedpoint: new Date(),
         points: {increment: points}
@@ -308,14 +302,13 @@ class UserEconomy {
      * @returns if the operation was successful or not
      */
   public async deductPoints(points: number, allowNegative?: boolean) {
-    if(!prisma) return false;
     // Check if user are allowed to have negative balance
     if(!allowNegative) {
       const cacheData = await this.user.getCacheData();
       if (!(cacheData?.points) || cacheData.points < points) return false;
     }
     // User has enough, deduct it
-    const newData = await prisma.members.update({
+    const newData = await this.user.client.prisma.members.update({
       data: {
         points: {decrement: points}
       },
@@ -367,6 +360,6 @@ class UserEconomy {
     return true;
   }
   public async getBalance() {
-    return Number(await redis.hGet(this.cacheKey,"points") ?? (await this.user.getCacheData())?.points ?? "0");
+    return Number(await this.user.client.redis.hGet(this.cacheKey,"points") ?? (await this.user.getCacheData())?.points ?? "0");
   }
 }

@@ -4,7 +4,7 @@ import config from '../config.json';
 import { PrismaClient } from "@prisma/client";
 import { RedisClientType, createClient } from "redis";
 import { connect, Connection } from "amqplib";
-import { eventLogger } from "../utils/eventLogger";
+import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents, AMQPEvents } from "../events/";
 
 import { init as sentryInit, Integrations } from "@sentry/node";
@@ -77,6 +77,7 @@ export class DiscordClient extends Client {
   }
 
   public async start(token: string) {
+    await this.logger.initalize();
     await this.login(token);
     if(process.env["AMQP_CONN"]) {
       this.amqp = await connect(process.env["AMQP_CONN"]);
