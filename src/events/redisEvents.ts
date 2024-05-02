@@ -43,5 +43,4 @@ export class RedisEvents extends baseEvent {
       message: "Redis: Connection Issue, Reconnecting..."
     });
   }
-
 }
