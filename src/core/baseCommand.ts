@@ -1,4 +1,7 @@
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import { DiscordClient } from "./DiscordClient";
+import { ChatUserstate } from "tmi.js";
+import { TwitchClient } from "./TwitchClient";
 
 export type accessPerms = {
     users?: string[];
@@ -14,7 +17,18 @@ export type accessPerms = {
 export abstract class baseCommand {
   public abstract metadata: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
   public abstract access?: accessPerms;
-  public abstract execute(interaction: CommandInteraction): Promise<void>;
+  public abstract execute(client: DiscordClient, interaction: CommandInteraction): Promise<void | unknown>;
+}
+
+
+
+export type tmiTypes = {
+  channel: string;
+  user: ChatUserstate;
+  message: string;
+  self: boolean;
+  client: TwitchClient;
+  args: string[];
 }
 
 /**
@@ -22,5 +36,6 @@ export abstract class baseCommand {
  */
 
 export abstract class baseTCommand {
-
+  public abstract name: string;
+  public abstract execute(data: tmiTypes): Promise<void | unknown>;
 }

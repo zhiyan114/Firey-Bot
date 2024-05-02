@@ -1,7 +1,7 @@
 import { Interaction } from "discord.js";
 import { DiscordClient } from "../core/DiscordClient";
 import { baseEvent } from "../core/baseEvent";
-import { DiscordCommandHandler } from "../services/DiscordCommandHandler";
+import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 
 export class DiscordEvents extends baseEvent {
   client: DiscordClient;
@@ -27,6 +27,6 @@ export class DiscordEvents extends baseEvent {
 
   private async createCommand(interaction: Interaction) {
     if(interaction.isCommand())
-      DiscordCommandHandler.commandEvent(interaction);
+      DiscordCommandHandler.commandEvent(this.client, interaction);
   }
 }

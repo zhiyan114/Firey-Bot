@@ -1,9 +1,9 @@
 import { APIEmbedField, ColorResolvable, DiscordAPIError, EmbedBuilder, User } from "discord.js";
-import { APIErrors } from "../../utils/discordErrorCode";
+import { APIErrors } from "./discordErrorCode";
 import { captureException } from "@sentry/node";
 import { Prisma } from "@prisma/client";
 import { createHash } from "crypto";
-import { DiscordClient } from "../DiscordClient";
+import { DiscordClient } from "../core/DiscordClient";
 
 type embedMessageType = {
     title: string;

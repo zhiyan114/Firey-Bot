@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { captureException } from "@sentry/node";
 import { redis, prisma } from "../utils/DatabaseManager";
-import { DiscordUser, getUser } from "./DiscordUser";
+import { DiscordUser, getUser } from "../../utils/DiscordUser";
 import { createHash } from "crypto";
 
 type updateUser = {

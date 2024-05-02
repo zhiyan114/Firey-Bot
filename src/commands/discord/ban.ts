@@ -1,5 +1,7 @@
-import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import { CommandInteraction, GuildMember, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
+import { DiscordClient } from "../../core/DiscordClient";
+import { DiscordUser } from "../../utils/DiscordUser";
 
 export class banCommand extends baseCommand {
   public metadata = new SlashCommandBuilder()
@@ -27,7 +29,7 @@ export class banCommand extends baseCommand {
     roles: [],
   };
 
-  public async execute(interaction: CommandInteraction) {
+  public async execute(client: DiscordClient, interaction: CommandInteraction) {
     // Validation Checks
     if(!interaction.guild) return await interaction.reply("Interaction must be executed in a server");
     const targetMember = interaction.options.getMember("user") as GuildMember | null;
@@ -36,8 +38,8 @@ export class banCommand extends baseCommand {
     // Get the supplied data
     const reason = interaction.options.get("reason",true).value as string;
     const deleteMessages = interaction.options.get("delete",true).value as boolean;
-    const targetUser = new DiscordUser(targetMember.user);
-    const issuerUser = new DiscordUser(interaction.user);
+    const targetUser = new DiscordUser(client, targetMember.user);
+    const issuerUser = new DiscordUser(client, interaction.user);
     await interaction.deferReply({ephemeral: true});
 
     // Notify and ban the user

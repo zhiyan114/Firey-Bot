@@ -1,16 +1,17 @@
 // This should handle all command callbacks and registerations
 
 import { ChannelType, CommandInteraction, REST, Routes } from "discord.js";
-import { banCommand } from "../commands/discord";
-import { baseCommand } from "../core/baseCommand";
+import { banCommand } from "../../commands/discord";
+import { baseCommand } from "../../core/baseCommand";
 import { metrics } from "@sentry/node";
+import { DiscordClient } from "../../core/DiscordClient";
 
 
 export class DiscordCommandHandler {
   // I know, using object would be more efficient, but I doubt we're going to have more than 100 commands to scan through..
   private static commands = [
     new banCommand()
-  ];
+  ] satisfies baseCommand[];
 
   public static async commandRegister() {
     // @TODO: Implement a check to ensure command is out of date before registering
@@ -28,7 +29,7 @@ export class DiscordCommandHandler {
 
   }   
     
-  public static async commandEvent(interaction: CommandInteraction): Promise<void> {
+  public static async commandEvent(client: DiscordClient, interaction: CommandInteraction): Promise<void> {
     // Get the command
     const command = this.commands.find(c=>c.metadata.name===interaction.commandName) as baseCommand | undefined;
     if(!command) return;
@@ -60,6 +61,6 @@ export class DiscordCommandHandler {
         command: interaction.commandName
       }
     });
-    await command.execute(interaction);
+    await command.execute(client, interaction);
   }
 }
