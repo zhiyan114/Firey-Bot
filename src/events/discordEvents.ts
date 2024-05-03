@@ -1,4 +1,4 @@
-import { ChannelType, DiscordAPIError, EmbedBuilder, GuildMember, Interaction, Message } from "discord.js";
+import { ChannelType, DiscordAPIError, EmbedBuilder, GuildMember, Interaction, Message, PartialUser, User } from "discord.js";
 import { DiscordClient } from "../core/DiscordClient";
 import { baseEvent } from "../core/baseEvent";
 import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
@@ -20,6 +20,8 @@ export class DiscordEvents extends baseEvent {
     this.client.on("interactionCreate", this.createCommand.bind(this));
     this.client.on("messageCreate", this.messageCreate.bind(this));
     this.client.on("guildMemberAdd", this.guildMemberAdd.bind(this));
+    this.client.on("userUpdate", this.userUpdate.bind(this));
+    this.client.on("guildMemberRemove", this.guildMemberRemove.bind(this));
   }
 
   private async onReady() {
@@ -74,5 +76,28 @@ export class DiscordEvents extends baseEvent {
     // Send a welcome banner
     const BannerBuff = await (new BannerPic()).generate(user.getUsername(), member.user.displayAvatarURL({size: 512}));
     await channel.send({files: [BannerBuff]});
+  }
+
+  private async userUpdate(oldUser: User | PartialUser, newUser: User) {
+    if(oldUser.bot) return;
+    if(oldUser.tag === newUser.tag)
+      return;
+    const user = new DiscordUser(this.client, newUser);
+
+    // See if we need to update user's rule confirmation date
+    let updateVerifyStatus = false;
+    if(!(await user.getCacheData())?.rulesconfirmedon &&
+      (await this.client.guilds.cache.find(g=>g.id === this.client.config.guildID)
+        ?.members.fetch(newUser))
+        ?.roles.cache.find(role=>role.id === this.client.config.newUserRoleID))
+      updateVerifyStatus = true;
+    
+    await user.updateUserData({
+      rulesconfirmedon: updateVerifyStatus ? new Date() : undefined
+    });
+  }
+
+  private async guildMemberRemove() {
+    this.client.updateStatus();
   }
 }
