@@ -1,6 +1,6 @@
 // This should handle all command callbacks and registerations
 
-import { ChannelType, CommandInteraction, REST, Routes } from "discord.js";
+import { ChannelType, CommandInteraction, ContextMenuCommandInteraction, REST, Routes } from "discord.js";
 import { banCommand } from "../../commands/discord";
 import { baseCommand } from "../../core/baseCommand";
 import { metrics } from "@sentry/node";
@@ -57,7 +57,7 @@ export class DiscordCommandHandler {
     });
   }   
     
-  public async commandEvent(interaction: CommandInteraction): Promise<void> {
+  public async commandEvent(interaction: CommandInteraction | ContextMenuCommandInteraction): Promise<void> {
     // Get the command
     const command = this.commands.find(c=>c.metadata.name===interaction.commandName) as baseCommand | undefined;
     if(!command) return;
@@ -86,10 +86,11 @@ export class DiscordCommandHandler {
     metrics.increment("discord.command.executed", 1, {
       timestamp: new Date().getTime(),
       tags: {
-        command: interaction.commandName
+        command: interaction.commandName,
+        type: interaction instanceof CommandInteraction ? "slash" : "context"
       }
     });
-    await command.execute(this.client, interaction);
+    await command.execute(interaction);
   }
 
   public getCommandHash(): Buffer {

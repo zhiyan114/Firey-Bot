@@ -37,7 +37,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async createCommand(interaction: Interaction) {
-    if(interaction.isCommand())
+    if(interaction.isCommand() || interaction.isContextMenuCommand())
       this.commandHandler.commandEvent(interaction);
 
     if(interaction.isButton())
