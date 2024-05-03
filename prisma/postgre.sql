@@ -3,7 +3,7 @@
 
 CREATE TABLE public.config (
     key TEXT PRIMARY KEY,
-    value TEXT NOT NULL,
+    value TEXT NOT NULL
 );
 CREATE TABLE public.members (
     id VARCHAR(100) NOT NULL,
