@@ -1,6 +1,22 @@
 import { DiscordClient } from "./core/DiscordClient";
 import { TwitchClient } from "./core/TwitchClient";
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
+import {config as dotenv} from "dotenv";
+
+
+/**
+ * .env persistance setup for docker
+ */
+if(process.env['IS_DOCKER']) {
+  const envToWrite = process.env["WRITE_ENV"];
+  if(envToWrite) {
+    const envs = envToWrite.split(",");
+    let envData = "";
+    for(const env of envs)
+      envData += `${env}=${process.env[env]}\n`;
+    writeFileSync(".env", envData);
+  } else dotenv();
+}
 
 
 /**

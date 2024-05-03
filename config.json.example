@@ -29,7 +29,8 @@
                 "RoleID": "Role to give for reacting the emote"
             }
         ],
-        "channelID": "Channel for the reaction role to be in"
+        "channelID": "Channel for the reaction role to be in",
+        "Description": "Reaction ROle Description"
     },
     "enableExtra": {
         "whisper": true,

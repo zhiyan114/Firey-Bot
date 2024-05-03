@@ -123,7 +123,7 @@ export class DiscordClient extends Client {
   private initSentry() {
     sentryInit({
       dsn: process.env["SENTRY_DSN"],
-      maxValueLength: 500,
+      maxValueLength: 1000,
       integrations: [
         extraErrorDataIntegration({
           depth: 5
