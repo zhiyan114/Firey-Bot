@@ -43,6 +43,10 @@ export class TwitchEvents extends baseTEvent {
     });
     if(res) return;
 
-    // Point awarding @TODO: Implement after refactoring streamClient...
+    // Point awarding system
+    if(!this.client.streamClient.isStreaming) return;
+    const discordUser = await tUser.getDiscordUser();
+    if(!(uData?.memberid) || uData.memberid === "-1" || !discordUser) return;
+    await discordUser.economy.chatRewardPoints(message);
   }
 }
