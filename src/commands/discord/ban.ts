@@ -26,7 +26,7 @@ export class banCommand extends baseCommand {
 
   public access = {
     users: [],
-    roles: [],
+    roles: ['908090260087513098'],
   };
 
   public async execute(client: DiscordClient, interaction: CommandInteraction) {

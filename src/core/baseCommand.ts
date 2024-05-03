@@ -16,7 +16,7 @@ export type accessPerms = {
  */
 export abstract class baseCommand {
   public abstract metadata: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
-  public abstract access?: accessPerms;
+  public abstract access: accessPerms;
   public abstract execute(client: DiscordClient, interaction: CommandInteraction): Promise<void | unknown>;
 }
 

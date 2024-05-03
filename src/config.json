@@ -37,7 +37,6 @@
         "Description": "If you would like to know when the derg is streaming. To be pinged for any videos recently uploaded to his youtube press on <:FireyPeek:941368077856161885>\nUse <a:Fireyababab:985594682883047495> if you want to be pinged when he started a VC party!"
     },
     "enableExtra": {
-        "whisper": true,
         "userReport": false
     }
 }

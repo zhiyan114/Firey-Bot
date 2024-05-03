@@ -13,6 +13,7 @@ import { Prisma } from "@prisma/client";
 import path from "path";
 import { ReactRoleLoader } from "../services/ReactRoleHandler";
 import { baseClient } from "./baseClient";
+import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
 
 
 /**
@@ -90,6 +91,7 @@ export class DiscordClient extends Client implements baseClient {
     }
 
     // Start all services
+    await DiscordCommandHandler.commandRegister(this);
     await this.loadServices();
     this.updateStatus();
     await this.logger.sendLog({
@@ -180,4 +182,5 @@ export class DiscordClient extends Client implements baseClient {
   private async loadServices() {
     await ReactRoleLoader(this);
   }
+  
 }

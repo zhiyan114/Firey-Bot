@@ -5,6 +5,7 @@ import { banCommand } from "../../commands/discord";
 import { baseCommand } from "../../core/baseCommand";
 import { metrics } from "@sentry/node";
 import { DiscordClient } from "../../core/DiscordClient";
+import { createHash, timingSafeEqual } from "crypto";
 
 
 export class DiscordCommandHandler {
@@ -13,13 +14,22 @@ export class DiscordCommandHandler {
     new banCommand()
   ] satisfies baseCommand[];
 
-  public static async commandRegister() {
-    // @TODO: Implement a check to ensure command is out of date before registering
+  public static async commandRegister(client: DiscordClient) {
     if(!process.env["CLIENTID"])
       throw Error("Missing CLIENTID as env variable");
 
-    // Assume the command is out of date, and register all the commands
-    new REST({ version: "10" }).setToken(process.env["BOTTOKEN"]!)
+    // Check if the command is out-of-date
+    const oldHash = await client.prisma.config.findUnique({
+      where: {
+        key: "command_hash"
+      }
+    });
+    const currentHash = this.getCommandHash();
+    if(oldHash && timingSafeEqual(Buffer.from(oldHash.value, 'base64'), currentHash))
+      return;
+
+    // Command out-of-date, register it
+    await new REST({ version: "10" }).setToken(process.env["BOTTOKEN"]!)
       .put(
         Routes.applicationCommands(process.env["CLIENTID"]),
         {
@@ -27,6 +37,18 @@ export class DiscordCommandHandler {
         }
       );
 
+    await client.prisma.config.upsert({
+      where: {
+        key: "command_hash"
+      },
+      create: {
+        key: "command_hash",
+        value: currentHash.toString("base64")
+      },
+      update: {
+        value: currentHash.toString("base64")
+      }
+    });
   }   
     
   public static async commandEvent(client: DiscordClient, interaction: CommandInteraction): Promise<void> {
@@ -35,7 +57,7 @@ export class DiscordCommandHandler {
     if(!command) return;
 
     // Check for access permission
-    if(command.access) {
+    if(command) {
       // User ID Check
       if(command.access.users && command.access.users.length > 0 && !command.access.users.includes(interaction.user.id)) {
         await interaction.reply({content: "You do not have permission to use this command.", ephemeral: true});
@@ -62,5 +84,11 @@ export class DiscordCommandHandler {
       }
     });
     await command.execute(client, interaction);
+  }
+
+  public static getCommandHash(): Buffer {
+    const hash = createHash("sha1");
+    hash.update(JSON.stringify(this.commands));
+    return hash.digest();
   }
 }
