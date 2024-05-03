@@ -4,6 +4,12 @@ import { createHash } from "crypto";
 import { Channel, ChannelType, Guild, GuildInvitableChannelResolvable, InviteCreateOptions, NewsChannel, TextChannel, VoiceChannel } from "discord.js";
 import { DiscordClient } from "../core/DiscordClient";
 
+interface tempInviteOption extends InviteCreateOptions {
+  channel?: GuildInvitableChannelResolvable;
+  rawCode?: boolean;
+  nocache?: boolean;
+}
+
 
 /**
  * Discord Invite Manager
@@ -70,32 +76,35 @@ export class DiscordInvite {
      * @param rawCode Whether to return an invite code or a full invite link
      * @returns The invite link or the code
      */
-  public async getTempInvite(inviteOpt?: InviteCreateOptions, channel?: GuildInvitableChannelResolvable, rawCode?: boolean) {
+  public async getTempInvite(inviteOpt?: tempInviteOption) {
+    if(!inviteOpt) inviteOpt = {};
+
     // Use the vanity code if possible
-    if(this.guild.vanityURLCode) return rawCode ? this.guild.vanityURLCode : this.baseUrl + this.guild.vanityURLCode;
+    if(this.guild.vanityURLCode) return inviteOpt.rawCode ? this.guild.vanityURLCode : this.baseUrl + this.guild.vanityURLCode;
 
     // Use the cached invite key if it exists
-    const cache = await this.client.redis.GET(this.redisKey);
-    if(cache) return rawCode ? cache : this.baseUrl + cache;
-
-    // Configure default inviteOpt if it does not exist
-    if(!inviteOpt) inviteOpt = {};
+    if(!inviteOpt.nocache) {
+      const cache = await this.client.redis.GET(this.redisKey);
+      if(cache) return inviteOpt.rawCode ? cache : this.baseUrl + cache;
+    }
+    
+    // Default value for the invite
     inviteOpt.maxAge = inviteOpt.maxAge ?? 86400;
     inviteOpt.reason = inviteOpt.reason ?? "Temporary Invite";
 
     // Find a valid guild channel to create invite in
-    channel = channel ??
+    inviteOpt.channel = inviteOpt.channel ??
         this.guild.rulesChannel ?? 
         this.guild.publicUpdatesChannel ?? 
         this.guild.channels.cache.find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined ??
         (await this.guild.channels.fetch()).find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined;
-    if(!channel) throw new DiscordInviteError("No channel is associated with this server");
+    if(!inviteOpt.channel) throw new DiscordInviteError("No channel is associated with this server");
 
     // Create a new invite key and save it to the cache
-    const inviteLink = await this.guild.invites.create(channel, inviteOpt);
+    const inviteLink = await this.guild.invites.create(inviteOpt.channel, inviteOpt);
     await this.client.redis.SET(this.redisKey, inviteLink.code);
     await this.client.redis.EXPIRE(this.redisKey, inviteOpt.maxAge);
-    return rawCode ? inviteLink.code : inviteLink.url;
+    return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
   }
 
 }
