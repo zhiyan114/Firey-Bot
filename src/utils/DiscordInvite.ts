@@ -100,8 +100,12 @@ export class DiscordInvite {
         (await this.guild.channels.fetch()).find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined;
     if(!inviteOpt.channel) throw new DiscordInviteError("No channel is associated with this server");
 
-    // Create a new invite key and save it to the cache
+    // Create invite
     const inviteLink = await this.guild.invites.create(inviteOpt.channel, inviteOpt);
+    if(!inviteOpt.nocache)
+      return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
+
+    // Save to cache if allowed
     await this.client.redis.SET(this.redisKey, inviteLink.code);
     await this.client.redis.EXPIRE(this.redisKey, inviteOpt.maxAge);
     return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
