@@ -29,7 +29,8 @@
                 "RoleID": "946613137031974963"
             }
         ],
-        "channelID": "908719210040008755"
+        "channelID": "908719210040008755",
+        "Description": "If you would like to know when the derg is streaming. Please press on <a:FireyTailwag:907314933648199700> to be in the know when he goes live.\nTo be pinged for any videos recently uploaded to his youtube press on <:FireyPeek:941368077856161885>"
     },
     "enableExtra": {
         "whisper": true,

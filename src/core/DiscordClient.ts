@@ -11,6 +11,7 @@ import { init as sentryInit, Integrations } from "@sentry/node";
 import { extraErrorDataIntegration, rewriteFramesIntegration } from "@sentry/integrations";
 import { Prisma } from "@prisma/client";
 import path from "path";
+import { ReactRoleLoader } from "../services/ReactRoleHandler";
 
 
 /**
@@ -76,14 +77,25 @@ export class DiscordClient extends Client {
   }
 
   public async start(token: string) {
+    // Connect all services
     await this.logger.initalize();
+    await this.prisma.$connect();
+    await this.redis.connect();
     await this.login(token);
+
     if(process.env["AMQP_CONN"]) {
       this.amqp = await connect(process.env["AMQP_CONN"]);
       this.events.amqp.registerEvents();
     }
-    await this.prisma.$connect();
+
+    // Start all services
+    await this.loadServices();
     this.updateStatus();
+    await this.logger.sendLog({
+      type: "Info",
+      message: "Discord client has been initialized!"
+    });
+    
   }
 
   public async dispose() {
@@ -98,11 +110,12 @@ export class DiscordClient extends Client {
   }
 
   public updateStatus() {
+    const commitHash = process.env['commitHash'];
     this.user?.setPresence({
       status: "dnd",
       activities: [{
-        name: `with ${this.guilds.cache.find(g=>g.id===this.config.guildID)?.memberCount} cuties :3`,
-        type: ActivityType.Competing,
+        name: commitHash ? `on release ${commitHash}` : `with ${this.guilds.cache.find(g=>g.id===this.config.guildID)?.memberCount} cuties :3`,
+        type: commitHash ? ActivityType.Listening : ActivityType.Competing,
       }]
     });
   }
@@ -161,5 +174,9 @@ export class DiscordClient extends Client {
       },
       release: process.env['commitHash']
     });
+  }
+
+  private async loadServices() {
+    await ReactRoleLoader(this);
   }
 }
