@@ -10,16 +10,22 @@ import { createHash, timingSafeEqual } from "crypto";
 
 export class DiscordCommandHandler {
   // I know, using object would be more efficient, but I doubt we're going to have more than 100 commands to scan through..
-  private static commands = [
-    new banCommand()
-  ] satisfies baseCommand[];
+  private commands: baseCommand[];
+  private client: DiscordClient;
 
-  public static async commandRegister(client: DiscordClient) {
+  constructor(client: DiscordClient) {
+    this.client = client;
+    this.commands = [
+      new banCommand(client)
+    ];
+  }
+
+  public async commandRegister() {
     if(!process.env["CLIENTID"])
       throw Error("Missing CLIENTID as env variable");
 
     // Check if the command is out-of-date
-    const oldHash = await client.prisma.config.findUnique({
+    const oldHash = await this.client.prisma.config.findUnique({
       where: {
         key: "command_hash"
       }
@@ -33,11 +39,11 @@ export class DiscordCommandHandler {
       .put(
         Routes.applicationCommands(process.env["CLIENTID"]),
         {
-          body: DiscordCommandHandler.commands.map(c=>c.metadata.toJSON())
+          body: this.commands.map(c=>c.metadata.toJSON())
         }
       );
 
-    await client.prisma.config.upsert({
+    await this.client.prisma.config.upsert({
       where: {
         key: "command_hash"
       },
@@ -51,13 +57,13 @@ export class DiscordCommandHandler {
     });
   }   
     
-  public static async commandEvent(client: DiscordClient, interaction: CommandInteraction): Promise<void> {
+  public async commandEvent(interaction: CommandInteraction): Promise<void> {
     // Get the command
     const command = this.commands.find(c=>c.metadata.name===interaction.commandName) as baseCommand | undefined;
     if(!command) return;
 
     // Check for access permission
-    if(command) {
+    if(command.access) {
       // User ID Check
       if(command.access.users && command.access.users.length > 0 && !command.access.users.includes(interaction.user.id)) {
         await interaction.reply({content: "You do not have permission to use this command.", ephemeral: true});
@@ -83,10 +89,10 @@ export class DiscordCommandHandler {
         command: interaction.commandName
       }
     });
-    await command.execute(client, interaction);
+    await command.execute(this.client, interaction);
   }
 
-  public static getCommandHash(): Buffer {
+  public getCommandHash(): Buffer {
     const hash = createHash("sha1");
     hash.update(JSON.stringify(this.commands));
     return hash.digest();

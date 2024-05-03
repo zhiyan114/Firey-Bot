@@ -91,7 +91,7 @@ export class DiscordClient extends Client implements baseClient {
     }
 
     // Start all services
-    await DiscordCommandHandler.commandRegister(this);
+    await new DiscordCommandHandler(this).commandRegister();
     await this.loadServices();
     this.updateStatus();
     await this.logger.sendLog({

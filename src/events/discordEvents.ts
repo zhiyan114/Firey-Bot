@@ -10,9 +10,11 @@ import { BannerPic } from "../utils/bannerGen";
 
 export class DiscordEvents extends baseEvent {
   client: DiscordClient;
+  commandHandler: DiscordCommandHandler;
   constructor(client: DiscordClient) {
     super();
     this.client = client;
+    this.commandHandler = new DiscordCommandHandler(client);
   }
 
   public registerEvents() {
@@ -36,7 +38,7 @@ export class DiscordEvents extends baseEvent {
 
   private async createCommand(interaction: Interaction) {
     if(interaction.isCommand())
-      DiscordCommandHandler.commandEvent(this.client, interaction);
+      this.commandHandler.commandEvent(interaction);
 
     if(interaction.isButton())
       if(interaction.customId === "RuleConfirm")

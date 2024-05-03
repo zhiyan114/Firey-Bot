@@ -15,9 +15,10 @@ export type accessPerms = {
  * @abstract execute: (interaction: CommandInteraction) => Promise<void> - The function that will be executed when the command is called
  */
 export abstract class baseCommand {
+  abstract client: DiscordClient;
   public abstract metadata: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
   public abstract access: accessPerms;
-  public abstract execute(client: DiscordClient, interaction: CommandInteraction): Promise<void | unknown>;
+  public abstract execute(interaction: CommandInteraction): Promise<void | unknown>;
 }
 
 

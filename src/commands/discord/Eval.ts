@@ -14,6 +14,7 @@ import { DiscordClient } from "../../core/DiscordClient";
 import { withScope as sentryScope } from "@sentry/node";
 
 export class EvalCommand extends baseCommand {
+  public client: DiscordClient;
   public metadata = new SlashCommandBuilder()
     .setName("eval")
     .setDescription("Evaluates a code snippet for debugging purposes; Requires the highest privilege to run.")
@@ -28,7 +29,12 @@ export class EvalCommand extends baseCommand {
     roles: [],
   };
 
-  public async execute(client: DiscordClient, interaction: CommandInteraction) {
+  constructor(client: DiscordClient) {
+    super();
+    this.client = client;
+  }
+
+  public async execute(interaction: CommandInteraction) {
     const code = interaction.options.get("code", true).value as string;
     const channel = interaction.channel;
     const guild = interaction.guild;
@@ -56,7 +62,7 @@ export class EvalCommand extends baseCommand {
         );
 
         secureFunc(
-          client,
+          this.client,
           interaction,
           channel,
           guild,
@@ -101,13 +107,13 @@ export class EvalCommand extends baseCommand {
   };
 
   // Automatically update out-of-date user to the database
-  private updateUser = async (client: DiscordClient) => {
-    const guild = client.guilds.cache.find(g=>g.id == client.config.guildID);
+  private updateUser = async () => {
+    const guild = this.client.guilds.cache.find(g=>g.id == this.client.config.guildID);
     if(!guild) return;
 
     for(const [,member] of await guild.members.fetch()) {
       if(member.user.bot) continue;
-      await client.prisma.members.update({
+      await this.client.prisma.members.update({
         data: {
           username: member.user.username,
           displayname: member.user.displayName,
@@ -149,8 +155,8 @@ export class EvalCommand extends baseCommand {
   };
 
   // Get channel object by channel ID
-  getChannel = async(client: DiscordClient, id: string) => {
-    return await client.channels.fetch(id);
+  getChannel = async(id: string) => {
+    return await this.client.channels.fetch(id);
   };
 
 }

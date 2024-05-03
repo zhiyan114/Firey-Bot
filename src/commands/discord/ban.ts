@@ -4,6 +4,7 @@ import { DiscordClient } from "../../core/DiscordClient";
 import { DiscordUser } from "../../utils/DiscordUser";
 
 export class banCommand extends baseCommand {
+  public client: DiscordClient;
   public metadata = new SlashCommandBuilder()
     .setName("ban")
     .setDescription("Bans the target user.")
@@ -29,7 +30,12 @@ export class banCommand extends baseCommand {
     roles: ['908090260087513098'],
   };
 
-  public async execute(client: DiscordClient, interaction: CommandInteraction) {
+  constructor(client: DiscordClient) {
+    super();
+    this.client = client;
+  }
+
+  public async execute(interaction: CommandInteraction) {
     // Validation Checks
     if(!interaction.guild) return await interaction.reply("Interaction must be executed in a server");
     const targetMember = interaction.options.getMember("user") as GuildMember | null;
@@ -38,8 +44,8 @@ export class banCommand extends baseCommand {
     // Get the supplied data
     const reason = interaction.options.get("reason",true).value as string;
     const deleteMessages = interaction.options.get("delete",true).value as boolean;
-    const targetUser = new DiscordUser(client, targetMember.user);
-    const issuerUser = new DiscordUser(client, interaction.user);
+    const targetUser = new DiscordUser(this.client, targetMember.user);
+    const issuerUser = new DiscordUser(this.client, interaction.user);
     await interaction.deferReply({ephemeral: true});
 
     // Notify and ban the user
