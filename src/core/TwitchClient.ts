@@ -1,5 +1,4 @@
 import { Client } from "tmi.js";
-import { twitch } from '../config.json';
 import { DiscordClient } from "./DiscordClient";
 import { TwitchEvents } from "../events";
 
@@ -17,7 +16,7 @@ export class TwitchClient extends Client {
         username: "fireybotuwu",
         password: `oauth:${token}`
       },
-      channels: [twitch.channel]
+      channels: [client.config.twitch.channel]
     });
     this.dClient = client;
 

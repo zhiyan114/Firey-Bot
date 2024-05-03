@@ -2,7 +2,7 @@
 
 import { createHash } from "crypto";
 import { Channel, ChannelType, Guild, GuildInvitableChannelResolvable, InviteCreateOptions, NewsChannel, TextChannel, VoiceChannel } from "discord.js";
-import { DiscordClient } from "../DiscordClient";
+import { DiscordClient } from "../core/DiscordClient";
 
 
 /**

@@ -2,7 +2,6 @@ import { ChatUserstate } from "tmi.js";
 import { TwitchClient } from "../../core/TwitchClient";
 import { baseTCommand } from "../../core/baseCommand";
 import { metrics } from "@sentry/node";
-import { twitch } from "../../config.json";
 
 const commands: baseTCommand[] = [
 
@@ -19,7 +18,7 @@ type eventType = {
 export async function processCommand(eventData: eventType): Promise<boolean | undefined> {
   // Validate if this action is command
   eventData.message = eventData.message.trim();
-  if(eventData.message[0] !== twitch.prefix) return;
+  if(eventData.message[0] !== eventData.client.dClient.config.twitch.prefix) return;
 
   // Grab command data stuff
   const args = eventData.message.split(" ");
