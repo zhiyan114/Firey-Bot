@@ -1,10 +1,13 @@
 import { Client } from "tmi.js";
 import { DiscordClient } from "./DiscordClient";
-import { TwitchEvents } from "../events";
+import { StreamEvents, TwitchEvents } from "../events";
+import { streamClient } from "../utils/twitchStream";
 
 
 export class TwitchClient extends Client {
   public dClient: DiscordClient;
+  public streamClient: streamClient;
+  
   constructor(client: DiscordClient, token: string) {
     super({
       connection: {
@@ -19,9 +22,12 @@ export class TwitchClient extends Client {
       channels: [client.config.twitch.channel]
     });
     this.dClient = client;
+    this.streamClient = new streamClient(this, client.config.twitch.channel);
 
     // Register events
     new TwitchEvents(this)
+      .registerEvents();
+    new StreamEvents(this)
       .registerEvents();
   }
     
