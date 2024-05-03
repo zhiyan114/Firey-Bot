@@ -1,5 +1,6 @@
 import { DiscordClient } from "./DiscordClient";
 import { TwitchClient } from "./TwitchClient";
+import { YoutubeClient } from "./YoutubeClient";
 
 /**
  * base Class for events/callbacks functions
@@ -18,5 +19,15 @@ export abstract class baseEvent {
  */
 export abstract class baseTEvent {
     abstract client: TwitchClient;
+    abstract registerEvents(): void;
+}
+
+/**
+ * base Class for youtube events/callbacks functions
+ * @property {YoutubeClient} client - Youtube Client
+ * @method registerEvents - Register the events
+ */
+export abstract class baseYEvent {
+    abstract client: YoutubeClient;
     abstract registerEvents(): void;
 }

@@ -2,6 +2,7 @@ import { DiscordClient } from "./core/DiscordClient";
 import { TwitchClient } from "./core/TwitchClient";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import {config as dotenv} from "dotenv";
+import { YoutubeClient } from "./core/YoutubeClient";
 
 
 /**
@@ -42,8 +43,17 @@ if(!process.env["commitHash"]) {
  * Setup our beloved client stuff
  */
 
+const port = process.env["WEBSERVER_PORT"];
+
 const CoreClient = new DiscordClient();
 const twitchClient = new TwitchClient(CoreClient, process.env["TWITCH_TOKEN"]);
+const youtubeClient = new YoutubeClient({
+  client: CoreClient,
+  FQDN: process.env["WEBSERVER_FQDN"] || "",
+  Port: !port || Number.isNaN(parseInt(port)) ? undefined : parseInt(port),
+  Path: "/UwU/youtube/callback/",
+  secret: process.env["YTSECRET"]
+});
 
 
 /**
@@ -58,6 +68,9 @@ twitchClient
   .start()
   .then(()=>console.log("Twitch client started"));
 
+youtubeClient
+  .start()
+  .then(()=>console.log("Youtube client started"));
 
 /**
  * Handle cleanups
@@ -65,6 +78,7 @@ twitchClient
 async function quitSignalHandler() {
   await CoreClient.dispose();
   await twitchClient.dispose();
+  await youtubeClient.dispose();
   process.exit(0);
 }
 

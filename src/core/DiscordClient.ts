@@ -12,6 +12,7 @@ import { extraErrorDataIntegration, rewriteFramesIntegration } from "@sentry/int
 import { Prisma } from "@prisma/client";
 import path from "path";
 import { ReactRoleLoader } from "../services/ReactRoleHandler";
+import { baseClient } from "./baseClient";
 
 
 /**
@@ -26,7 +27,7 @@ import { ReactRoleLoader } from "../services/ReactRoleHandler";
  * @method dispose - Stop the client and dispose the resources
  * @method updateStatus - Update the status of the bot
  */
-export class DiscordClient extends Client {
+export class DiscordClient extends Client implements baseClient {
   config = config;
   prisma: PrismaClient;
   redis: RedisClientType;

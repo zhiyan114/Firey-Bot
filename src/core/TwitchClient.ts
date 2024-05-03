@@ -2,9 +2,10 @@ import { Client } from "tmi.js";
 import { DiscordClient } from "./DiscordClient";
 import { StreamEvents, TwitchEvents } from "../events";
 import { streamClient } from "../utils/twitchStream";
+import { baseClient } from "./baseClient";
 
 
-export class TwitchClient extends Client {
+export class TwitchClient extends Client implements baseClient {
   public dClient: DiscordClient;
   public streamClient: streamClient;
   
