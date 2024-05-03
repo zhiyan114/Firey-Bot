@@ -7,10 +7,11 @@ import {config as dotenv} from "dotenv";
 /**
  * .env persistance setup for docker
  */
+
 if(process.env['IS_DOCKER']) {
   const envToWrite = process.env["WRITE_ENV"];
   if(envToWrite) {
-    const envs = envToWrite.split(",");
+    const envs = envToWrite.replaceAll(' ', '').split(",");
     let envData = "";
     for(const env of envs)
       envData += `${env}=${process.env[env]}\n`;
