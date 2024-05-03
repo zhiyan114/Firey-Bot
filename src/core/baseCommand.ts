@@ -38,5 +38,6 @@ export type tmiTypes = {
 
 export abstract class baseTCommand {
   public abstract name: string;
+  public abstract perm: string[];
   public abstract execute(data: tmiTypes): Promise<void | unknown>;
 }

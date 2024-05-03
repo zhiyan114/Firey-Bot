@@ -28,6 +28,12 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
   const command = commands.find(c=>c.name.toLowerCase()===cmdName) as baseTCommand | undefined;
   if(!command) return;
 
+  // Check access privileges
+  if(command.perm.length > 0 && (!eventData.user.username || !command.perm.includes(eventData.user.username))) {
+    await eventData.client.say(eventData.channel, `@${eventData.user.username}, you do not have permission to use this command.`);
+    return false;
+  }
+
   // Execute command, assuming all the checks are passed (and track their usages)
   metrics.increment("twitch.command.executed", 1, {
     timestamp: new Date().getTime(),

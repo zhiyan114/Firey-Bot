@@ -4,6 +4,7 @@ import { DiscordInvite } from "../../utils/DiscordInvite";
 
 export class DiscordCommand extends baseTCommand {
   public name = "discord";
+  public perm = [];
   public async execute(data: tmiTypes) {
     const invite = await new DiscordInvite(data.client.dClient, "twitchChat")
       .getTempInvite({
