@@ -9,7 +9,7 @@ import { YoutubeClient } from "./core/YoutubeClient";
  * .env persistance setup for docker
  */
 
-if(process.env['IS_DOCKER']) {
+if(process.env['ISDOCKER']) {
   const envToWrite = process.env["WRITE_ENV"];
   if(envToWrite) {
     const envs = envToWrite.replaceAll(' ', '').split(",");
