@@ -4,6 +4,8 @@ import { getPointsCommand } from "./getPoints";
 import { kickCommand } from "./kick";
 import { leaderboardCommand } from "./leaderboard";
 import { purgeCommand } from "./Purge";
+import { softBanCommand } from "./softban";
+import { unbanCommand } from "./unban";
 
 export {
   banCommand,
@@ -12,4 +14,6 @@ export {
   kickCommand,
   leaderboardCommand,
   purgeCommand,
+  softBanCommand,
+  unbanCommand
 };
