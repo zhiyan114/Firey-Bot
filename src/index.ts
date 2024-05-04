@@ -62,15 +62,14 @@ const youtubeClient = new YoutubeClient({
 
 CoreClient
   .start(process.env["BOTTOKEN"])
-  .then(()=>console.log("Bot started"));
+  .then(async ()=>{
+    console.log("Bot started");
 
-twitchClient
-  .start()
-  .then(()=>console.log("Twitch client started"));
+    // Run the core client then the utility clients..
+    await twitchClient.start();
+    await youtubeClient.start();
 
-youtubeClient
-  .start()
-  .then(()=>console.log("Youtube client started"));
+  });
 
 /**
  * Handle cleanups
