@@ -23,6 +23,7 @@ services:
       - SENTRY_AUTH_TOKEN
       - SENTRY_ORG
       - SENTRY_PROJECT
+      - WRITE_ENV
     depends_on:
       - redis
     restart: on-failure
