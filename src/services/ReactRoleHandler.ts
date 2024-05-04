@@ -5,7 +5,7 @@ export async function ReactRoleLoader(client: DiscordClient) {
   // General checks
   const guild = client.guilds.cache.get(client.config.guildID);
   if(!guild) return;
-  const channel = guild.channels.cache.get(client.config.generalChannelID);
+  const channel = guild.channels.cache.get(client.config.reactRoles.channelID);
   if(!channel) return;
   if(channel.type !== ChannelType.GuildText) return;
 
