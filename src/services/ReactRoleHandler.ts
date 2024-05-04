@@ -1,5 +1,7 @@
-import { ChannelType, EmbedBuilder, Message, MessageReaction } from "discord.js";
+import { ChannelType, DiscordAPIError, EmbedBuilder, Message, MessageReaction } from "discord.js";
 import { DiscordClient } from "../core/DiscordClient";
+import { APIErrors } from "../utils/discordErrorCode";
+import { captureException } from "@sentry/node";
 
 export async function ReactRoleLoader(client: DiscordClient) {
   // General checks
@@ -17,7 +19,14 @@ export async function ReactRoleLoader(client: DiscordClient) {
       key: "reactMessageID"
     }
   }))?.value;
-  let msg: Message | undefined = msgID ? await channel.messages.fetch(msgID) : undefined;
+  let msg: Message | undefined;
+
+  try {
+    msg = msgID ? await channel.messages.fetch(msgID) : undefined;
+  } catch(ex) {
+    if(ex instanceof DiscordAPIError && ex.code !== APIErrors.UNKNOWN_MESSAGE)
+      captureException(ex);
+  }
 
   if(!msg) {
     // Create the message
