@@ -31,5 +31,10 @@ For environment variable configurations, please refer to the `.env.example` file
     * `reminderInterval` - Interval to send a reminder for the discord server (in ms)
 * `noPointsChannel` - A list of channels that the points will not be awarded to
 * `enableExtra` - A list of extra services that can either be enabled or disabled
-    * `whisper` - OpenAI Speech To Text Transcriber
     * `userReport` - Enables user to report software bug via sentry user-feedback
+
+
+## Add commands
+All commands are in their respective folders under `src/commands`. To add commands, please make sure to update index.ts and inside `src/events/helper`.
+
+To ensure command is compatible, import `baseCommand` from core (or `baseTCommand` for twitch commands)
