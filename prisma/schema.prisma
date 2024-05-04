@@ -8,17 +8,17 @@ datasource db {
 }
 
 model config {
-  key   String  @id
+  key   String @id
   value String
 }
 
 model members {
   id                                 String    @id @db.VarChar(100)
   username                           String
-  displayname                        String?
   rulesconfirmedon                   DateTime? @db.Timestamptz(6)
   points                             Int       @default(0)
   lastgrantedpoint                   DateTime  @default(now()) @db.Timestamp(6)
+  displayname                        String?
   modlog_modlog_moderatoridTomembers modlog[]  @relation("modlog_moderatoridTomembers")
   modlog_modlog_targetidTomembers    modlog[]  @relation("modlog_targetidTomembers")
   twitch                             twitch?

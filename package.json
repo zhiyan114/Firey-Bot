@@ -7,7 +7,7 @@
     "amqplib": "^0.10.3",
     "axios": "^1.1.2",
     "bufferutil": "^4.0.6",
-    "canvas": "^2.11.0",
+    "canvas": "^2.11.2",
     "discord.js": "^14.11.0",
     "dotenv": "^16.4.5",
     "erlpack": "github:discord/erlpack",
