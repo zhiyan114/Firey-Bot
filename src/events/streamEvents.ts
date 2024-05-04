@@ -59,8 +59,9 @@ export class StreamEvents extends baseTEvent {
   private async sendDiscordLink() {
     await this.client.say(this.client.dClient.config.twitch.channel, `Hey! Don't forget to join our discord server! ${
       await new DiscordInvite(this.client.dClient, "twitchChat").getTempInvite({
-        reason: "Bot's Automatic Reminder Link"
-      }, this.client.dClient.config.twitch.notification.channelID)
+        reason: "Bot's Automatic Reminder Link",
+        channel: this.client.dClient.config.twitch.notification.channelID
+      })
     }`);
 
     if(this.client.streamClient.isStreaming)
