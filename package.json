@@ -24,7 +24,7 @@
   "scripts": {
     "lint:fix": "eslint --fix . --ext .ts",
     "lint:check": "eslint . --ext .ts",
-    "build": "prisma generate && rimraf dist && tsc -p tsconfig.json",
+    "build": "rimraf dist && tsc -p tsconfig.json",
     "start": "node ./dist/index.js"
   },
   "devDependencies": {

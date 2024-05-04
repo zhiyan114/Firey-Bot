@@ -12,9 +12,11 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 # Copy all build files and build
-COPY tsconfig.json prisma/ ./
+COPY tsconfig.json ./
 COPY scripts/ ./scripts
 RUN chmod +x ./scripts/*
+COPY prisma/ ./
+RUN npx prisma generate
 COPY src/ ./src/
 RUN npm run build
 

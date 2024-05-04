@@ -26,6 +26,8 @@ jobs:
       run: npm i
     - name: lint check
       run: npm run lint:check
+    - name: Prisma Checker
+      run: npx prisma generate
     - name: build
       run: npm run build
   # Build docker image
