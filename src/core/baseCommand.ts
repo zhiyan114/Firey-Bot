@@ -22,7 +22,6 @@ export abstract class baseCommand {
 }
 
 
-
 export type tmiTypes = {
   channel: string;
   user: ChatUserstate;
