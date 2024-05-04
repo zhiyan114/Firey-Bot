@@ -38,7 +38,7 @@ export class softBanCommand extends baseCommand {
 
   public async execute(interaction: CommandInteraction) {
     // Grab the data and do validation
-    const targetMember = interaction.options.getMember("user") as GuildMember | null;
+    const targetMember = interaction.options.get("user", true).member as GuildMember | null;
     const reason = interaction.options.get("reason", true).value as string;
     const invite = interaction.options.get("invite", true).value as boolean;
     if(!interaction.guild)

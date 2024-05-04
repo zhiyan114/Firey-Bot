@@ -37,7 +37,7 @@ export class kickCommand extends baseCommand {
 
   }
   public async execute(interaction: CommandInteraction) {
-    const targetMember = interaction.options.getMember("user") as GuildMember | null;
+    const targetMember = interaction.options.get("user")?.member as GuildMember | null;
     if(!targetMember) return await interaction.reply("Invalid User has been supplied");
 
     // supplied info
