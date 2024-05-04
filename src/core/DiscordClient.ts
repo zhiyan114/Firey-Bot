@@ -113,7 +113,11 @@ export class DiscordClient extends Client implements baseClient {
   }
 
   public updateStatus() {
-    const commitHash = process.env['commitHash'];
+    // Get and trim the commit hash
+    let commitHash = process.env['commitHash'];
+    if(commitHash && commitHash.length > 7)
+      commitHash = commitHash.substring(0, 7);
+
     this.user?.setPresence({
       status: "dnd",
       activities: [{
