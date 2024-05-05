@@ -67,8 +67,10 @@ CoreClient
 
     // Run the core client then the utility clients..
     await twitchClient.start();
-    await youtubeClient.start();
+    console.log("Twitch client started");
 
+    await youtubeClient.start();
+    console.log("Youtube client started");
   });
 
 /**

@@ -177,6 +177,10 @@ export class TwitchUser {
  * This function clears all the cache that is created by this class
  */
 export const clearTwitchCache = async (client: DiscordClient) => {
+  // Fixed race condition for streamClient event
+  if(!client.redis.isOpen)
+    return;
+
   let oldCursor = 0;
   while(true) {
     // get all the values
