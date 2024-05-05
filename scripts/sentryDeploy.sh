@@ -15,3 +15,4 @@ fi
 
 npx sentry-cli sourcemaps inject ./dist
 npx sentry-cli sourcemaps upload --release="$(git rev-parse HEAD)" ./dist
+echo Successfully Deployed Source Map

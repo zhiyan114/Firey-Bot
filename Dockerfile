@@ -12,9 +12,11 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 # Copy all build files and build
-COPY tsconfig.json prisma/ ./
+COPY tsconfig.json ./
 COPY scripts/ ./scripts
 RUN chmod +x ./scripts/*
+COPY prisma/ ./
+RUN npx prisma generate
 COPY src/ ./src/
 RUN npm run build
 
@@ -22,9 +24,17 @@ RUN npm run build
 COPY .git/ ./.git/
 RUN echo $(git -C /source/ rev-parse HEAD) > "commitHash"
 
-# Perform build cleanup (or post-build stuff)
+# Setup sentry source mapping
+ARG SENTRY_AUTH_TOKEN
+ARG SENTRY_ORG
+ARG SENTRY_PROJECT
+ENV SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+ENV SENTRY_ORG=${SENTRY_ORG}
+ENV SENTRY_PROJECT=${SENTRY_PROJECT}
 RUN scripts/sentryDeploy.sh
-RUN npm prune --production
+
+# Perform build cleanup (or post-build stuff)
+RUN npm prune --omit=dev
 
 
 
@@ -41,8 +51,8 @@ RUN apt-get update
 RUN apt-get install fonts-noto ffmpeg -y
 
 # Copy files from the build env
-COPY --from=buildenv /source/dist /app/
 COPY --from=buildenv /source/node_modules /app/node_modules/
+COPY --from=buildenv /source/dist /app/
 COPY --from=buildenv /source/commitHash /app/commitHash
 
 # Exposed web server port

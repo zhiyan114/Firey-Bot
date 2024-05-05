@@ -15,6 +15,7 @@ export class BannerPic {
   constructor() {
     this.canvas = createCanvas(900, 400);
   }
+
   /**
     * Generate the banner
     * @param name The user's display tag
@@ -29,6 +30,7 @@ export class BannerPic {
     await this.setProfilePicture(context, imgURL);
     return this.canvas.toBuffer("image/png");
   }
+
   /**
     * Set the canvas's background
     * @param ctx The canvas context
@@ -40,6 +42,7 @@ export class BannerPic {
     ctx.fillStyle = gradient;
     ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
   }
+
   /**
     * Set a rainbow border around the canvas
     * @param ctx The canvas context
@@ -57,6 +60,7 @@ export class BannerPic {
     ctx.lineWidth = 10;
     ctx.strokeRect(0,0,this.canvas.width,this.canvas.height);
   }
+
   /**
     * Set the canvas's text
     * @param ctx The canvas context
@@ -73,6 +77,7 @@ export class BannerPic {
     ctx.font = "22px fonts-noto, sans-serif, segoe-ui-emoji";
     ctx.fillText("Welcome to Firey's server! I hope you enjoy your stay here (σ`・∀・)σ", this.canvas.width/2, this.canvas.height/3 + 150);
   }
+
   /**
     * Set the canvas's user profile picture
     * @param ctx The canvas context
@@ -99,6 +104,7 @@ export class BannerPic {
     // Draw in the profile picture
     ctx.drawImage(pfp, this.canvas.width/2 - hsx,this.canvas.height/3 - hsy, hsx*2, hsy*2);
   }
+  
   /**
     * Download an image from a URL and convert it to a Buffer in PNG format
     * @param url The URL of the image

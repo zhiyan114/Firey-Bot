@@ -1,46 +1,85 @@
-/* Message Maker: const MessageEmbed=require("discord.js").MessageEmbed;const embed=new MessageEmbed();embed.setColor("#00FFFF");embed.setDescription("If you would like to know when the derg is streaming. Please press on <a:FireyTailwag:907314933648199700> to be in the know when he goes live.\nTo be pinged for any videos recently uploaded to his youtube press on <:FireyPeek:941368077856161885>"); client.channels.cache.find(channel => channel.id === "908719210040008755").send({embeds:[embed]}); */
-/* Message Reactor: const msg = (client.channels.cache.find(opt=>opt.id === "908719210040008755")).messages.cache.find(opt=>opt.id === "970021524763471893"); msg.react("<a:FireyTailwag:907314933648199700>"); msg.react("<:FireyPeek:941368077856161885>"); */
-import { Client, TextChannel, MessageReaction, User } from "discord.js";
-import {guildID, reactionRole} from "../config";
+import { ChannelType, DiscordAPIError, EmbedBuilder, Message, MessageReaction } from "discord.js";
+import { DiscordClient } from "../core/DiscordClient";
+import { APIErrors } from "../utils/discordErrorCode";
+import { captureException } from "@sentry/node";
 
-// Internal Interface
-interface IReactRoleList {
-    [key: string]: string;
-}
-/*
-const AllRolesGrant : IReactRoleList = {
-    "907314933648199700": "908723067067437076", // Derg Gaming Role
-    "941368077856161885": "946613137031974963", // Derg Showing Role
-    // "Emote ID": "Role ID"
-}
-*/
-const AllRolesGrant : IReactRoleList = reactionRole.reactionLists;
-
-const filterEmotes = Object.entries(AllRolesGrant).map((k) => k[0]);
-export default async (client : Client) => {
-  const guild = client.guilds.cache.find(opt=>opt.id === guildID);
+export async function ReactRoleLoader(client: DiscordClient) {
+  // General checks
+  const guild = client.guilds.cache.get(client.config.guildID);
   if(!guild) return;
-  const message = await (guild.channels.cache.find(opt=>opt.id ===reactionRole.channelID) as TextChannel).messages.fetch(reactionRole.messageID);
+  const channel = guild.channels.cache.get(client.config.reactRoles.channelID);
+  if(!channel) return;
+  if(channel.type !== ChannelType.GuildText) return;
 
-  // Check and see if there's already reaction made to the message. If not, add it
-  if(message.reactions.cache.size < filterEmotes.length)
-    for(const emoteID of filterEmotes) 
-      await message.react(emoteID);
+  const config = client.config.reactRoles;
+  
+  // Check if the react message exists
+  const msgID = (await client.prisma.config.findUnique({
+    where: {
+      key: "reactMessageID"
+    }
+  }))?.value;
+  let msg: Message | undefined;
 
-  const deleteFilter = (reaction : MessageReaction) => filterEmotes.includes(reaction.emoji.id ?? "0"); // If ID is somehow undefined, we'll feed it 0, which essentially means nothing
-  const collector = message.createReactionCollector({filter: deleteFilter, dispose: true});
-  collector.on("collect", async (react : MessageReaction, user : User) => {
-    const member = guild.members.cache.find(opt=>opt.id === user.id);
-    if(!member) return; // How would they undo the reaction if they aren't in the server...
-    const role = guild.roles.cache.find(opt=>opt.id === AllRolesGrant[react.emoji.id ?? -1]);
-    if(!role) return; // Role somehow not found? Just do nothing
+  try {
+    msg = msgID ? await channel.messages.fetch(msgID) : undefined;
+  } catch(ex) {
+    if(ex instanceof DiscordAPIError && ex.code !== APIErrors.UNKNOWN_MESSAGE)
+      captureException(ex);
+  }
+
+  if(!msg) {
+    // Create the message
+    const embed = new EmbedBuilder()
+      .setColor("#00FFFF")
+      .setDescription(config.Description);
+    msg = await channel.send({embeds:[embed]});
+    await client.prisma.config.upsert({
+      where: {
+        key: "reactMessageID"
+      },
+      create: {
+        key: "reactMessageID",
+        value: msg.id
+      },
+      update: {
+        value: msg.id
+      }
+    });
+  }
+
+  // Check for missing reactions
+  const emoteLists: string[] = [];
+  const emoteToRole: {[key: string]: string} = {};
+
+  // Put all the organization here to maintain O(n)
+  for(const {EmoteID, RoleID} of config.reactionLists) {
+    if(msg.reactions.cache.size !== config.reactionLists.length)
+      await msg.react(EmoteID);
+
+    emoteLists.push(EmoteID);
+    emoteToRole[EmoteID] = RoleID;
+  }
+      
+
+  // Listen for roles
+  const deleteFilter = (reaction: MessageReaction) => emoteLists.includes(reaction.emoji.id ?? "0");
+  const collector = msg.createReactionCollector({filter: deleteFilter, dispose: true});
+
+  collector.on("collect", async(react, user)=>{
+    const member = await react.message.guild?.members.fetch(user.id);
+    if(!member) return;
+    const role = guild.roles.cache.find(opt=>opt.id === (emoteToRole[react.emoji.id ?? "0"] ?? "0"));
+    if(!role) return;
     await member.roles.add(role);
   });
-  collector.on("remove",async (react,user)=>{
-    const member = guild.members.cache.find(opt=>opt.id === user.id);
+
+  collector.on("remove", async(react, user)=>{
+    const member = await react.message.guild?.members.fetch(user.id);
     if(!member) return;
-    const role = guild.roles.cache.find(opt=>opt.id === AllRolesGrant[react.emoji.id ?? -1]);
-    if(!role) return; // Role somehow not found? Just do nothing
+    const role = guild.roles.cache.find(opt=>opt.id === (emoteToRole[react.emoji.id ?? "0"] ?? "0"));
+    if(!role) return;
     await member.roles.remove(role);
   });
-};
+
+}

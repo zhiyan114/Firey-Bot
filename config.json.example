@@ -1,0 +1,39 @@
+{
+    "guildID": "Guild ID",
+    "adminRoleID": "Server Mod Role ID",
+    "newUserRoleID": "Role for new users",
+    "welcomeChannelID": "Channel to post welcome messages",
+    "logChannelID": "Channel to post service logs",
+    "generalChannelID": "Default user interaction channel",
+    "noPointsChannel": [
+        "Guild Channel ID which the point won't be awarded to"
+    ],
+    "youtube": {
+        "youtubeChannelID": "Channel to listen for",
+        "guildChannelID": "Guild channel to post the notification",
+        "pingRoleID": "Role to ping or everyone/here"
+    },
+    "twitch": {
+        "prefix": "!",
+        "channel": "Twitch channel for the integrated chat bot to listen in",
+        "notification": {
+            "channelID": "Guild channel ID for the start stream notification",
+            "roleToPing" : "Role to ping or everyone/here",
+            "inviteRemindExpire": 1800000
+        }
+    },
+    "reactRoles": {
+        "reactionLists": [
+            {
+                "EmoteID": "Reaction emote ID",
+                "RoleID": "Role to give for reacting the emote"
+            }
+        ],
+        "channelID": "Channel for the reaction role to be in",
+        "Description": "Reaction ROle Description"
+    },
+    "enableExtra": {
+        "whisper": true,
+        "userReport": false
+    }
+}

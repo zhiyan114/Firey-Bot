@@ -7,13 +7,14 @@
     "amqplib": "^0.10.3",
     "axios": "^1.1.2",
     "bufferutil": "^4.0.6",
-    "canvas": "^2.11.0",
+    "canvas": "^2.11.2",
     "discord.js": "^14.11.0",
+    "dotenv": "^16.4.5",
     "erlpack": "github:discord/erlpack",
     "express": "^4.18.1",
     "fluent-ffmpeg": "^2.1.2",
     "redis": "^4.6.5",
-    "sharp": "^0.32.0",
+    "sharp": "^0.33.2",
     "tmi.js": "^1.8.5",
     "utf-8-validate": "^6.0.3",
     "ws": "^8.6.0",
@@ -21,12 +22,13 @@
     "zlib-sync": "^0.1.7"
   },
   "scripts": {
-    "lint": "eslint . --ext .ts",
-    "build": "prisma generate && rimraf dist && tsc -p tsconfig.json",
+    "lint:fix": "eslint --fix . --ext .ts",
+    "lint:check": "eslint . --ext .ts",
+    "build": "rimraf dist && tsc -p tsconfig.json",
     "start": "node ./dist/index.js"
   },
   "devDependencies": {
-    "@sentry/cli": "^2.22.2",
+    "@sentry/cli": "^2.31.2",
     "@types/amqplib": "^0.10.1",
     "@types/express": "^4.17.13",
     "@types/fluent-ffmpeg": "^2.1.21",
