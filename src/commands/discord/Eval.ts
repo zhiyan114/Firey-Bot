@@ -48,6 +48,7 @@ export class EvalCommand extends baseCommand {
 
     sentryScope(async (scope) => {
       scope.setTag("isEval", true);
+      await interaction.deferReply({ephemeral: true});
       try {
         const secureFunc = new Function(
           "client",
@@ -77,6 +78,7 @@ export class EvalCommand extends baseCommand {
             getChannel: this.getChannel,
           }
         );
+        return await interaction.followUp({content: "Execution complete!", ephemeral: true});
       } catch(ex) {
         const err = ex as Error;
         await interaction.followUp({content: `Bad Execution [${err.name}]: \`${err.message}\``, ephemeral: true});
