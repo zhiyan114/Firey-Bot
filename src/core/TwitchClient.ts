@@ -28,11 +28,13 @@ export class TwitchClient extends Client implements baseClient {
     // Register events
     new TwitchEvents(this)
       .registerEvents();
-    new StreamEvents(this)
-      .registerEvents();
   }
     
   public async start() {
+    // Special events that requires core event to be ready
+    new StreamEvents(this)
+      .registerEvents();
+
     await this.connect();
     await this.dClient.logger.sendLog({
       type: "Info",
