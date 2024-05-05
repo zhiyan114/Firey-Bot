@@ -185,7 +185,7 @@ export const clearTwitchCache = async (client: DiscordClient) => {
   while(true) {
     // get all the values
     const {cursor,keys} = await client.redis.scan(oldCursor,{
-      MATCH: "discorduser:*",
+      MATCH: "twchuser:*",
       COUNT: 100,
     });
     // Delete or Unlink all the items
