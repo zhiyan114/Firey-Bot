@@ -20,6 +20,8 @@ export class getPointsCommand extends baseCommand {
   }
 
   public async execute(interaction: UserContextMenuCommandInteraction) {
+    if(interaction.targetUser.bot)
+      return await interaction.reply({content: "Bots do not have points.", ephemeral: true});
     await interaction.deferReply({ephemeral: true});
 
     // Setup Embed
