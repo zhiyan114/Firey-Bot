@@ -8,11 +8,12 @@ import { getStreamData } from "../utils/twitchStream";
 
 export class StreamEvents extends baseTEvent {
   client: TwitchClient;
-  lastStream: Date | undefined;
+  lastStream: Date;
   discordReminer: NodeJS.Timeout | undefined;
   constructor(client: TwitchClient) {
     super();
     this.client = client;
+    this.lastStream = new Date();
   }
   
   public registerEvents() {
@@ -21,10 +22,10 @@ export class StreamEvents extends baseTEvent {
   }
 
   private async onStream(data: getStreamData) {
-    if(this.lastStream && (new Date()).getTime() - this.lastStream.getTime() < 18000) return;
-    await clearTwitchCache(this.client.dClient);
     if(!this.discordReminer)
       this.discordReminer = setInterval(this.sendDiscordLink.bind(this), this.client.dClient.config.twitch.notification.inviteRemindExpire);
+    await clearTwitchCache(this.client.dClient);
+    if(this.lastStream && (new Date()).getTime() - this.lastStream.getTime() < 18000) return;
 
     const channel = await this.client.dClient.channels.fetch(this.client.dClient.config.twitch.notification.channelID);
     if(!channel) return;
