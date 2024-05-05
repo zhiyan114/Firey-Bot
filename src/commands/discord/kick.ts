@@ -9,12 +9,13 @@ export class kickCommand extends baseCommand {
   metadata = new SlashCommandBuilder();
   access = {
     users: [],
-    roles: ['908090260087513098'],
+    roles: [] as string[],
   };
 
   constructor(client: DiscordClient) {
     super();
     this.client = client;
+    this.access.roles.push(client.config.adminRoleID);
     this.metadata
       .setName("kick")
       .setDescription("Kicks a target user.")
