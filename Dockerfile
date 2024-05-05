@@ -51,8 +51,8 @@ RUN apt-get update
 RUN apt-get install fonts-noto ffmpeg -y
 
 # Copy files from the build env
-COPY --from=buildenv /source/dist /app/
 COPY --from=buildenv /source/node_modules /app/node_modules/
+COPY --from=buildenv /source/dist /app/
 COPY --from=buildenv /source/commitHash /app/commitHash
 
 # Exposed web server port
