@@ -109,7 +109,7 @@ export class DiscordClient extends Client implements baseClient {
 
   public updateStatus() {
     // Get and trim the commit hash
-    let commitHash = process.env['commitHash'];
+    let commitHash = process.env['COMMITHASH'];
     if(commitHash && commitHash.length > 7)
       commitHash = commitHash.substring(0, 7);
 
@@ -174,7 +174,7 @@ export class DiscordClient extends Client implements baseClient {
         if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null;
         return evnt;
       },
-      release: process.env['commitHash'],
+      release: process.env['COMMITHASH'],
       environment: process.env["ENVIRONMENT"]
     });
   }

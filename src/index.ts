@@ -30,10 +30,10 @@ if(!process.env["BOTTOKEN"])
 if(!process.env["TWITCH_TOKEN"])
   throw new Error("No twitch token provided");
 
-if(!process.env["commitHash"]) {
+if(!process.env["COMMITHASH"]) {
   // Try to load the commit hash via file
   if(existsSync("commitHash"))
-    process.env["commitHash"] = readFileSync("commitHash").toString();
+    process.env["COMMITHASH"] = readFileSync("commitHash").toString();
   else
     console.warn("No commit hash found!");
 }
