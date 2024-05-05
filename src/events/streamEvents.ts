@@ -20,16 +20,16 @@ export class StreamEvents extends baseTEvent {
     this.client.streamClient.on("end", this.onStreamEnd.bind(this));
   }
 
-  private async onStream(client: TwitchClient, data: getStreamData) {
+  private async onStream(data: getStreamData) {
     if(this.lastStream && (new Date()).getTime() - this.lastStream.getTime() < 18000) return;
-    await clearTwitchCache(client.dClient);
+    await clearTwitchCache(this.client.dClient);
     if(!this.discordReminer)
-      this.discordReminer = setInterval(this.sendDiscordLink.bind(this), client.dClient.config.twitch.notification.inviteRemindExpire);
+      this.discordReminer = setInterval(this.sendDiscordLink.bind(this), this.client.dClient.config.twitch.notification.inviteRemindExpire);
 
-    const channel = await client.dClient.channels.fetch(client.dClient.config.twitch.notification.channelID);
+    const channel = await this.client.dClient.channels.fetch(this.client.dClient.config.twitch.notification.channelID);
     if(!channel) return;
     if(channel.type !== ChannelType.GuildText)
-      return await client.dClient.logger.sendLog({
+      return await this.client.dClient.logger.sendLog({
         type: "Error",
         message: "StreamClient: Notification channel is not a text channel!"
       });
@@ -47,8 +47,8 @@ export class StreamEvents extends baseTEvent {
     await channel.send({content: `<@${this.client.dClient.config.twitch.notification.roleToPing}> Derg is streaming right now, come join!`, embeds: [embed]});
   }
 
-  private async onStreamEnd(client: TwitchClient) {
-    await clearTwitchCache(client.dClient);
+  private async onStreamEnd() {
+    await clearTwitchCache(this.client.dClient);
     if(this.discordReminer) {
       clearInterval(this.discordReminer);
       this.discordReminer = undefined;

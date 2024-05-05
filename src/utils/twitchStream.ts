@@ -38,7 +38,7 @@ export type twitchGetStreamType = {
 // Util Class Definition
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export declare interface streamClient extends events.EventEmitter {
-    on(event: "start", listener: (client: TwitchClient, data: getStreamData) => void): this;
+    on(event: "start", listener: (data: getStreamData) => void): this;
     on(event: "end", listener: (client: TwitchClient) => void): this;
     emit(eventName: "start", data: getStreamData): boolean;
     emit(eventName: "end"): boolean;

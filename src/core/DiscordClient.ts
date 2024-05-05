@@ -83,7 +83,6 @@ export class DiscordClient extends Client implements baseClient {
     await this.prisma.$connect();
     await this.redis.connect();
     await this.login(token);
-    await this.logger.initalize();
 
     if(process.env["AMQP_CONN"]) {
       this.amqp = await connect(process.env["AMQP_CONN"]);
@@ -94,10 +93,6 @@ export class DiscordClient extends Client implements baseClient {
     await new DiscordCommandHandler(this).commandRegister();
     await this.loadServices();
     this.updateStatus();
-    await this.logger.sendLog({
-      type: "Info",
-      message: "Discord client has been initialized!"
-    });
     
   }
 

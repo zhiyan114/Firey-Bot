@@ -31,7 +31,7 @@ export class DiscordEvents extends baseEvent {
     await this.client.logger.initalize();
     await this.client.logger.sendLog({
       type: "Info",
-      message: "Discord.js client has been initialized!"
+      message: "Discord client has been initialized!"
     });
     this.client.updateStatus();
   }
