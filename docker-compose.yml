@@ -25,6 +25,7 @@ services:
       - AMQP_CONN
       - REDIS_CONN
       - YTSECRET
+      - ENVIRONMENT
       - WRITE_ENV
     depends_on:
       - redis
