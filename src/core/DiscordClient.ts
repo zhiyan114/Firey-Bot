@@ -174,7 +174,8 @@ export class DiscordClient extends Client implements baseClient {
         if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null;
         return evnt;
       },
-      release: process.env['commitHash']
+      release: process.env['commitHash'],
+      environment: process.env["ENVIRONMENT"]
     });
   }
 
