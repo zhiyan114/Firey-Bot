@@ -63,6 +63,10 @@ export class DiscordCommandHandler {
         value: currentHash.toString("base64")
       }
     });
+    await this.client.logger.sendLog({
+      type: "Info",
+      message: "Application Command has been updated!"
+    });
   }   
     
   public async commandEvent(interaction: CommandInteraction | ContextMenuCommandInteraction): Promise<void> {
