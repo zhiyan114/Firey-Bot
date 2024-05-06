@@ -107,7 +107,7 @@ export class DiscordCommandHandler {
 
   public getCommandHash(): Buffer {
     const hash = createHash("sha1");
-    hash.update(this.commands.map(k=> k.metadata.toJSON()).join());
+    hash.update(JSON.stringify(this.commands.map(k=> k.metadata.toJSON())));
     return hash.digest();
   }
 }
