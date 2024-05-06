@@ -146,7 +146,7 @@ export class EvalCommand extends baseCommand {
   };
 
   // Send Embed Message on behalf of the bot lmao
-  sendEmbed = async (channel: Channel, text: string, title?: string, color?: ColorResolvable) => {
+  private sendEmbed = async (channel: Channel, text: string, title?: string, color?: ColorResolvable) => {
     if(channel.type !== ChannelType.GuildText) return;
     const embed = new EmbedBuilder()
       .setTitle(title ?? null)
@@ -158,7 +158,7 @@ export class EvalCommand extends baseCommand {
   };
 
   // Get channel object by channel ID
-  getChannel = async(id: string) => {
+  private getChannel = async(id: string) => {
     return await this.client.channels.fetch(id);
   };
 
