@@ -9,6 +9,7 @@ import { YoutubeClient } from "./core/YoutubeClient";
  * .env persistance setup for docker
  */
 
+dotenv();
 if(process.env['ISDOCKER']) {
   const envToWrite = process.env["WRITE_ENV"];
   if(envToWrite) {
@@ -17,9 +18,8 @@ if(process.env['ISDOCKER']) {
     for(const env of envs)
       envData += `${env}=${process.env[env]}\n`;
     writeFileSync(".env", envData);
-  } else dotenv();
+  } 
 }
-
 
 /**
  * Start up checks

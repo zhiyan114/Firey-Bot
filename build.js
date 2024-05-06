@@ -1,6 +1,7 @@
 const esbuild = require('esbuild');
 const fs = require('fs');
 const path = require('path');
+const process = require('child_process');
 
 const basePath = "src";
 
@@ -20,7 +21,14 @@ function getAllFilesInFolder(folderPath, filesArray = []) {
   return filesArray;
 }
 
+// Get Commit Hash (using git)
+const commitHash = process
+  .execSync('git rev-parse HEAD')
+  .toString()
+  .trim();
+
 // Run Build
+const start = new Date();
 const out = esbuild.buildSync({
   entryPoints: getAllFilesInFolder(basePath),
   minify: true,
@@ -32,10 +40,12 @@ const out = esbuild.buildSync({
   packages: "external",
   sourcemap: true,
   metafile: true,
+  banner: { js: `/* 2022-${start.getFullYear()} © zhiyan114 GPLv3 UwU | Build: ${commitHash} */` },
   outdir: "dist",
 });
 if(out.errors.length > 0)
   console.error(`Build Failed: ${JSON.stringify(out.errors)}`);
+const end = Date.now();
 
 // Copy over config.json
 fs.copyFileSync(path.join(basePath, "config.json"), path.join("dist", "config.json"));
@@ -52,4 +62,4 @@ while (buildSize > 1024) {
   sizeUnitIndex++;
 }
 
-console.log(`Build Success! Size: ${(buildSize).toFixed(2)} ${sizeUnits[sizeUnitIndex]}`);
+console.log(`Build Success! Took ${end-start.getTime()}ms with size: ${(buildSize).toFixed(2)} ${sizeUnits[sizeUnitIndex]}`);
