@@ -1,7 +1,7 @@
 import { Client } from "tmi.js";
 import { DiscordClient } from "./DiscordClient";
 import { StreamEvents, TwitchEvents } from "../events";
-import { streamClient } from "../utils/twitchStream";
+import { streamClient } from "./helper/twitchStream";
 import { baseClient } from "./baseClient";
 
 

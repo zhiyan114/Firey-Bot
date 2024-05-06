@@ -7,7 +7,7 @@ import { captureException } from "@sentry/node";
 import axios, { Axios } from "axios";
 import events from "events";
 import https from "https"; 
-import { TwitchClient } from "../core/TwitchClient";
+import { TwitchClient } from "../TwitchClient";
 
 // Type Reference: https://dev.twitch.tv/docs/api/reference#get-streams
 interface stringObjectType {

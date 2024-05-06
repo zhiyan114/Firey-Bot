@@ -3,7 +3,7 @@ import { TwitchClient } from "../core/TwitchClient";
 import { baseTEvent } from "../core/baseEvent";
 import { DiscordInvite } from "../utils/DiscordInvite";
 import { clearTwitchCache } from "../utils/TwitchUser";
-import { getStreamData } from "../utils/twitchStream";
+import { getStreamData } from "../core/helper/twitchStream";
 
 
 export class StreamEvents extends baseTEvent {
