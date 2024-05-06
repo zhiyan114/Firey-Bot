@@ -9,7 +9,7 @@ export class TwitchClient extends Client implements baseClient {
   public dClient: DiscordClient;
   public streamClient: streamClient;
   
-  constructor(client: DiscordClient, token: string) {
+  constructor(client: DiscordClient, username: string, token: string) {
     super({
       connection: {
         reconnect: true,
@@ -17,7 +17,7 @@ export class TwitchClient extends Client implements baseClient {
       },
       // @TODO: Eventually configify this
       identity: {
-        username: "fireybotuwu",
+        username,
         password: `oauth:${token}`
       },
       channels: [client.config.twitch.channel]

@@ -22,6 +22,7 @@ services:
       - WEBSERVER_HTTPS_KEY
       - SENTRY_DSN
       - POSTGRESQL_CONN
+      - TWITCH_USERNAME
       - TWITCH_TOKEN
       - AMQP_CONN
       - REDIS_CONN
