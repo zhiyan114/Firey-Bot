@@ -18,7 +18,8 @@
     "ignorePatterns": [
         "node_modules/",
         "dist/",
-        "src/utils/youtube-notifier/**/*"
+        "src/utils/youtube-notifier/**/*",
+        "build.js"
     ],
     "rules": {
         "indent": [
