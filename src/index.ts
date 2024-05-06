@@ -27,8 +27,8 @@ if(process.env['ISDOCKER']) {
 
 if(!process.env["BOTTOKEN"])
   throw new Error("No token provided");
-if(!process.env["TWITCH_TOKEN"])
-  throw new Error("No twitch token provided");
+if(!process.env["TWITCH_TOKEN"] || !process.env["TWITCH_USERNAME"])
+  throw new Error("No twitch username/token provided");
 
 if(!process.env["COMMITHASH"]) {
   // Try to load the commit hash via file
@@ -46,7 +46,7 @@ if(!process.env["COMMITHASH"]) {
 const port = process.env["WEBSERVER_PORT"];
 
 const CoreClient = new DiscordClient();
-const twitchClient = new TwitchClient(CoreClient, process.env["TWITCH_TOKEN"]);
+const twitchClient = new TwitchClient(CoreClient, process.env["TWITCH_USERNAME"], process.env["TWITCH_TOKEN"]);
 const youtubeClient = new YoutubeClient({
   client: CoreClient,
   FQDN: process.env["WEBSERVER_FQDN"] || "",

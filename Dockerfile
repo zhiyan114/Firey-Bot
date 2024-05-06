@@ -17,6 +17,7 @@ COPY scripts/ ./scripts
 RUN chmod +x ./scripts/*
 COPY prisma/ ./
 RUN npx prisma generate
+COPY build.js ./build.js
 COPY src/ ./src/
 RUN npm run build
 
@@ -43,7 +44,6 @@ FROM node:20-buster-slim
 
 # Setup the environment?
 WORKDIR /app/
-ENV ISDOCKER=true
 
 # Install/upgrade some system packages
 RUN npm install -g npm@latest

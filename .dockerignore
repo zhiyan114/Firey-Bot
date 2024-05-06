@@ -1,1 +1,3 @@
-node_modules
+# Sentry already has the source maps
+**/dist/**.map.js
+**/dist/**.map

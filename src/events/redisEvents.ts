@@ -7,6 +7,8 @@ import { baseEvent } from "../core/baseEvent";
 
 export class RedisEvents extends baseEvent {
   client: DiscordClient;
+  alreadyReconWarned = false;
+
   constructor(client: DiscordClient) {
     super();
     this.client = client;
@@ -29,6 +31,8 @@ export class RedisEvents extends baseEvent {
   }
 
   private ready() {
+    this.alreadyReconWarned = false;
+
     console.log("Redis Connected");
     this.client.logger.sendLog({
       type: "Info",
@@ -37,6 +41,11 @@ export class RedisEvents extends baseEvent {
   }
 
   private reconnecting() {
+    // We don't need the reconnect to spam...
+    this.alreadyReconWarned = true;
+    if(this.alreadyReconWarned)
+      return;
+
     console.log("Redis reconnecting...");
     this.client.logger.sendLog({
       type: "Warning",
