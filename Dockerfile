@@ -43,7 +43,6 @@ FROM node:20-buster-slim
 
 # Setup the environment?
 WORKDIR /app/
-ENV ISDOCKER=true
 
 # Install/upgrade some system packages
 RUN npm install -g npm@latest
