@@ -15,9 +15,9 @@ export interface LogData {
  * @method sendLog - Create and send the log to the log channels
  */
 export class eventLogger {
-  client: DiscordClient;
-  channel?: TextChannel;
-  logQueues: LogData[] = []; // For logs received during unitialized state
+  private client: DiscordClient;
+  private channel?: TextChannel;
+  private logQueues: LogData[] = []; // For logs received during unitialized state
   constructor(client: DiscordClient) {
     this.client = client;
   }

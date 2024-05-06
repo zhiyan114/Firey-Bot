@@ -63,6 +63,10 @@ export class DiscordCommandHandler {
         value: currentHash.toString("base64")
       }
     });
+    await this.client.logger.sendLog({
+      type: "Info",
+      message: "Application Command has been updated!"
+    });
   }   
     
   public async commandEvent(interaction: CommandInteraction | ContextMenuCommandInteraction): Promise<void> {
@@ -103,7 +107,7 @@ export class DiscordCommandHandler {
 
   public getCommandHash(): Buffer {
     const hash = createHash("sha1");
-    hash.update(this.commands.map(k=> k.metadata.toJSON()).join());
+    hash.update(JSON.stringify(this.commands.map(k=> k.metadata.toJSON())));
     return hash.digest();
   }
 }
