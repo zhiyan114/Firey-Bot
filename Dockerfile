@@ -11,19 +11,21 @@ RUN apt-get install python3 make g++ git -y
 COPY package.json package-lock.json ./
 RUN npm install
 
-# Copy all build files and build
+# Env Setup
 COPY tsconfig.json ./
 COPY scripts/ ./scripts
 RUN chmod +x ./scripts/*
 COPY prisma/ ./
 RUN npx prisma generate
-COPY build.js ./build.js
-COPY src/ ./src/
-RUN npm run build
 
 # Passthrough git to keep commit hash up to date
 COPY .git/ ./.git/
 RUN echo $(git -C /source/ rev-parse HEAD) > "commitHash"
+
+# Build the source
+COPY src/ ./src/
+COPY build.js ./build.js
+RUN npm run build
 
 # Setup sentry source mapping
 ARG SENTRY_AUTH_TOKEN
