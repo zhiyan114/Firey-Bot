@@ -21,6 +21,7 @@ function getAllFilesInFolder(folderPath, filesArray = []) {
 }
 
 // Run Build
+const start = Date.now();
 const out = esbuild.buildSync({
   entryPoints: getAllFilesInFolder(basePath),
   minify: true,
@@ -36,6 +37,7 @@ const out = esbuild.buildSync({
 });
 if(out.errors.length > 0)
   console.error(`Build Failed: ${JSON.stringify(out.errors)}`);
+const end = Date.now();
 
 // Copy over config.json
 fs.copyFileSync(path.join(basePath, "config.json"), path.join("dist", "config.json"));
@@ -52,4 +54,4 @@ while (buildSize > 1024) {
   sizeUnitIndex++;
 }
 
-console.log(`Build Success! Size: ${(buildSize).toFixed(2)} ${sizeUnits[sizeUnitIndex]}`);
+console.log(`Build Success! Took ${end-start}ms with size: ${(buildSize).toFixed(2)} ${sizeUnits[sizeUnitIndex]}`);
