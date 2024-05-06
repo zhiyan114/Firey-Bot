@@ -11,7 +11,6 @@ import {
 } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordClient } from "../../core/DiscordClient";
-import { withScope as sentryScope } from "@sentry/node";
 
 export class EvalCommand extends baseCommand {
   public client: DiscordClient;
@@ -22,6 +21,11 @@ export class EvalCommand extends baseCommand {
     .addStringOption(option=>
       option.setName("code")
         .setDescription("The code to evaluate.")
+        .setRequired(true)
+    )
+    .addBooleanOption(option=>
+      option.setName("async")
+        .setDescription("Whether to run the code in an asynchronous context.")
         .setRequired(true)
     );
   public access = {
@@ -36,9 +40,8 @@ export class EvalCommand extends baseCommand {
 
   public async execute(interaction: CommandInteraction) {
     const code = interaction.options.get("code", true).value as string;
+    const isAsync = interaction.options.get("async", true).value as boolean;
     const channel = interaction.channel;
-    const guild = interaction.guild;
-    const member = interaction.member;
     const print = async (msg: unknown) => {
       if(typeof msg == "object") msg = JSON.stringify(msg);
       if(msg === undefined || msg === null) msg = "undefined";
@@ -46,44 +49,42 @@ export class EvalCommand extends baseCommand {
       await channel?.send(msg as string);
     };
 
-    sentryScope(async (scope) => {
-      scope.setTag("isEval", true);
-      await interaction.deferReply({ephemeral: true});
-      try {
-        const secureFunc = new Function(
-          "client",
-          "interaction",
-          "channel",
-          "guild",
-          "member",
-          "print",
-          "sentryScope",
-          "utils",
-          code
-        );
+    await interaction.deferReply({ephemeral: true});
+    try {
+      const secureFunc = new Function(
+        "client",
+        "interaction",
+        "channel",
+        "guild",
+        "member",
+        "print",
+        "utils",
+        isAsync ? `return (async()=>{${code}})();` : code
+      );
 
-        secureFunc(
-          this.client,
-          interaction,
-          channel,
-          guild,
-          member,
-          print,
-          sentryScope,
-          {
-            createMissingUser: this.createMissingUser,
-            updateUser: this.updateUser,
-            createVeifyBtn: this.createVeifyBtn,
-            sendEmbed: this.sendEmbed,
-            getChannel: this.getChannel,
-          }
-        );
-        return await interaction.followUp({content: "Execution complete!", ephemeral: true});
-      } catch(ex) {
-        const err = ex as Error;
-        await interaction.followUp({content: `Bad Execution [${err.name}]: \`${err.message}\``, ephemeral: true});
-      }
-    });
+      let context = secureFunc(
+        this.client,
+        interaction,
+        channel,
+        interaction.guild,
+        interaction.member,
+        print,
+        {
+          createMissingUser: this.createMissingUser,
+          updateUser: this.updateUser,
+          createVeifyBtn: this.createVeifyBtn,
+          sendEmbed: this.sendEmbed,
+          getChannel: this.getChannel,
+        }
+      );
+
+      if(context instanceof Promise)
+        context = await context;
+      return await interaction.followUp({content: `Execution complete! Context Returned: ${context}`, ephemeral: true});
+    } catch(ex) {
+      const err = ex as Error;
+      await interaction.followUp({content: `Bad Execution [${err.name}]: \`${err.message}\``, ephemeral: true});
+    }
   }
 
   /* Util commands for eval command runner */
