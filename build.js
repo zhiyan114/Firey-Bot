@@ -27,7 +27,6 @@ const commitHash = process
   .toString()
   .trim();
 
-
 // Run Build
 const start = Date.now();
 const out = esbuild.buildSync({
@@ -41,7 +40,7 @@ const out = esbuild.buildSync({
   packages: "external",
   sourcemap: true,
   metafile: true,
-  banner: { js: `/* 2022-${new Date().getFullYear()} © zhiyan114 GPLv3 UwU | Build: ${commitHash} */` },
+  banner: { js: `/* 2022-${start.getFullYear()} © zhiyan114 GPLv3 UwU | Build: ${commitHash} */` },
   outdir: "dist",
 });
 if(out.errors.length > 0)
