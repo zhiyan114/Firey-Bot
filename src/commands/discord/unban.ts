@@ -10,12 +10,13 @@ export class unbanCommand extends baseCommand {
   metadata = new SlashCommandBuilder();
   access = {
     users: [],
-    roles: ['908090260087513098'],
+    roles: [] as string[],
   };
 
   constructor(client: DiscordClient) {
     super();
     this.client = client;
+    this.access.roles.push(client.config.adminRoleID);
     this.metadata 
       .setName("unban")
       .setDescription("Remove a user from the ban list")

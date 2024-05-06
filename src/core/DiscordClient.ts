@@ -116,7 +116,7 @@ export class DiscordClient extends Client implements baseClient {
     this.user?.setPresence({
       status: "dnd",
       activities: [{
-        name: `rel ${commitHash ?? "???"} | ${this.guilds.cache.find(g=>g.id===this.config.guildID)?.memberCount} cuties :Þ`,
+        name: `ver ${commitHash ?? "???"} | ${this.guilds.cache.find(g=>g.id===this.config.guildID)?.memberCount} cuties :Þ`,
         type: ActivityType.Watching,
       }]
     });

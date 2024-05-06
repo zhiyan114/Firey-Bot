@@ -23,6 +23,6 @@ export async function VertificationHandler(client: DiscordClient, interaction: B
   await interaction.reply({ content: "Thank you for confirming the rules.", ephemeral: true });
   await client.logger.sendLog({
     type: "Interaction",
-    message: `${interaction.user.tag} has confirmed the rules.`
+    message: `**${interaction.user.tag}** has confirmed the rules.`
   });
 }
