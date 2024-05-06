@@ -17,6 +17,7 @@ COPY scripts/ ./scripts
 RUN chmod +x ./scripts/*
 COPY prisma/ ./
 RUN npx prisma generate
+COPY build.js ./build.js
 COPY src/ ./src/
 RUN npm run build
 
