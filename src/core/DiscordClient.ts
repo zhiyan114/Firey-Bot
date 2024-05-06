@@ -57,7 +57,8 @@ export class DiscordClient extends Client implements baseClient {
     // Initalize components
     this.logger = new eventLogger(this);
     this.redis = createClient({
-      url: !process.env["REDIS_CONN"] ? "redis://redis:6379" : process.env["REDIS_CONN"],
+      url: (process.env["ISDOCKER"] && !process.env["REDIS_CONN"]) ?
+        "redis://redis:6379" : process.env["REDIS_CONN"],
       
     });
     this.prisma = new PrismaClient({
