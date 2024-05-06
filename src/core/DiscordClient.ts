@@ -1,4 +1,4 @@
-import { ActivityType, Client, GatewayIntentBits, Partials, DiscordAPIError } from "discord.js";
+import { ActivityType, Client, GatewayIntentBits, Partials, DiscordAPIError, DefaultWebSocketManagerOptions } from "discord.js";
 import { APIErrors } from "../utils/discordErrorCode";
 import config from '../config.json';
 import { PrismaClient } from "@prisma/client";
@@ -64,6 +64,8 @@ export class DiscordClient extends Client implements baseClient {
     this.prisma = new PrismaClient({
       errorFormat: "minimal"
     });
+    //@ts-expect-error Override readonly property
+    DefaultWebSocketManagerOptions.identifyProperties.browser = "Discord iOS";
     
     // Initialize Events
     this.events = {
@@ -115,11 +117,11 @@ export class DiscordClient extends Client implements baseClient {
       commitHash = commitHash.substring(0, 7);
 
     this.user?.setPresence({
-      status: "dnd",
+      status: "online",
       activities: [{
         name: `${this.guilds.cache.find(g=>g.id===this.config.guildID)?.memberCount} cuties :Þ | ver ${commitHash ?? "???"}`,
         type: ActivityType.Watching,
-      }]
+      }],
     });
   }
 
