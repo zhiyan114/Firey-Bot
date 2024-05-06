@@ -77,9 +77,13 @@ export class EvalCommand extends baseCommand {
           getChannel: this.getChannel,
         }
       );
-
+      
+      // Appropriately serialize the context if needed
       if(context instanceof Promise)
         context = await context;
+      if(typeof context === "object")
+        context = JSON.stringify(context);
+
       return await interaction.followUp({content: `Execution complete! Context Returned: ${context}`, ephemeral: true});
     } catch(ex) {
       const err = ex as Error;
