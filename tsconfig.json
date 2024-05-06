@@ -10,8 +10,10 @@
         "resolveJsonModule": true,
         "esModuleInterop": true,
         "skipLibCheck": false,
-        "sourceMap": true,
-        "inlineSources": true,
-        "sourceRoot": "/"
-    }
+        "noEmit": true
+    },
+    "exclude": [
+        "build.js",
+        "./dist"
+    ]
 }
