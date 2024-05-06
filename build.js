@@ -28,7 +28,7 @@ const commitHash = process
   .trim();
 
 // Run Build
-const start = Date.now();
+const start = new Date();
 const out = esbuild.buildSync({
   entryPoints: getAllFilesInFolder(basePath),
   minify: true,
@@ -62,4 +62,4 @@ while (buildSize > 1024) {
   sizeUnitIndex++;
 }
 
-console.log(`Build Success! Took ${end-start}ms with size: ${(buildSize).toFixed(2)} ${sizeUnits[sizeUnitIndex]}`);
+console.log(`Build Success! Took ${end-start.getTime()}ms with size: ${(buildSize).toFixed(2)} ${sizeUnits[sizeUnitIndex]}`);
