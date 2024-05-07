@@ -66,7 +66,10 @@ export class DiscordCommandHandler {
     });
     await this.client.logger.sendLog({
       type: "Info",
-      message: "Application Command has been updated!"
+      message: "Application Command has been updated!",
+      metadata: {
+        count: this.commands.length.toString()
+      }
     });
   }   
     
