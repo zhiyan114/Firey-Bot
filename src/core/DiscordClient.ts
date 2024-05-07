@@ -7,7 +7,7 @@ import { connect, Connection } from "amqplib";
 import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents, AMQPEvents } from "../events/";
 
-import { init as sentryInit, Integrations } from "@sentry/node";
+import { init as sentryInit, Integrations, flush } from "@sentry/node";
 import { extraErrorDataIntegration, rewriteFramesIntegration } from "@sentry/integrations";
 import { Prisma } from "@prisma/client";
 import path from "path";
@@ -108,6 +108,7 @@ export class DiscordClient extends Client implements baseClient {
       await this.amqp.close();
     }
     await this.destroy();
+    await flush();
   }
 
   public updateStatus() {
