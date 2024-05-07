@@ -40,13 +40,15 @@ export class TwitchUser {
   }
   /**
      * Standard way of retrieving twitch user data
-     * @returns Cache Data (memberid of -1 if account linking has not been started)
+     * @returns Cache Data or undefined if the user does not exist
      */
-  public async getCacheData(): Promise<cacheData> {
+  public async getCacheData(): Promise<cacheData | undefined> {
     // Check if the record already exist in redis
     if(await this.cacheExists()) {
       // Pull it up and use it
       const data = await this.client.dClient.redis.hGetAll(this.cachekey);
+      if(data.memberid === "-1")
+        return;
       return {
         memberid: data.memberid,
         username: data.username,
@@ -60,7 +62,7 @@ export class TwitchUser {
         memberid: "-1",
       };
       await this.updateDataCache(guestUserData);
-      return guestUserData;
+      return;
     }
     const finalData: cacheData = {
       memberid: dbData.memberid,
@@ -167,7 +169,7 @@ export class TwitchUser {
   }
   public async getDiscordUser(): Promise<DiscordUser | undefined> {
     const data = await this.getCacheData();
-    if(!data.memberid || data.memberid === "-1") return;
+    if(!data?.memberid || data?.memberid === "-1") return;
     const user = await this.client.dClient.users.fetch(data.memberid);
     return new DiscordUser(this.client.dClient, user);
   }
