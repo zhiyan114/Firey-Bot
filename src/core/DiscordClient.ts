@@ -7,7 +7,7 @@ import { connect, Connection } from "amqplib";
 import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents, AMQPEvents } from "../events/";
 
-import { init as sentryInit, Integrations, flush } from "@sentry/node";
+import { init as sentryInit, Integrations, flush, metrics } from "@sentry/node";
 import { extraErrorDataIntegration, rewriteFramesIntegration } from "@sentry/integrations";
 import { Prisma } from "@prisma/client";
 import path from "path";
@@ -143,7 +143,8 @@ export class DiscordClient extends Client implements baseClient {
             return frame;
           }
         }),
-        new Integrations.Prisma({client: this.prisma})
+        new Integrations.Prisma({client: this.prisma}),
+        metrics.metricsAggregatorIntegration()
       ],
   
       _experiments: {
@@ -170,8 +171,6 @@ export class DiscordClient extends Client implements baseClient {
         "ENOTFOUND"
       ],
       beforeSend : (evnt, hint) => {
-        if(evnt.tags && evnt.tags["isEval"]) return null;
-    
         const ex = hint.originalException;
         if(ex instanceof DiscordAPIError && ex.code === APIErrors.UNKNOWN_INTERACTION) return null;
         // Somehow prisma bugged and threw this error :/

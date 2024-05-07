@@ -35,12 +35,13 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
   }
 
   // Execute command, assuming all the checks are passed (and track their usages)
-  metrics.increment("twitch.command.executed", 1, {
-    timestamp: new Date().getTime(),
-    tags: {
-      command: cmdName
-    }
-  });
+  if(eventData.user.id !== "128185688")
+    metrics.increment("twitch.command.executed", 1, {
+      timestamp: new Date().getTime(),
+      tags: {
+        command: cmdName
+      }
+    });
 
   await command.execute({
     channel: eventData.channel,
