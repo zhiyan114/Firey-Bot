@@ -43,7 +43,7 @@ export class EvalCommand extends baseCommand {
     const isAsync = interaction.options.get("async", true).value as boolean;
     const channel = interaction.channel;
     const print = async (msg: unknown) => {
-      if(typeof msg == "object") msg = JSON.stringify(msg);
+      if(typeof msg === "object") msg = JSON.stringify(msg);
       if(msg === undefined || msg === null) msg = "undefined";
       else msg = msg.toString();
       await channel?.send(msg as string);
@@ -96,11 +96,11 @@ export class EvalCommand extends baseCommand {
   // Automatically add missing users to the database
   private createMissingUser = async (client: DiscordClient) => {
     const dataToPush: userDataType[] = [];
-    const guild = client.guilds.cache.find(g=>g.id == client.config.guildID);
+    const guild = client.guilds.cache.find(g=>g.id === client.config.guildID);
     if(!guild) return;
     for(const [,member] of await guild.members.fetch()) {
       if(member.user.bot) continue;
-      const hasVerifyRole = member.roles.cache.find(role=>role.id == client.config.newUserRoleID);
+      const hasVerifyRole = member.roles.cache.find(role=>role.id === client.config.newUserRoleID);
       dataToPush.push({
         id: member.user.id,
         username: member.user.tag,
@@ -115,7 +115,7 @@ export class EvalCommand extends baseCommand {
 
   // Automatically update out-of-date user to the database
   private updateUser = async () => {
-    const guild = this.client.guilds.cache.find(g=>g.id == this.client.config.guildID);
+    const guild = this.client.guilds.cache.find(g=>g.id === this.client.config.guildID);
     if(!guild) return;
 
     for(const [,member] of await guild.members.fetch()) {

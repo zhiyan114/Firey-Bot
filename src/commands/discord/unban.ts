@@ -54,7 +54,7 @@ export class unbanCommand extends baseCommand {
       // Cleanup
       await issuer.actionLog({
         actionName: "unban",
-        target: target,
+        target,
         message: `<@${targetUser.id}> has been unbanned by <@${interaction.user.id}>`,
         reason: reason?.value?.toString()
       });

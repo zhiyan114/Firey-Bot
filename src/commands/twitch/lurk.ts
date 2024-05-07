@@ -4,6 +4,6 @@ export class LurkCommand extends baseTCommand {
   public name = "lurk";
   public perm = [];
   public async execute(data: tmiTypes) {
-    return data.client.say(data.channel, `@${data.user.username} is now lurking in the shadows!`);
+    return await data.client.say(data.channel, `@${data.user.username} is now lurking in the shadows!`);
   }
 }

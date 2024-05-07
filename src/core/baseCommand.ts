@@ -18,7 +18,7 @@ export abstract class baseCommand {
   abstract client: DiscordClient;
   public abstract metadata: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup"> | ContextMenuCommandBuilder | SlashCommandOptionsOnlyBuilder;
   public abstract access: accessPerms;
-  public abstract execute(interaction: CommandInteraction | ContextMenuCommandInteraction): Promise<void | unknown>;
+  public abstract execute(interaction: CommandInteraction | ContextMenuCommandInteraction): void | Promise<void | unknown>;
 }
 
 
@@ -38,5 +38,5 @@ export type tmiTypes = {
 export abstract class baseTCommand {
   public abstract name: string;
   public abstract perm: string[];
-  public abstract execute(data: tmiTypes): Promise<void | unknown>;
+  public abstract execute(data: tmiTypes): void | Promise<void | unknown>;
 }
