@@ -1,7 +1,7 @@
 // This should handle all command callbacks and registerations
 
 import { ChannelType, CommandInteraction, ContextMenuCommandInteraction, REST, Routes } from "discord.js";
-import { EvalCommand, banCommand, getPointsCommand, kickCommand, leaderboardCommand, purgeCommand, softBanCommand, unbanCommand } from "../../commands/discord";
+import { EvalCommand, TwitchVerify, banCommand, getPointsCommand, kickCommand, leaderboardCommand, purgeCommand, softBanCommand, unbanCommand } from "../../commands/discord";
 import { baseCommand } from "../../core/baseCommand";
 import { metrics } from "@sentry/node";
 import { DiscordClient } from "../../core/DiscordClient";
@@ -24,7 +24,8 @@ export class DiscordCommandHandler {
       new leaderboardCommand(client),
       new purgeCommand(client),
       new softBanCommand(client),
-      new unbanCommand(client)
+      new unbanCommand(client),
+      new TwitchVerify(client),
     ] satisfies baseCommand[];
   }
 

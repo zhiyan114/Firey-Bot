@@ -2,7 +2,6 @@ import { Prisma } from "@prisma/client";
 import { captureException } from "@sentry/node";
 import { DiscordUser } from "./DiscordUser";
 import { createHash } from "crypto";
-import { TwitchClient } from "../core/TwitchClient";
 import { DiscordClient } from "../core/DiscordClient";
 
 type updateUser = {
@@ -27,10 +26,10 @@ type cacheData = {
 }
 // userid is for user's twitch ID; this class is used to manage twitch bot's redis cache system, replacing the current memory-based cache system.
 export class TwitchUser {
-  private client: TwitchClient;
+  private client: DiscordClient;
   private userid: string;
   private cachekey: string;
-  constructor(tClient: TwitchClient, userid: string) {
+  constructor(tClient: DiscordClient, userid: string) {
     this.userid = userid;
     this.client = tClient;
 
@@ -46,7 +45,7 @@ export class TwitchUser {
     // Check if the record already exist in redis
     if(await this.cacheExists()) {
       // Pull it up and use it
-      const data = await this.client.dClient.redis.hGetAll(this.cachekey);
+      const data = await this.client.redis.hGetAll(this.cachekey);
       if(data.memberid === "-1")
         return;
       return {
@@ -77,7 +76,7 @@ export class TwitchUser {
      * @returns {boolean} return true if exist, otherwise false
      */
   public async cacheExists(): Promise<boolean> {
-    return await this.client.dClient.redis.exists(this.cachekey) > 0;
+    return await this.client.redis.exists(this.cachekey) > 0;
   }
   /**
      * Update user's cache data
@@ -94,9 +93,9 @@ export class TwitchUser {
     if(newData.username !== undefined) filteredData["username"] = newData.username;
     if(newData.verified !== undefined) filteredData["verified"] = newData.verified.toString();
     // Update the cache   
-    await this.client.dClient.redis.hSet(this.cachekey, filteredData);
+    await this.client.redis.hSet(this.cachekey, filteredData);
     // set redis expire key in 3 hours
-    await this.client.dClient.redis.expire(this.cachekey, 10800);
+    await this.client.redis.expire(this.cachekey, 10800);
     return;
   }
   /**
@@ -105,7 +104,7 @@ export class TwitchUser {
      */
   private async getUserFromDB(): Promise<null | userData> {
     try {
-      return await this.client.dClient.prisma.twitch.findUnique({
+      return await this.client.prisma.twitch.findUnique({
         where: {
           id: this.userid,
         }
@@ -122,7 +121,7 @@ export class TwitchUser {
      */
   public async createUser(data: createUser) {
     try {
-      return await this.client.dClient.prisma.twitch.create({
+      return await this.client.prisma.twitch.create({
         data: {
           id: this.userid,
           memberid: data.memberid,
@@ -141,7 +140,7 @@ export class TwitchUser {
      */
   public async updateUser(data: updateUser): Promise<boolean> {
     try {
-      await this.client.dClient.prisma.twitch.update({
+      await this.client.prisma.twitch.update({
         data: {
           memberid: data.memberid,
           username: data.username,
@@ -170,8 +169,8 @@ export class TwitchUser {
   public async getDiscordUser(): Promise<DiscordUser | undefined> {
     const data = await this.getCacheData();
     if(!data?.memberid || data?.memberid === "-1") return;
-    const user = await this.client.dClient.users.fetch(data.memberid);
-    return new DiscordUser(this.client.dClient, user);
+    const user = await this.client.users.fetch(data.memberid);
+    return new DiscordUser(this.client, user);
   }
 }
 

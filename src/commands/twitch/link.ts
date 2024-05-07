@@ -8,7 +8,7 @@ export class LinkCommand extends baseTCommand {
     const discordID = data.args[1];
     if(!data.user["user-id"]) return;
     if(!data.user.username) return;
-    const tUser = new TwitchUser(data.client, data.user["user-id"]);
+    const tUser = new TwitchUser(data.client.dClient, data.user["user-id"]);
     const uData = await tUser.getCacheData();
 
     // General sanity check
