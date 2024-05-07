@@ -90,7 +90,7 @@ export class softBanCommand extends baseCommand {
     // Handle the cleanup
     await issuer.actionLog({
       actionName: this.metadata.name,
-      target: target,
+      target,
       message: `<@${targetMember.id}> has been softban by <@${interaction.user.id}>`,
       reason,
     });

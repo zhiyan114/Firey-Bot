@@ -110,9 +110,9 @@ export class BannerPic {
     * @param url The URL of the image
     * @returns The Buffer of the image in PNG format
     */
-  private async urltobuff(url: string) {
+  private urltobuff(url: string) {
     return new Promise<Buffer>((res,rej)=>{
-      https.get(url, async(resp)=>{
+      https.get(url, (resp)=>{
         const data: Buffer[] = [];
         resp.on("data",(chunk)=> data.push(chunk));
         // Conversion is necessary since discord uses webp as their default format which Node-Canvas doesn't support

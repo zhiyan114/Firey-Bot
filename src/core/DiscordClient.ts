@@ -5,7 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import { RedisClientType, createClient } from "redis";
 import { connect, Connection } from "amqplib";
 import { eventLogger } from "./helper/eventLogger";
-import { DiscordEvents, RedisEvents, AMQPEvents } from "../events/";
+import { DiscordEvents, RedisEvents, AMQPEvents } from "../events";
 
 import { init as sentryInit, Integrations, flush, metrics } from "@sentry/node";
 import { extraErrorDataIntegration, rewriteFramesIntegration } from "@sentry/integrations";

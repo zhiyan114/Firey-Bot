@@ -84,7 +84,7 @@ export class kickCommand extends baseCommand {
     // Handle the cleanup
     await issuer.actionLog({
       actionName: this.metadata.name,
-      target: target,
+      target,
       message: `<@${targetMember.id}> has been kicked by <@${interaction.user.id}>`,
       reason,
     });

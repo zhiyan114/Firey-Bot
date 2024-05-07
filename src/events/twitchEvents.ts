@@ -21,9 +21,9 @@ export class TwitchEvents extends baseTEvent {
     if(!userstate["user-id"] || !userstate['username']) return;
 
     // Keep username up to date
-    const tUser = new TwitchUser(this.client, userstate['user-id']);
+    const tUser = new TwitchUser(this.client.dClient, userstate['user-id']);
     const uData = await tUser.getCacheData();
-    if(uData && uData.verified)
+    if(uData?.verified)
       if(userstate['username'] !== uData.username) {
         await tUser.updateDataCache({
           username: userstate['username']

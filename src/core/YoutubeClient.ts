@@ -68,8 +68,7 @@ interface config {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export declare interface YoutubeClient extends YouTubeNotifier {
     on(event: "notified", listener: (data: NotifiedEvent) => void): this;
-    on(event: "subscribe", listener: (data: SubEvent) => void): this;
-    on(event: "unsubscribe", listener: (data: SubEvent) => void): this;
+    on(event: "subscribe" | "unsubscribe", listener: (data: SubEvent) => void): this;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging

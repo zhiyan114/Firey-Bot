@@ -90,6 +90,9 @@ export class eventLogger {
 
     case "Error":
       return "#00FFFF";
+
+    default:
+      return "#000000";
     }
   }
 }

@@ -38,11 +38,11 @@ export class DiscordEvents extends baseEvent {
 
   private async createCommand(interaction: Interaction) {
     if(interaction.isCommand() || interaction.isContextMenuCommand())
-      this.commandHandler.commandEvent(interaction);
+      return await this.commandHandler.commandEvent(interaction);
 
     if(interaction.isButton())
       if(interaction.customId === "RuleConfirm")
-        VertificationHandler(this.client, interaction);
+        return await VertificationHandler(this.client, interaction);
   }
 
   private async messageCreate(message: Message) {
@@ -99,7 +99,7 @@ export class DiscordEvents extends baseEvent {
     });
   }
 
-  private async guildMemberRemove() {
+  private guildMemberRemove() {
     this.client.updateStatus();
   }
 }
