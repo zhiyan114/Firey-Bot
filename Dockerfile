@@ -20,7 +20,7 @@ RUN npx prisma generate
 
 # Passthrough git to keep commit hash up to date
 COPY .git/ ./.git/
-RUN echo $(git -C /source/ rev-parse HEAD) > "commitHash"
+RUN git -C /source/ rev-parse HEAD > "commitHash"
 
 # Build the source
 COPY src/ ./src/
@@ -51,6 +51,7 @@ WORKDIR /app/
 RUN npm install -g npm@latest
 RUN apt-get update
 RUN apt-get install fonts-noto ffmpeg -y
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy files from the build env
 COPY --from=buildenv /source/node_modules /app/node_modules/

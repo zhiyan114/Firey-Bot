@@ -5,9 +5,10 @@
     "welcomeChannelID": "907121158376288307",
     "logChannelID": "971584951076147261",
     "generalChannelID": "908069392384933938",
-    "noPointsChannel": [
-        "907121158376288307"
-    ],
+    "noPoints": {
+        "channel": ["907121158376288307"],
+        "category": ["971814606265806849", "907313940986466374"]
+    },
     "youtube": {
         "youtubeChannelID": "UCKsRmVfwU-IkVWhfiSVp1ig",
         "guildChannelID": "912150616908890142",

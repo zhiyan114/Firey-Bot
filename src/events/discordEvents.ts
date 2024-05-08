@@ -46,9 +46,15 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async messageCreate(message: Message) {
+    // Channel Checks
     if(message.author.bot) return;
-    if(message.channel.type !== ChannelType.GuildText) return;
-    if(this.client.config.noPointsChannel.find(c=>c===message.channel.id)) return;
+    const channel = message.channel;
+    if(channel.type !== ChannelType.GuildText) return;
+
+    // Place where user wont be awarded with points
+    const noPointsConf = this.client.config.noPoints;
+    if(noPointsConf.channel.length > 0 && noPointsConf.channel.find(c=>c===channel.id)) return;
+    if(noPointsConf.category.length > 0 && noPointsConf.category.find(c=>channel.parentId === c)) return;
 
     // Grant points
     await (new DiscordUser(this.client, message.author)).economy.chatRewardPoints(message.content);

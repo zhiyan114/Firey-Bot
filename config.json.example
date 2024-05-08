@@ -5,9 +5,10 @@
     "welcomeChannelID": "Channel to post welcome messages",
     "logChannelID": "Channel to post service logs",
     "generalChannelID": "Default user interaction channel",
-    "noPointsChannel": [
-        "Guild Channel ID which the point won't be awarded to"
-    ],
+    "noPoints": {
+        "channel": ["Channel ID Where Points Wont Be Awarded"],
+        "category": ["Category ID Where Points Wont Be Awarded"]
+    },
     "youtube": {
         "youtubeChannelID": "Channel to listen for",
         "guildChannelID": "Guild channel to post the notification",

@@ -9,4 +9,4 @@ RUN apt-get install make g++ git ffmpeg -y
 
 # Install python packages
 
-RUN pip install pika openai-whisper
+RUN pip install --no-cache-dir pika openai-whisper
