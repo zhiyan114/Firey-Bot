@@ -7,6 +7,7 @@ import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
 import { captureException } from "@sentry/node";
 import { BannerPic } from "../utils/bannerGen";
+import { ModalBoxHandler } from "./helper/ModalBoxHandler";
 
 export class DiscordEvents extends baseEvent {
   client: DiscordClient;
@@ -43,6 +44,10 @@ export class DiscordEvents extends baseEvent {
     if(interaction.isButton())
       if(interaction.customId === "RuleConfirm")
         return await VertificationHandler(this.client, interaction);
+
+    if(interaction.isModalSubmit())
+      if(interaction.customId === "feedbackModal")
+        return await ModalBoxHandler.handleFeedBackModal(this.client, interaction);
   }
 
   private async messageCreate(message: Message) {

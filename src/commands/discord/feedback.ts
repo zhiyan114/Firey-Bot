@@ -27,7 +27,7 @@ export class FeedbackCommand extends baseCommand {
 
     
     // Let the user know if sentry caught the last error via description text
-    const lastUserSentryErrorID = this.client.redis.GET(this.client.redisKey(`userSentryErrorID:${interaction.user.id}`));
+    const userSentryErrorID = this.client.redis.GET(this.client.redisKey(`userSentryErrorID:${interaction.user.id}`));
 
     // Create a description text, describing the feedback box and when to submit one on the bot's github repo page instead.
     // @TODO: Pending discord new modal box features
