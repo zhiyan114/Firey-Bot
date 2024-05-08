@@ -10,7 +10,7 @@ cd ../
 
 # Only build if the master branch is out-of-date
 pull_output=$(git pull)
-if [[ "$pull_output" == *"Already up to date."* ]]; then
+if [[ "$pull_output" != *"files changed"* ]]; then
     echo "Already up to date."
     exit 0
 fi
