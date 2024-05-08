@@ -48,7 +48,7 @@ export class DiscordEvents extends baseEvent {
   private async messageCreate(message: Message) {
     // Channel Checks
     if(message.author.bot) return;
-    const channel = message.channel; // This variable is used as a workaround for TS's control flow bug
+    const channel = message.channel;
     if(channel.type !== ChannelType.GuildText) return;
 
     // Place where user wont be awarded with points
