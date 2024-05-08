@@ -9,6 +9,7 @@ on:
 
 jobs:
   BuildTest:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -32,6 +33,7 @@ jobs:
       run: npm run build:check
   # Build docker image
   DockerTest:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
