@@ -5,6 +5,7 @@
     "welcomeChannelID": "907121158376288307",
     "logChannelID": "971584951076147261",
     "generalChannelID": "908069392384933938",
+    "redisPrefix": "FireyBot",
     "noPoints": {
         "channel": ["907121158376288307"],
         "category": ["971814606265806849", "907313940986466374"]
@@ -36,8 +37,5 @@
         ],
         "channelID": "908719210040008755",
         "Description": "If you would like to know when the derg is streaming. To be pinged for any videos recently uploaded to his youtube press on <:FireyPeek:941368077856161885>\nUse <a:Fireyababab:985594682883047495> if you want to be pinged when he started a VC party!"
-    },
-    "enableExtra": {
-        "userReport": false
     }
 }

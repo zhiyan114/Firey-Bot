@@ -26,7 +26,7 @@ export class leaderboardCommand extends baseCommand {
   }
   public async execute(interaction: CommandInteraction) {
     await interaction.deferReply({ephemeral: true});
-    const cacheData = await this.client.redis.GET(this.cacheKey);
+    const cacheData = await this.client.redis.GET(this.client.redisKey(this.cacheKey));
     let boardData: boardData[] = cacheData ? JSON.parse(cacheData) : [];
 
     if (boardData.length === 0) {
@@ -43,7 +43,7 @@ export class leaderboardCommand extends baseCommand {
       });
 
       // Cache it for 30 minutes
-      await this.client.redis.SET(this.cacheKey, JSON.stringify(boardData), {
+      await this.client.redis.SET(this.client.redisKey(this.cacheKey), JSON.stringify(boardData), {
         EX: 1800
       });
     }

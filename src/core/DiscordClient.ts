@@ -81,6 +81,15 @@ export class DiscordClient extends Client implements baseClient {
       this.initSentry();
   }
 
+  /**
+   * Replacement for redis library's former prefix config
+   * @param key Intended redis key
+   * @returns post-processed redis key
+   */
+  public redisKey(key:string) {
+    return `${this.config.redisPrefix}:${key}`;
+  }
+
   public async start(token: string) {
     // Connect all services
     await this.prisma.$connect();

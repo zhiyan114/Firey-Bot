@@ -5,6 +5,7 @@
     "welcomeChannelID": "Channel to post welcome messages",
     "logChannelID": "Channel to post service logs",
     "generalChannelID": "Default user interaction channel",
+    "redisPrefix": "Redis prefix to use when using a restrctive ACL",
     "noPoints": {
         "channel": ["Channel ID Where Points Wont Be Awarded"],
         "category": ["Category ID Where Points Wont Be Awarded"]
@@ -32,9 +33,5 @@
         ],
         "channelID": "Channel for the reaction role to be in",
         "Description": "Reaction ROle Description"
-    },
-    "enableExtra": {
-        "whisper": true,
-        "userReport": false
     }
 }
