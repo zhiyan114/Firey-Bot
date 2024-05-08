@@ -7,8 +7,7 @@ import { connect, Connection } from "amqplib";
 import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents, AMQPEvents } from "../events";
 
-import { init as sentryInit, Integrations, flush, metrics } from "@sentry/node";
-import { extraErrorDataIntegration, rewriteFramesIntegration } from "@sentry/integrations";
+import { init as sentryInit, Integrations, flush, metrics, extraErrorDataIntegration, rewriteFramesIntegration } from "@sentry/node";
 import { Prisma } from "@prisma/client";
 import path from "path";
 import { ReactRoleLoader } from "../services/ReactRoleHandler";
@@ -139,6 +138,8 @@ export class DiscordClient extends Client implements baseClient {
     sentryInit({
       dsn: process.env["SENTRY_DSN"],
       maxValueLength: 1000,
+      tracesSampleRate: 0.1,
+
       integrations: [
         extraErrorDataIntegration({
           depth: 5
@@ -153,7 +154,7 @@ export class DiscordClient extends Client implements baseClient {
           }
         }),
         new Integrations.Prisma({client: this.prisma}),
-        metrics.metricsAggregatorIntegration()
+        metrics.metricsAggregatorIntegration(),
       ],
   
       _experiments: {
@@ -177,8 +178,14 @@ export class DiscordClient extends Client implements baseClient {
       ignoreErrors: [
         "ETIMEDOUT",
         "EADDRINUSE",
-        "ENOTFOUND"
+        "ENOTFOUND",
+        "TimeoutError",
+        "AbortError",
+        "NetworkError",
+        "ECONNREFUSED",
+        "ECONNRESET",
       ],
+
       beforeSend : (evnt, hint) => {
         const ex = hint.originalException;
         if(ex instanceof DiscordAPIError && ex.code === APIErrors.UNKNOWN_INTERACTION) return null;
@@ -186,6 +193,7 @@ export class DiscordClient extends Client implements baseClient {
         if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null;
         return evnt;
       },
+
       release: process.env['COMMITHASH'],
       environment: process.env["ENVIRONMENT"]
     });

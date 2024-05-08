@@ -5,6 +5,7 @@ import { baseClient } from "./baseClient";
 import http from 'http';
 import https from 'https';
 import { YoutubeEvents } from "../events";
+import { Integrations, getClient } from "@sentry/node";
 
 /*
 Example Reference
@@ -89,6 +90,10 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
     this.port = config.Port ?? 80;
     this.express.use(config.Path, this.listener());
     this.httpServer = config.https ? https.createServer(this.express) : http.createServer(this.express);
+    
+    // Add express integration to Sentry
+    const ExpInt = new Integrations.Express({ app: this.express });
+    getClient()?.addIntegration?.(ExpInt);
 
     // Register events
     new YoutubeEvents(this)
