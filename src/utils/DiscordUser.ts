@@ -65,7 +65,7 @@ export class DiscordUser {
      * @returns {boolean} if the user exists
      */
   public async cacheExists(): Promise<boolean> {
-    return await this.client.redis.exists(this.cachekey) > 0;
+    return await this.client.redis.exists(this.client.redisKey(this.cachekey)) > 0;
   }
   /**
      * Returns all the user data stored in the cache (or freshly from database)
@@ -75,7 +75,7 @@ export class DiscordUser {
     // Check if the record already exist in redis
     if(await this.cacheExists()) {
       // Pull it up and use it
-      const data = await this.client.redis.hGetAll(this.cachekey);
+      const data = await this.client.redis.hGetAll(this.client.redisKey(this.cachekey));
       return {
         rulesconfirmedon: data.rulesconfirmedon ? new Date(data.rulesconfirmedon) : undefined,
         points: data.points ? Number(data.points) : undefined,
@@ -105,9 +105,9 @@ export class DiscordUser {
     if(newData.points !== undefined) filteredData["points"] = newData.points.toString();
     if(newData.lastgrantedpoint !== undefined) filteredData["lastgrantedpoint"] = newData.lastgrantedpoint.toString();
     // Update the cache   
-    await this.client.redis.hSet(this.cachekey, filteredData);
+    await this.client.redis.hSet(this.client.redisKey(this.cachekey), filteredData);
     // set redis expire key in 5 hours
-    await this.client.redis.expire(this.cachekey, 18000);
+    await this.client.redis.expire(this.client.redisKey(this.cachekey), 18000);
     return;
   }
   /**
@@ -360,6 +360,6 @@ class UserEconomy {
     return true;
   }
   public async getBalance() {
-    return Number(await this.user.client.redis.hGet(this.cacheKey,"points") ?? (await this.user.getCacheData())?.points ?? "0");
+    return Number(await this.user.client.redis.hGet(this.user.client.redisKey(this.cacheKey),"points") ?? (await this.user.getCacheData())?.points ?? "0");
   }
 }

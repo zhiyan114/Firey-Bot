@@ -45,7 +45,7 @@ export class TwitchUser {
     // Check if the record already exist in redis
     if(await this.cacheExists()) {
       // Pull it up and use it
-      const data = await this.client.redis.hGetAll(this.cachekey);
+      const data = await this.client.redis.hGetAll(this.client.redisKey(this.cachekey));
       if(data.memberid === "-1")
         return;
       return {
@@ -76,7 +76,7 @@ export class TwitchUser {
      * @returns {boolean} return true if exist, otherwise false
      */
   public async cacheExists(): Promise<boolean> {
-    return await this.client.redis.exists(this.cachekey) > 0;
+    return await this.client.redis.exists(this.client.redisKey(this.cachekey)) > 0;
   }
   /**
      * Update user's cache data
@@ -93,9 +93,9 @@ export class TwitchUser {
     if(newData.username !== undefined) filteredData["username"] = newData.username;
     if(newData.verified !== undefined) filteredData["verified"] = newData.verified.toString();
     // Update the cache   
-    await this.client.redis.hSet(this.cachekey, filteredData);
+    await this.client.redis.hSet(this.client.redisKey(this.cachekey), filteredData);
     // set redis expire key in 3 hours
-    await this.client.redis.expire(this.cachekey, 10800);
+    await this.client.redis.expire(this.client.redisKey(this.cachekey), 10800);
     return;
   }
   /**
@@ -186,7 +186,7 @@ export const clearTwitchCache = async (client: DiscordClient) => {
   while(true) {
     // get all the values
     const {cursor,keys} = await client.redis.scan(oldCursor,{
-      MATCH: "twchuser:*",
+      MATCH: client.redisKey("twchuser:*"),
       COUNT: 100,
     });
     // Delete or Unlink all the items

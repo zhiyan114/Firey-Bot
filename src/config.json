@@ -5,6 +5,7 @@
     "welcomeChannelID": "907121158376288307",
     "logChannelID": "971584951076147261",
     "generalChannelID": "908069392384933938",
+    "redisPrefix": "FireyBot",
     "noPoints": {
         "channel": ["907121158376288307"],
         "category": ["971814606265806849", "907313940986466374"]
