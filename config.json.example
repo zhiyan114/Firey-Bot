@@ -32,9 +32,5 @@
         ],
         "channelID": "Channel for the reaction role to be in",
         "Description": "Reaction ROle Description"
-    },
-    "enableExtra": {
-        "whisper": true,
-        "userReport": false
     }
 }
