@@ -15,6 +15,7 @@ if [[ "$pull_output" != *"files changed"* ]]; then
     exit 0
 fi
 
+echo "New changes detected..."
 # BUILDKIT_PROGRESS=plain
 doppler run -- docker compose build
 docker compose down
