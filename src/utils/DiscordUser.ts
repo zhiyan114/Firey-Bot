@@ -334,12 +334,12 @@ class UserEconomy {
     if(!ignoreCooldown && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false;
 
     /*
-        This algorithm checks to see if the user has a message that is
-            - longer than 10 characters
-            - does not only contain numbers, special character, emoji, or links
-            - does not only have repeating characters
-        If the user is not eligible, their reward cooldown timer resets while not getting any points
-        */
+      This algorithm checks to see if the user has a message that is
+        - longer than 10 characters
+        - does not only contain numbers, special character, emoji, or links
+        - does not only have repeating characters
+      If the user is not eligible, their reward cooldown timer resets while not getting any points
+      */
 
     if(
       text.length < 10 || // Length check
