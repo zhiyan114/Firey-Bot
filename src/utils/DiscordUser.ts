@@ -335,20 +335,20 @@ class UserEconomy {
 
     /*
         This algorithm checks to see if the user has a message that is
-            - longer than 5 characters
+            - longer than 10 characters
             - does not only contain numbers, special character, emoji, or links
             - does not only have repeating characters
         If the user is not eligible, their reward cooldown timer resets while not getting any points
         */
-    const isNotEligible: boolean[] = [
-      text.length > 5, // Length check
-      (/^[0-9]+$/g).test(text), // Number Check
-      (/^[^a-zA-Z0-9]+$/g).test(text), // Special Character check
-      (/^(:[a-zA-Z0-9_]+: ?)+$/g).test(text), // Emoji check
-      (/(.)\1{3,}/g).test(text), // Repeating character check
-      (/https?:\/\/[^\s]+/g).test(text), // link check
-    ];
-    if(isNotEligible.find(e=>e === true) !== undefined) {
+
+    if(
+      text.length < 10 || // Length check
+      (/^[0-9]+$/g).test(text) || // Number Check
+      (/^[^a-zA-Z0-9]+$/g).test(text) || // Special Character check
+      (/^(:[a-zA-Z0-9_]+: ?)+$/g).test(text) || // Emoji check
+      (/(.)\1{3,}/g).test(text) || // Repeating character check
+      (/https?:\/\/[^\s]+/g).test(text) // link check
+    ) {
       await this.user.updateCacheData({
         lastgrantedpoint: new Date()
       });
