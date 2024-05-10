@@ -6,7 +6,7 @@ import { baseClient } from "./baseClient";
 
 
 export class TwitchClient extends Client implements baseClient {
-  public dClient: DiscordClient;
+  public discord: DiscordClient;
   public streamClient: streamClient;
   
   constructor(client: DiscordClient, username: string, token: string) {
@@ -22,7 +22,7 @@ export class TwitchClient extends Client implements baseClient {
       },
       channels: [client.config.twitch.channel]
     });
-    this.dClient = client;
+    this.discord = client;
     this.streamClient = new streamClient(this, client.config.twitch.channel);
 
     // Register events
@@ -35,7 +35,7 @@ export class TwitchClient extends Client implements baseClient {
     
   public async start() {
     await this.connect();
-    await this.dClient.logger.sendLog({
+    await this.discord.logger.sendLog({
       type: "Info",
       message: "Twitch client has been initialized!"
     });

@@ -80,7 +80,7 @@ export class streamClient extends events.EventEmitter {
 
       if(serverResponse.status !== 200) {
         this.errLogged = true;
-        return await this.client.dClient.logger.sendLog({
+        return await this.client.discord.logger.sendLog({
           type: "Warning",
           message: `Twitch API is responding with ${serverResponse.status} with message \`${JSON.stringify(serverResponse.data)}\``
         });
@@ -97,7 +97,7 @@ export class streamClient extends events.EventEmitter {
       }
 
       if(this.errLogged)
-        await this.client.dClient.logger.sendLog({
+        await this.client.discord.logger.sendLog({
           type: "Info",
           message: "Twitch API call can now be completed!"
         });
@@ -107,19 +107,19 @@ export class streamClient extends events.EventEmitter {
       if(!this.errLogged) {
         this.errLogged = true;
         if(ex instanceof axios.AxiosError && (ex.code === axios.AxiosError.ECONNABORTED || ex.code === axios.AxiosError.ETIMEDOUT))
-          return await this.client.dClient.logger.sendLog({
+          return await this.client.discord.logger.sendLog({
             type: "Warning",
             message: `twitchStream: Connection Timeout - ${ex.message}`
           });
           
         if(ex instanceof axios.AxiosError)
           if(ex.response && Math.floor(ex.response.status/100) === 5)
-            return await this.client.dClient.logger.sendLog({
+            return await this.client.discord.logger.sendLog({
               type: "Warning",
               message: `twitchStream: Twitch's Backend Server Error (status: ${ex.response.status})`
             });
         
-        await this.client.dClient.logger.sendLog({
+        await this.client.discord.logger.sendLog({
           type: "Warning",
           message: "twitchStream: Service is down due to unhandled exception"
         });

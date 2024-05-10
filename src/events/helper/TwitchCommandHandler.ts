@@ -21,7 +21,7 @@ type eventType = {
 export async function processCommand(eventData: eventType): Promise<boolean | undefined> {
   // Validate if this action is command
   eventData.message = eventData.message.trim();
-  if(eventData.message[0] !== eventData.client.dClient.config.twitch.prefix) return;
+  if(eventData.message[0] !== eventData.client.discord.config.twitch.prefix) return;
 
   // Grab command data stuff
   const args = eventData.message.split(" ");

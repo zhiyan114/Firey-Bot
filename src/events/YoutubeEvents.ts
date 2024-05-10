@@ -12,7 +12,7 @@ export class YoutubeEvents extends baseYEvent {
     super();
     this.client = client;
     this.NotificationChannel = null;
-    this.config = client.dClient.config.youtube;
+    this.config = client.discord.config.youtube;
   }
 
   public registerEvents() {
@@ -34,7 +34,7 @@ export class YoutubeEvents extends baseYEvent {
     await this.getChannel();
 
     console.log("Youtube Notification Service: PubSubHubbub has been Subscribed...");
-    await this.client.dClient.logger.sendLog({
+    await this.client.discord.logger.sendLog({
       type: "Info",
       message: "Youtube Notification Service: PubSubHubbub has been Subscribed..."
     });
@@ -42,7 +42,7 @@ export class YoutubeEvents extends baseYEvent {
     if(this.timeoutEvent) clearTimeout(this.timeoutEvent);
     this.timeoutEvent = setTimeout(()=> { 
       this.client.subscribe(this.config.youtubeChannelID);
-      this.client.dClient.logger.sendLog({
+      this.client.discord.logger.sendLog({
         type: "Info",
         message: "Youtube Notification Service: Renewing Subscription..."
       });
@@ -54,7 +54,7 @@ export class YoutubeEvents extends baseYEvent {
     await this.getChannel();
 
     console.log("Youtube Notification Service: Even has been unsubscribed, resubscribing...");
-    await this.client.dClient.logger.sendLog({
+    await this.client.discord.logger.sendLog({
       type: "Warning",
       message: "Youtube Notification Service: Even has been unsubscribed, resubscribing..."
     });
@@ -63,7 +63,7 @@ export class YoutubeEvents extends baseYEvent {
 
   private async getChannel() {
     if(this.NotificationChannel) return;
-    const tempClient = await this.client.dClient.channels.fetch(this.config.guildChannelID);
+    const tempClient = await this.client.discord.channels.fetch(this.config.guildChannelID);
     if(tempClient?.type === ChannelType.GuildText)
       this.NotificationChannel = tempClient;
   }

@@ -10,10 +10,12 @@ export class StreamEvents extends baseTEvent {
   client: TwitchClient;
   lastStream: Date;
   discordReminer: NodeJS.Timeout | undefined;
+  config;
   constructor(client: TwitchClient) {
     super();
     this.client = client;
     this.lastStream = new Date();
+    this.config = client.discord.config.twitch;
   }
   
   public registerEvents() {
@@ -23,14 +25,14 @@ export class StreamEvents extends baseTEvent {
 
   private async onStream(data: getStreamData) {
     if(!this.discordReminer)
-      this.discordReminer = setInterval(this.sendDiscordLink.bind(this), this.client.dClient.config.twitch.notification.inviteRemindExpire);
-    await clearTwitchCache(this.client.dClient);
+      this.discordReminer = setInterval(this.sendDiscordLink.bind(this), this.config.notification.inviteRemindExpire);
+    await clearTwitchCache(this.client.discord);
     if(this.lastStream && (new Date()).getTime() - this.lastStream.getTime() < 18000) return;
 
-    const channel = await this.client.dClient.channels.fetch(this.client.dClient.config.twitch.notification.channelID);
+    const channel = await this.client.discord.channels.fetch(this.config.notification.channelID);
     if(!channel) return;
     if(channel.type !== ChannelType.GuildText)
-      return await this.client.dClient.logger.sendLog({
+      return await this.client.discord.logger.sendLog({
         type: "Error",
         message: "StreamClient: Notification channel is not a text channel!"
       });
@@ -45,11 +47,11 @@ export class StreamEvents extends baseTEvent {
       .setURL(streamUrl)
       .setImage(data.thumbnail_url);
 
-    await channel.send({content: `<@${this.client.dClient.config.twitch.notification.roleToPing}> Derg is streaming right now, come join!`, embeds: [embed]});
+    await channel.send({content: `<@${this.config.notification.roleToPing}> Derg is streaming right now, come join!`, embeds: [embed]});
   }
 
   private async onStreamEnd() {
-    await clearTwitchCache(this.client.dClient);
+    await clearTwitchCache(this.client.discord);
     if(this.discordReminer) {
       clearInterval(this.discordReminer);
       this.discordReminer = undefined;
@@ -58,14 +60,14 @@ export class StreamEvents extends baseTEvent {
   }
 
   private async sendDiscordLink() {
-    await this.client.say(this.client.dClient.config.twitch.channel, `Hey! Don't forget to join our discord server! ${
-      await new DiscordInvite(this.client.dClient, "twitchChat").getTempInvite({
+    await this.client.say(this.config.channel, `Hey! Don't forget to join our discord server! ${
+      await new DiscordInvite(this.client.discord, "twitchChat").getTempInvite({
         reason: "Bot's Automatic Reminder Link",
-        channel: this.client.dClient.config.twitch.notification.channelID
+        channel: this.config.notification.channelID
       })
     }`);
 
     if(this.client.streamClient.isStreaming)
-      this.discordReminer = setTimeout(this.sendDiscordLink.bind(this), this.client.dClient.config.twitch.notification.inviteRemindExpire);
+      this.discordReminer = setTimeout(this.sendDiscordLink.bind(this), this.client.discord.config.twitch.notification.inviteRemindExpire);
   }
 }

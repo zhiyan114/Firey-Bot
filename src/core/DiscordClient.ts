@@ -13,6 +13,8 @@ import path from "path";
 import { ReactRoleLoader } from "../services/ReactRoleHandler";
 import { baseClient } from "./baseClient";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
+import { TwitchClient } from "./TwitchClient";
+import { YoutubeClient } from "./YoutubeClient";
 
 
 /**
@@ -34,6 +36,8 @@ export class DiscordClient extends Client implements baseClient {
   amqp?: Connection;
   logger: eventLogger;
   events;
+  twitch: TwitchClient;
+  youtube: YoutubeClient;
 
   constructor() {
     super({
@@ -63,6 +67,7 @@ export class DiscordClient extends Client implements baseClient {
     this.prisma = new PrismaClient({
       errorFormat: "minimal"
     });
+
     //@ts-expect-error Override readonly property
     DefaultWebSocketManagerOptions.identifyProperties.browser = "Discord iOS";
     
@@ -78,6 +83,22 @@ export class DiscordClient extends Client implements baseClient {
     // Start Sentry
     if(process.env["SENTRY_DSN"])
       this.initSentry();
+
+    // Initialize Twitch Client
+    if(!process.env["TWITCH_TOKEN"] || !process.env["TWITCH_USERNAME"])
+      throw new Error("No twitch username/token provided");
+    this.twitch = new TwitchClient(this, process.env["TWITCH_USERNAME"], process.env["TWITCH_TOKEN"]);
+
+    // Initalize Youtube Client
+    const port = process.env["WEBSERVER_PORT"];
+    this.youtube = new YoutubeClient({
+      client: this,
+      FQDN: process.env["WEBSERVER_FQDN"] || "",
+      Port: !port || Number.isNaN(parseInt(port)) ? undefined : parseInt(port),
+      Path: "/UwU/youtube/callback/",
+      secret: process.env["YTSECRET"]
+    });
+
   }
 
   /**
@@ -105,6 +126,9 @@ export class DiscordClient extends Client implements baseClient {
     await this.loadServices();
     this.updateStatus();
     
+    // Start helper clients
+    await this.twitch.start();
+    await this.youtube.start();
   }
 
   public async dispose() {
