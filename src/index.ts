@@ -1,8 +1,6 @@
 import { DiscordClient } from "./core/DiscordClient";
-import { TwitchClient } from "./core/TwitchClient";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import {config as dotenv} from "dotenv";
-import { YoutubeClient } from "./core/YoutubeClient";
 
 
 /**
@@ -27,8 +25,6 @@ if(process.env['ISDOCKER']) {
 
 if(!process.env["BOTTOKEN"])
   throw new Error("No token provided");
-if(!process.env["TWITCH_TOKEN"] || !process.env["TWITCH_USERNAME"])
-  throw new Error("No twitch username/token provided");
 
 if(!process.env["COMMITHASH"]) {
   // Try to load the commit hash via file
@@ -38,48 +34,21 @@ if(!process.env["COMMITHASH"]) {
     console.warn("No commit hash found!");
 }
 
-
 /**
- * Setup our beloved client stuff
+ * Setup our beloved client stuff and start it
  */
-
-const port = process.env["WEBSERVER_PORT"];
-
 const CoreClient = new DiscordClient();
-const twitchClient = new TwitchClient(CoreClient, process.env["TWITCH_USERNAME"], process.env["TWITCH_TOKEN"]);
-const youtubeClient = new YoutubeClient({
-  client: CoreClient,
-  FQDN: process.env["WEBSERVER_FQDN"] || "",
-  Port: !port || Number.isNaN(parseInt(port)) ? undefined : parseInt(port),
-  Path: "/UwU/youtube/callback/",
-  secret: process.env["YTSECRET"]
-});
-
-
-/**
- * Let's start our beloved client
- */
-
 CoreClient
   .start(process.env["BOTTOKEN"])
-  .then(async ()=>{
-    console.log("Bot started");
-
-    // Run the core client then the utility clients..
-    await twitchClient.start();
-    console.log("Twitch client started");
-
-    await youtubeClient.start();
-    console.log("Youtube client started");
-  });
+  .then(()=>console.log("Bot started"));
 
 /**
  * Handle cleanups
  */
 async function quitSignalHandler() {
   await CoreClient.dispose();
-  await twitchClient.dispose();
-  await youtubeClient.dispose();
+  await CoreClient.twitch.dispose();
+  await CoreClient.youtube.dispose();
   process.exit(0);
 }
 

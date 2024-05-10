@@ -76,7 +76,7 @@ export declare interface YoutubeClient extends YouTubeNotifier {
 export class YoutubeClient extends YouTubeNotifier implements baseClient {
   express: Express.Express;
   httpServer: https.Server | http.Server;
-  dClient: DiscordClient;
+  discord: DiscordClient;
   port: number;
 
   constructor(config: config) {
@@ -86,7 +86,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
       secret: config.secret ?? "NotifierSecret_ShouldNotBeExposed",
     });
     this.express = Express();
-    this.dClient = config.client;
+    this.discord = config.client;
     this.port = config.Port ?? 80;
     this.express.use(config.Path, this.listener());
     this.httpServer = config.https ? https.createServer(this.express) : http.createServer(this.express);
@@ -102,11 +102,11 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
 
   public async start() {
     await new Promise<void>((resolve) => this.httpServer.listen(this.port, ()=>resolve()));
-    await this.dClient.logger.sendLog({
+    await this.discord.logger.sendLog({
       type: "Info",
       message: "Web server started!"
     });
-    this.subscribe(this.dClient.config.youtube.youtubeChannelID);
+    this.subscribe(this.discord.config.youtube.youtubeChannelID);
   }
 
   public async dispose() {

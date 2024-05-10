@@ -8,7 +8,7 @@ export class LinkCommand extends baseTCommand {
     const discordID = data.args[1];
     if(!data.user["user-id"]) return;
     if(!data.user.username) return;
-    const tUser = new TwitchUser(data.client.dClient, data.user["user-id"]);
+    const tUser = new TwitchUser(data.client.discord, data.user["user-id"]);
     const uData = await tUser.getCacheData();
 
     // General sanity check
@@ -22,7 +22,7 @@ export class LinkCommand extends baseTCommand {
       return data.client.say(data.channel, `@${data.user.username}, no new discord ID has been set. Please use the tverify command in the discord server to complete the process.`);
 
     // Check if the account is already linked
-    const linkCount = await data.client.dClient.prisma.twitch.count({
+    const linkCount = await data.client.discord.prisma.twitch.count({
       where: {
         memberid: discordID,
         verified: true,
@@ -32,7 +32,7 @@ export class LinkCommand extends baseTCommand {
       return data.client.say(data.channel, `@${data.user.username}, this Discord ID is already linked to another account. Please contact zhiyan114 if you believe this is an error.`);
 
     // Check if user has already joined in the discord server
-    const dAccCount = await data.client.dClient.prisma.members.findUnique({
+    const dAccCount = await data.client.discord.prisma.members.findUnique({
       where: {
         id: discordID,
       }
