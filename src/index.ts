@@ -26,7 +26,6 @@ if(process.env['ISDOCKER']) {
 if(!process.env["BOTTOKEN"])
   throw new Error("No token provided");
 
-
 if(!process.env["COMMITHASH"]) {
   // Try to load the commit hash via file
   if(existsSync("commitHash"))
@@ -35,21 +34,13 @@ if(!process.env["COMMITHASH"]) {
     console.warn("No commit hash found!");
 }
 
-
 /**
- * Setup our beloved client stuff
+ * Setup our beloved client stuff and start it
  */
-
 const CoreClient = new DiscordClient();
-
-
-/**
- * Let's start our beloved client
- */
-
 CoreClient
   .start(process.env["BOTTOKEN"])
-  .then(async ()=>console.log("Bot started"));
+  .then(()=>console.log("Bot started"));
 
 /**
  * Handle cleanups
