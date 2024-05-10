@@ -30,6 +30,8 @@ jobs:
       run: npx prisma generate
     - name: Type Check
       run: npm run build:check
+    - name: Unit Test
+      run: npm run test
   # Build docker image
   DockerTest:
     runs-on: ubuntu-latest
