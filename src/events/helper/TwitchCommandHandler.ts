@@ -2,13 +2,12 @@ import { ChatUserstate } from "tmi.js";
 import { TwitchClient } from "../../core/TwitchClient";
 import { baseTCommand } from "../../core/baseCommand";
 import { metrics } from "@sentry/node";
-import { BypassCommand, DiscordCommand, LinkCommand, LurkCommand } from "../../commands/twitch";
+import { DiscordCommand, LinkCommand, LurkCommand } from "../../commands/twitch";
 
 const commands: baseTCommand[] = [
   new LurkCommand(),
   new DiscordCommand(),
   new LinkCommand(),
-  new BypassCommand(),
 ] satisfies baseTCommand[];
 
 type eventType = {
