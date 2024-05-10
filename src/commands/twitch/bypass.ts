@@ -11,13 +11,13 @@ export class BypassCommand extends baseTCommand {
     const memberID = (await new TwitchUser(data.client.discord, data.user["user-id"])
       .getCacheData())?.memberid;
     if(!memberID)
-      return data.client.say(data.channel, `@${data.user.username}, Please link your discord account before using this command: !link [DiscordID].`);
+      return await data.client.say(data.channel, `@${data.user.username}, Please link your discord account before using this command: !link [DiscordID].`);
 
     // Check privilege
     const member = await data.client.discord.guilds.cache.first()?.members.fetch(memberID);
     if(!member) return data.client.say(data.channel, `@${data.user.username}, You are no longer in the server; thus, cannot verify your privilege.`);
     if(!this.discordRoles.find(k=>member.roles.cache.has(k)))
-      return data.client.say(data.channel, `@${data.user.username}, Privilege Insufficient.`);
+      return await data.client.say(data.channel, `@${data.user.username}, Privilege Insufficient.`);
 
     // Send the message
     const message = data.message.slice(9, data.message.length);
