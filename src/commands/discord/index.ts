@@ -5,6 +5,7 @@ import { kickCommand } from "./kick";
 import { leaderboardCommand } from "./leaderboard";
 import { purgeCommand } from "./Purge";
 import { softBanCommand } from "./softban";
+import { TwitchChatRelay } from "./tbypass";
 import { TwitchVerify } from "./tverify";
 import { unbanCommand } from "./unban";
 
@@ -17,5 +18,6 @@ export {
   purgeCommand,
   softBanCommand,
   unbanCommand,
-  TwitchVerify
+  TwitchVerify,
+  TwitchChatRelay
 };
