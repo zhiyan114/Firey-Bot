@@ -5,5 +5,6 @@ import { LinkCommand } from "./link";
 export {
   LurkCommand,
   DiscordCommand,
-  LinkCommand
+  LinkCommand,
+  BypassCommand
 };
