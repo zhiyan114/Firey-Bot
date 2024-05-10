@@ -52,10 +52,7 @@ export class StreamEvents extends baseTEvent {
 
   private async onStreamEnd() {
     await clearTwitchCache(this.client.discord);
-    if(this.discordReminer) {
-      clearInterval(this.discordReminer);
-      this.discordReminer = undefined;
-    }
+    this.clearReminder();
     this.lastStream = new Date();
   }
 
@@ -67,7 +64,16 @@ export class StreamEvents extends baseTEvent {
       })
     }`);
 
-    if(this.client.streamClient.isStreaming)
-      this.discordReminer = setTimeout(this.sendDiscordLink.bind(this), this.client.discord.config.twitch.notification.inviteRemindExpire);
+    if(this.client.streamClient.isStreaming) {
+      this.clearReminder();
+      this.discordReminer = setTimeout(this.sendDiscordLink.bind(this), this.config.notification.inviteRemindExpire);
+    }
+  }
+
+  private clearReminder() {
+    if(this.discordReminer) {
+      clearInterval(this.discordReminer);
+      this.discordReminer = undefined;
+    }
   }
 }
