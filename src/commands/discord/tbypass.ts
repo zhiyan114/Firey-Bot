@@ -1,7 +1,8 @@
-import { ActionRowBuilder, CommandInteraction, GuildMember, ModalBuilder, ModalSubmitInteraction, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, CommandInteraction, DiscordjsError, DiscordjsErrorCodes, GuildMember, ModalBuilder, ModalSubmitInteraction, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
+import { captureException } from "@sentry/node";
 
 export class TwitchChatRelay extends baseCommand {
   public client: DiscordClient;
@@ -22,18 +23,18 @@ export class TwitchChatRelay extends baseCommand {
   }
   public async execute(interaction: CommandInteraction) {
     if(!(interaction.member instanceof GuildMember)) return; // Not possible since the command usage is set disabled in DM
-    await interaction.deferReply({ephemeral: true});
+    const uniqueID = randomUUID();
+    
     const tUser = await this.client.prisma.twitch.findUnique({
       where: {
         memberid: interaction.user.id
       }
     });
-
     if(!tUser || !tUser.verified)
       return interaction.reply("You haven't linked your twitch account with your discord account yet! Use `!link [DiscordID]` on twitch chat to get started.");
-
+    await this.client.redis.set(this.client.redisKey(`tbypass:${uniqueID}`), tUser.username, {EX: 300});
     // create a modal box asking user for the input
-    const uniqueID = randomUUID();
+    
     const modalBox = new ModalBuilder()
       .setCustomId(uniqueID)
       .setTitle("Twitch Unfiltered Chat");
@@ -42,9 +43,9 @@ export class TwitchChatRelay extends baseCommand {
     const chatMessageAction = new ActionRowBuilder<TextInputBuilder>()
       .addComponents(
         new TextInputBuilder()
-          .setCustomId(`chatMessage:${tUser.username}`)
+          .setCustomId(`chatMessage`)
           .setLabel("Message")
-          .setPlaceholder("Type your message here (expire in 3 minutes)...")
+          .setPlaceholder("Type your message here (expire in 5 minutes)...")
           .setMinLength(1)
           .setStyle(TextInputStyle.Paragraph)
           .setMaxLength(this.MaxMessageLength)
@@ -57,19 +58,21 @@ export class TwitchChatRelay extends baseCommand {
     try {
       await this.processResult(await interaction.awaitModalSubmit({ 
         filter: (i) => i.customId === uniqueID && i.user.id === interaction.user.id,
-        time: 60000*3
+        time: 300000
       }));
     } catch(ex) {
-      if(ex instanceof Error)
-        await interaction.followUp({content: "You took too long to submit the request!", components: []});
+      if(ex instanceof DiscordjsError && ex.code === DiscordjsErrorCodes.InteractionCollectorError)
+        return await interaction.followUp({content: "You took too long to submit the request!", components: []});
+      captureException(ex);
     }
   }
 
   private async processResult(result: ModalSubmitInteraction) {
     const components = result.components[0].components[0];
-    const username = components.customId.split(":")[1];
+    const username = await this.client.redis.GETDEL(this.client.redisKey(`tbypass:${result.customId}`));
     const message = components.value;
 
     await this.client.twitch.say(this.client.config.twitch.channel, `[@${username}]: ${message}`);
+    await result.reply({content: "Message Sent!", ephemeral: true});
   }
 }
