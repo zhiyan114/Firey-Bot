@@ -45,7 +45,7 @@ export class TwitchUser {
     // Check if the record already exist in redis
     if(await this.cacheExists()) {
       // Pull it up and use it
-      const data = await this.client.redis.hGetAll(this.client.redisKey(this.cachekey));
+      const data = await this.client.redis.hgetall(this.cachekey);
       if(data.memberid === "-1")
         return;
       return {
@@ -76,7 +76,7 @@ export class TwitchUser {
      * @returns {boolean} return true if exist, otherwise false
      */
   public async cacheExists(): Promise<boolean> {
-    return await this.client.redis.exists(this.client.redisKey(this.cachekey)) > 0;
+    return await this.client.redis.exists(this.cachekey) > 0;
   }
   /**
      * Update user's cache data
@@ -93,9 +93,9 @@ export class TwitchUser {
     if(newData.username !== undefined) filteredData["username"] = newData.username;
     if(newData.verified !== undefined) filteredData["verified"] = newData.verified.toString();
     // Update the cache   
-    await this.client.redis.hSet(this.client.redisKey(this.cachekey), filteredData);
+    await this.client.redis.hset(this.cachekey, filteredData);
     // set redis expire key in 3 hours
-    await this.client.redis.expire(this.client.redisKey(this.cachekey), 10800);
+    await this.client.redis.expire(this.cachekey, 10800);
     return;
   }
   /**
@@ -179,20 +179,17 @@ export class TwitchUser {
  */
 export const clearTwitchCache = async (client: DiscordClient) => {
   // Fixed race condition for streamClient event
-  if(!client.redis.isOpen)
+  if(client.redis.status === "ready")
     return;
 
-  let oldCursor = 0;
+  let oldCursor = "0";
   while(true) {
     // get all the values
-    const {cursor,keys} = await client.redis.scan(oldCursor,{
-      MATCH: client.redisKey("twchuser:*"),
-      COUNT: 100,
-    });
+    const [cursor,keys] = await client.redis.scan(oldCursor, "MATCH", "twchuser:*", "COUNT", "1000");
     // Delete or Unlink all the items
     for(const key of keys) await client.redis.unlink(key);
     // scan has been completed
-    if(cursor === 0) break;
+    if(cursor === "0") break;
     // scan not completed, assign the new cursor
     oldCursor = cursor;
   }

@@ -82,7 +82,7 @@ export class DiscordInvite {
 
     // Use the cached invite key if it exists
     if(!inviteOpt.nocache) {
-      const cache = await this.client.redis.GET(this.client.redisKey(this.redisKey));
+      const cache = await this.client.redis.get(this.redisKey);
       if(cache) return inviteOpt.rawCode ? cache : this.baseUrl + cache;
     }
     
@@ -104,8 +104,7 @@ export class DiscordInvite {
       return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
 
     // Save to cache if allowed
-    await this.client.redis.SET(this.client.redisKey(this.redisKey), inviteLink.code);
-    await this.client.redis.EXPIRE(this.client.redisKey(this.redisKey), inviteOpt.maxAge);
+    await this.client.redis.set(this.redisKey, inviteLink.code, "EX", inviteOpt.maxAge);
     return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
   }
 
