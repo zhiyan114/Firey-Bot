@@ -105,7 +105,8 @@ export class DiscordClient extends Client implements baseClient {
   public async start(token: string) {
     // Connect all services
     await this.prisma.$connect();
-    await this.redis.connect();
+    if(this.redis.status === "close")
+      await this.redis.connect();
     await this.login(token);
 
     if(process.env["AMQP_CONN"]) {
