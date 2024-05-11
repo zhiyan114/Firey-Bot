@@ -2,7 +2,7 @@ import { ActivityType, Client, GatewayIntentBits, Partials, DiscordAPIError, Def
 import { APIErrors } from "../utils/discordErrorCode";
 import config from '../config.json';
 import { PrismaClient } from "@prisma/client";
-import { RedisClientType, createClient } from "redis";
+import Redis from "ioredis";
 import { connect, Connection } from "amqplib";
 import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents, AMQPEvents } from "../events";
@@ -32,7 +32,7 @@ import { YoutubeClient } from "./YoutubeClient";
 export class DiscordClient extends Client implements baseClient {
   config = config;
   prisma: PrismaClient;
-  redis: RedisClientType;
+  redis: Redis;
   amqp?: Connection;
   logger: eventLogger;
   events;
@@ -59,10 +59,11 @@ export class DiscordClient extends Client implements baseClient {
 
     // Initalize components
     this.logger = new eventLogger(this);
-    this.redis = createClient({
-      url: (process.env["ISDOCKER"] && !process.env["REDIS_CONN"]) ?
+    this.redis = new Redis({
+      path: (process.env["ISDOCKER"] && !process.env["REDIS_CONN"]) ?
         "redis://redis:6379" : process.env["REDIS_CONN"],
-      
+      keyPrefix: this.config.redisPrefix,
+
     });
     this.prisma = new PrismaClient({
       errorFormat: "minimal"
@@ -101,19 +102,11 @@ export class DiscordClient extends Client implements baseClient {
 
   }
 
-  /**
-   * Replacement for redis library's former prefix config
-   * @param key Intended redis key
-   * @returns post-processed redis key
-   */
-  public redisKey(key:string) {
-    return `${this.config.redisPrefix}:${key}`;
-  }
-
   public async start(token: string) {
     // Connect all services
     await this.prisma.$connect();
-    await this.redis.connect();
+    if(this.redis.status === "close")
+      await this.redis.connect();
     await this.login(token);
 
     if(process.env["AMQP_CONN"]) {
