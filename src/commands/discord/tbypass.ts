@@ -52,7 +52,15 @@ export class TwitchChatRelay extends baseCommand {
     // Show the box to the user
     modalBox.addComponents(chatMessageAction);
     await interaction.showModal(modalBox);
-    await this.processResult(await interaction.awaitModalSubmit({ filter: (i) => i.customId === "tbypass", time: 60000*3}));
+    try {
+      await this.processResult(await interaction.awaitModalSubmit({ 
+        filter: (i) => i.customId === "tbypass" && i.user.id === interaction.user.id,
+        time: 60000*3
+      }));
+    } catch(ex) {
+      if(ex instanceof Error)
+        await interaction.followUp({content: "You took too long to submit the request!", components: []});
+    }
   }
 
   private async processResult(result: ModalSubmitInteraction) {
