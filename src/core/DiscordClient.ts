@@ -59,11 +59,9 @@ export class DiscordClient extends Client implements baseClient {
 
     // Initalize components
     this.logger = new eventLogger(this);
-    this.redis = new Redis({
-      path: (process.env["ISDOCKER"] && !process.env["REDIS_CONN"]) ?
-        "redis://redis:6379" : process.env["REDIS_CONN"],
-      keyPrefix: this.config.redisPrefix,
-
+    this.redis = new Redis((process.env["ISDOCKER"] && !process.env["REDIS_CONN"]) ?
+      "redis://redis:6379" : process.env["REDIS_CONN"] ?? "", {
+      keyPrefix: this.config.redisPrefix
     });
     this.prisma = new PrismaClient({
       errorFormat: "minimal"
@@ -105,7 +103,8 @@ export class DiscordClient extends Client implements baseClient {
   public async start(token: string) {
     // Connect all services
     await this.prisma.$connect();
-    await this.redis.connect();
+    if(this.redis.status === "close")
+      await this.redis.connect();
     await this.login(token);
 
     if(process.env["AMQP_CONN"]) {
