@@ -62,7 +62,7 @@ export class TwitchChatRelay extends baseCommand {
       }));
     } catch(ex) {
       if(ex instanceof DiscordjsError && ex.code === DiscordjsErrorCodes.InteractionCollectorError)
-        return await interaction.followUp({content: "You took too long to submit the request!", components: []});
+        return await interaction.followUp({content: "You took too long to submit the request!", ephemeral: true});
       captureException(ex);
     }
   }
