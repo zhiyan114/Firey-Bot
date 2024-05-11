@@ -51,4 +51,5 @@ describe("Event Logger behavior", ()=> {
     expect(logger.logQueues.length).toBe(0);
     expect(spySendLog).toHaveBeenCalledTimes(logCount);
   });
+  
 });
