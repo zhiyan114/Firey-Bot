@@ -1,6 +1,7 @@
 import { ActionRowBuilder, CommandInteraction, GuildMember, ModalBuilder, ModalSubmitInteraction, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
+import { randomUUID } from "crypto";
 
 export class TwitchChatRelay extends baseCommand {
   public client: DiscordClient;
@@ -32,8 +33,9 @@ export class TwitchChatRelay extends baseCommand {
       return interaction.reply("You haven't linked your twitch account with your discord account yet! Use `!link [DiscordID]` on twitch chat to get started.");
 
     // create a modal box asking user for the input
+    const uniqueID = randomUUID();
     const modalBox = new ModalBuilder()
-      .setCustomId("tbypass")
+      .setCustomId(uniqueID)
       .setTitle("Twitch Unfiltered Chat");
 
     // Textbox for the chat message
@@ -54,7 +56,7 @@ export class TwitchChatRelay extends baseCommand {
     await interaction.showModal(modalBox);
     try {
       await this.processResult(await interaction.awaitModalSubmit({ 
-        filter: (i) => i.customId === "tbypass" && i.user.id === interaction.user.id,
+        filter: (i) => i.customId === uniqueID && i.user.id === interaction.user.id,
         time: 60000*3
       }));
     } catch(ex) {
