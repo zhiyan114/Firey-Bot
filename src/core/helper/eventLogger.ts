@@ -73,6 +73,7 @@ export class eventLogger {
     if(log.metadata)
       for(const [name, value] of Object.entries(log.metadata))
         if(value) embed.addFields({name, value});
+
     return embed;
   }
 
