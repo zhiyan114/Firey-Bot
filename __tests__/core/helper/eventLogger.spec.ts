@@ -75,6 +75,7 @@ describe("Event Logger behavior", ()=> {
       expect(data.embeds[0].data.title).toEqual("Info Log");
       expect(data.embeds[0].data.description).toEqual(`Log ${i++}`);
       expect(data.embeds[0].data.fields).toEqual(undefined);
+      expect(data.embeds[0].data.color).toEqual(255);
     }
 
 
