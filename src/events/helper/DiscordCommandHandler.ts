@@ -4,7 +4,7 @@ import { ChannelType, CommandInteraction, ContextMenuCommandInteraction, REST, R
 import { 
   EvalCommand, TwitchChatRelay, TwitchVerify, banCommand,
   getPointsCommand, kickCommand, leaderboardCommand, purgeCommand,
-  softBanCommand, unbanCommand 
+  softBanCommand, unbanCommand, FeedbackCommand
 } from "../../commands/discord";
 import { baseCommand } from "../../core/baseCommand";
 import { metrics } from "@sentry/node";
@@ -30,7 +30,8 @@ export class DiscordCommandHandler {
       new softBanCommand(client),
       new unbanCommand(client),
       new TwitchVerify(client),
-      new TwitchChatRelay(client)
+      new TwitchChatRelay(client),
+      new FeedbackCommand(client),
     ] satisfies baseCommand[];
   }
 
