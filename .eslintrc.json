@@ -19,7 +19,8 @@
         "node_modules/",
         "dist/",
         "src/utils/youtube-notifier/**/*",
-        "build.js"
+        "build.js",
+        "**/*.spec.ts"
     ],
     "rules": {
         "indent": [

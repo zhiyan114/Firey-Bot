@@ -1,5 +1,6 @@
 import { banCommand } from "./ban";
 import { EvalCommand } from "./Eval";
+import { FeedbackCommand } from "./feedback";
 import { getPointsCommand } from "./getPoints";
 import { kickCommand } from "./kick";
 import { leaderboardCommand } from "./leaderboard";
@@ -19,5 +20,6 @@ export {
   softBanCommand,
   unbanCommand,
   TwitchVerify,
-  TwitchChatRelay
+  TwitchChatRelay,
+  FeedbackCommand
 };

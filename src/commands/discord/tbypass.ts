@@ -32,7 +32,6 @@ export class TwitchChatRelay extends baseCommand {
     });
     if(!tUser || !tUser.verified)
       return interaction.reply("You haven't linked your twitch account with your discord account yet! Use `!link [DiscordID]` on twitch chat to get started.");
-    await this.client.redis.set(`tbypass:${uniqueID}`, tUser.username, "EX", 300);
     // create a modal box asking user for the input
     
     const modalBox = new ModalBuilder()
@@ -59,7 +58,7 @@ export class TwitchChatRelay extends baseCommand {
       await this.processResult(await interaction.awaitModalSubmit({ 
         filter: (i) => i.customId === uniqueID && i.user.id === interaction.user.id,
         time: 300000
-      }));
+      }), tUser.username);
     } catch(ex) {
       if(ex instanceof DiscordjsError && ex.code === DiscordjsErrorCodes.InteractionCollectorError)
         return await interaction.followUp({content: "You took too long to submit the request!", ephemeral: true});
@@ -67,9 +66,8 @@ export class TwitchChatRelay extends baseCommand {
     }
   }
 
-  private async processResult(result: ModalSubmitInteraction) {
+  private async processResult(result: ModalSubmitInteraction, username: string) {
     const components = result.components[0].components[0];
-    const username = await this.client.redis.getdel(`tbypass:${result.customId}`);
     const message = components.value;
 
     await this.client.twitch.say(this.client.config.twitch.channel, `[@${username}]: ${message}`);

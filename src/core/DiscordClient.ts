@@ -7,7 +7,7 @@ import { connect, Connection } from "amqplib";
 import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents, AMQPEvents } from "../events";
 
-import { init as sentryInit, Integrations, flush, metrics, extraErrorDataIntegration, rewriteFramesIntegration } from "@sentry/node";
+import { init as sentryInit, flush, extraErrorDataIntegration, rewriteFramesIntegration, expressIntegration, prismaIntegration } from "@sentry/node";
 import { Prisma } from "@prisma/client";
 import path from "path";
 import { ReactRoleLoader } from "../services/ReactRoleHandler";
@@ -15,6 +15,14 @@ import { baseClient } from "./baseClient";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
 import { TwitchClient } from "./TwitchClient";
 import { YoutubeClient } from "./YoutubeClient";
+
+import { SEMRESATTRS_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { registerInstrumentations } from '@opentelemetry/instrumentation';
+import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
+import { PrismaInstrumentation } from '@prisma/instrumentation';
+import { Resource } from '@opentelemetry/resources';
 
 
 /**
@@ -79,9 +87,11 @@ export class DiscordClient extends Client implements baseClient {
     new RedisEvents(this)
       .registerEvents();
 
-    // Start Sentry
-    if(process.env["SENTRY_DSN"])
+    // Enable Telemetry Systems
+    if(process.env["SENTRY_DSN"]) {
+      this.configureOpenTelemetry();
       this.initSentry();
+    }
 
     // Initialize Twitch Client
     if(!process.env["TWITCH_TOKEN"] || !process.env["TWITCH_USERNAME"])
@@ -149,6 +159,13 @@ export class DiscordClient extends Client implements baseClient {
     });
   }
 
+  private async loadServices() {
+    await ReactRoleLoader(this);
+  }
+
+
+  /* Telemetry Systems Below */
+
   private initSentry() {
     sentryInit({
       dsn: process.env["SENTRY_DSN"],
@@ -168,13 +185,9 @@ export class DiscordClient extends Client implements baseClient {
             return frame;
           }
         }),
-        new Integrations.Prisma({client: this.prisma}),
-        metrics.metricsAggregatorIntegration(),
+        prismaIntegration(),
+        expressIntegration(),
       ],
-  
-      _experiments: {
-        metricsAggregator: true,
-      },
     
       beforeBreadcrumb: (breadcrumb) => {
         // List of urls to ignore
@@ -214,8 +227,24 @@ export class DiscordClient extends Client implements baseClient {
     });
   }
 
-  private async loadServices() {
-    await ReactRoleLoader(this);
+  private configureOpenTelemetry() {
+    // Default Prisma Configuration
+
+    const provider = new NodeTracerProvider({
+      resource: new Resource({
+        [SEMRESATTRS_SERVICE_NAME]: 'example application',
+      }),
+    });
+
+    provider.addSpanProcessor(new SimpleSpanProcessor(new OTLPTraceExporter()));
+
+    registerInstrumentations({
+      tracerProvider: provider,
+      instrumentations: [new PrismaInstrumentation()],
+    });
+
+    // Register the provider globally
+    provider.register();
   }
   
 }

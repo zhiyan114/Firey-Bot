@@ -7,8 +7,7 @@ import {config as dotenv} from "dotenv";
  * .env persistance setup for docker
  */
 
-dotenv();
-if(process.env['ISDOCKER']) {
+export function saveEnv() {
   const envToWrite = process.env["WRITE_ENV"];
   if(envToWrite) {
     const envs = envToWrite.replaceAll(' ', '').split(",");
@@ -16,8 +15,12 @@ if(process.env['ISDOCKER']) {
     for(const env of envs)
       envData += `${env}=${process.env[env]}\n`;
     writeFileSync(".env", envData);
-  } 
+  }
 }
+
+dotenv();
+if(process.env['ISDOCKER'])
+  saveEnv();
 
 /**
  * Start up checks
