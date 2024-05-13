@@ -107,7 +107,6 @@ export class DiscordCommandHandler {
     // Execute command, assuming all the checks are passed (and track their usages)
     if(interaction.user.id !== "233955058604179457")
       metrics.increment("discord.command.executed", 1, {
-        timestamp: new Date().getTime(),
         tags: {
           command: interaction.commandName,
           type: interaction instanceof CommandInteraction ? "slash" : "context"
