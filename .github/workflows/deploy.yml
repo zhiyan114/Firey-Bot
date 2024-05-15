@@ -5,7 +5,7 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ deploy ]
 
 jobs:
   Deployment:
@@ -13,22 +13,33 @@ jobs:
     environment: standard
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [20.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-#        cache: 'npm'
-    - name: Setup Sentry CLI
-      uses: mathieu-bour/setup-sentry-cli@v1.3.0
+        cache: 'npm'
+    - name: Setup FlyIO
+      uses: superfly/flyctl-actions/setup-flyctl@master
     - name: install package
-      run: npm i
-    - name: build it
-      run: npm run build
+      run: npm ci
+    - name: lint check
+      run: npm run lint:check
+    - name: Prisma Checker
+      run: npx prisma generate
+    - name: Type Check
+      run: npm run build:check
+    - name: Unit Test
+      run: npm run test
+    - name: Deploy FlyIO
+      run: flyctl deploy --remote-only
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_KEY }}
+
     # - name: Publish artifact to sentry
     #   env:
     #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
