@@ -77,7 +77,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
   port: number;
 
   constructor(config: config) {
-    const PubSubPort = config.PubSubPort !== 0 ? config.PubSubPort : config.Port;
+    const PubSubPort = config.PubSubPort ?? config.Port;
     const pubsuburl = `${config.https ? "https" : "http"}://${config.FQDN}${PubSubPort ? `:${PubSubPort}` : ""}${config.Path}`;
     super({
       hubCallback: pubsuburl,
@@ -101,12 +101,17 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
   }
 
   public async start() {
+    this.express.get("/test", this.HealthRoute);
     await new Promise<void>((resolve) => this.httpServer.listen(this.port, ()=>resolve()));
     await this.discord.logger.sendLog({
       type: "Info",
       message: "Web server started!"
     });
     this.subscribe(this.discord.config.youtube.youtubeChannelID);
+  }
+
+  private HealthRoute(req: Express.Request, res: Express.Response) {
+    res.status(200).send("Hello World!");
   }
 
   public async dispose() {
