@@ -13,7 +13,8 @@
     "youtube": {
         "youtubeChannelID": "Channel to listen for",
         "guildChannelID": "Guild channel to post the notification",
-        "pingRoleID": "Role to ping or everyone/here"
+        "pingRoleID": "Role to ping or everyone/here",
+        "overridePort": "Override WEBSERVER_HTTPS for PubSub, useful for railway or similar service"
     },
     "twitch": {
         "prefix": "!",
