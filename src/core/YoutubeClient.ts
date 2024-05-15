@@ -57,10 +57,7 @@ interface config {
     client: DiscordClient;
     FQDN: string;
     Path: string;
-    https?: {
-        key: string;
-        cert: string;
-    };
+    https?: boolean;
     
     Port?: number;
     secret?: string;
