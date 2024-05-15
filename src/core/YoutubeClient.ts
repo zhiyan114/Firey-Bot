@@ -58,7 +58,7 @@ interface config {
     FQDN: string;
     Path: string;
     https?: boolean;
-    
+    PubSubPort?: number;
     Port?: number;
     secret?: string;
 }
@@ -77,8 +77,9 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
   port: number;
 
   constructor(config: config) {
+    const PubSubPort = config.PubSubPort ?? config.Port;
     super({
-      hubCallback: `${config.https ? "https" : "http"}://${config.FQDN}${config.Port ? `:${config.Port}` : ""}${config.Path}`,
+      hubCallback: `${config.https ? "https" : "http"}://${config.FQDN}${PubSubPort ? `:${PubSubPort}` : ""}${config.Path}`,
       middleware: true,
       secret: config.secret ?? "NotifierSecret_ShouldNotBeExposed",
     });
