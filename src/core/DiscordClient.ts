@@ -102,6 +102,7 @@ export class DiscordClient extends Client implements baseClient {
     const port = process.env["WEBSERVER_PORT"];
     this.youtube = new YoutubeClient({
       client: this,
+      https: process.env["WEBSERVER_HTTPS"] === "true",
       FQDN: process.env["WEBSERVER_FQDN"] || "",
       Port: !port || Number.isNaN(parseInt(port)) ? undefined : parseInt(port),
       Path: "/UwU/youtube/callback/",
