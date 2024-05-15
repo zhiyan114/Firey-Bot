@@ -78,11 +78,14 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
 
   constructor(config: config) {
     const PubSubPort = config.PubSubPort !== 0 ? config.PubSubPort : config.Port;
+    const pubsuburl = `${config.https ? "https" : "http"}://${config.FQDN}${PubSubPort ? `:${PubSubPort}` : ""}${config.Path}`;
     super({
-      hubCallback: `${config.https ? "https" : "http"}://${config.FQDN}${PubSubPort ? `:${PubSubPort}` : ""}${config.Path}`,
+      hubCallback: pubsuburl,
       middleware: true,
       secret: config.secret ?? "NotifierSecret_ShouldNotBeExposed",
     });
+    console.log(`Current PubSub URL: ${pubsuburl}`);
+
     this.express = Express();
     this.discord = config.client;
     this.port = config.Port ?? 80;
