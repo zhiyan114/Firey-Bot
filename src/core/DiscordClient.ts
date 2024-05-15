@@ -105,6 +105,7 @@ export class DiscordClient extends Client implements baseClient {
       https: process.env["WEBSERVER_HTTPS"] === "true",
       FQDN: process.env["WEBSERVER_FQDN"] || "",
       Port: !port || Number.isNaN(parseInt(port)) ? undefined : parseInt(port),
+      PubSubPort: this.config.youtube.overridePort !== 0 ? this.config.youtube.overridePort : undefined,
       Path: "/UwU/youtube/callback/",
       secret: process.env["YTSECRET"]
     });
