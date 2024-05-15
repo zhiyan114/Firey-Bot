@@ -10,7 +10,6 @@ on:
 jobs:
   DeployPreReqCheck:
     runs-on: ubuntu-latest
-    environment: standard
     steps:
       - name: Main Branch Merge Only
         if: github.base_ref == 'deploy' && github.head_ref != 'master'
