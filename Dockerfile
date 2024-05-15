@@ -59,6 +59,7 @@ COPY --from=buildenv /source/dist /app/
 COPY --from=buildenv /source/commitHash /app/commitHash
 
 # Exposed web server port
-EXPOSE ${WEBSERVER_PORT}
+#EXPOSE ${WEBSERVER_PORT}
+EXPOSE 3000
 
 CMD node index.js
