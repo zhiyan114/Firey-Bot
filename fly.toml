@@ -9,19 +9,12 @@ primary_region = 'atl'
 [build]
 
 [http_service]
- internal_port = 46271
+ internal_port = 3000
  force_https = true
  auto_stop_machines = false
  auto_start_machines = true
  min_machines_running = 0
  processes = ['app']
-
-#[[services]]
-#  internal_port = 46271
-#  protocol = "tcp"
-#
-# [[services.ports]]
-#    port = "46271"
 
 [[vm]]
   size = 'shared-cpu-1x'
