@@ -77,7 +77,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
   port: number;
 
   constructor(config: config) {
-    const PubSubPort = config.PubSubPort ?? config.Port;
+    const PubSubPort = config.PubSubPort !== 0 ? config.PubSubPort : config.Port;
     super({
       hubCallback: `${config.https ? "https" : "http"}://${config.FQDN}${PubSubPort ? `:${PubSubPort}` : ""}${config.Path}`,
       middleware: true,
