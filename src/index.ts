@@ -1,14 +1,13 @@
 import { DiscordClient } from "./core/DiscordClient";
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { flush } from "@sentry/node";
-import {config as dotenv} from "dotenv";
 
 
 /**
  * .env persistance setup for docker
  */
 
-export function saveEnv() {
+function saveEnv() {
   const envToWrite = process.env["WRITE_ENV"];
   if(envToWrite) {
     const envs = envToWrite.replaceAll(' ', '').split(",");
@@ -19,7 +18,6 @@ export function saveEnv() {
   }
 }
 
-dotenv();
 if(process.env['ISDOCKER'])
   saveEnv();
 
@@ -29,14 +27,6 @@ if(process.env['ISDOCKER'])
 
 if(!process.env["BOTTOKEN"])
   throw new Error("No token provided");
-
-if(!process.env["COMMITHASH"]) {
-  // Try to load the commit hash via file
-  if(existsSync("commitHash"))
-    process.env["COMMITHASH"] = readFileSync("commitHash").toString();
-  else
-    console.warn("No commit hash found!");
-}
 
 /**
  * Setup our beloved client stuff and start it
@@ -60,4 +50,3 @@ async function quitSignalHandler() {
 process.on("SIGINT", quitSignalHandler);
 process.on("SIGTERM", quitSignalHandler);
 process.on("SIGQUIT", quitSignalHandler);
-  

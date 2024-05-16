@@ -1,5 +1,22 @@
 /* Software Loader */
 
+
+// Load Env Variable
+import {config as dotenv} from "dotenv";
+dotenv();
+
+
+// Load Commit Hash
+import {existsSync, readFileSync} from "fs";
+if(!process.env["COMMITHASH"]) {
+  // Try to load the commit hash via file
+  if(existsSync("commitHash"))
+    process.env["COMMITHASH"] = readFileSync("commitHash").toString();
+  else
+    console.warn("No commit hash found!");
+}
+
+
 // Run Sentry first as required by the docs
 import { expressIntegration, extraErrorDataIntegration, prismaIntegration, rewriteFramesIntegration, init as sentryInit } from "@sentry/node";
 import { DiscordAPIError } from "discord.js";
