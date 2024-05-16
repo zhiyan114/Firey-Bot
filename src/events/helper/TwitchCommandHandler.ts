@@ -59,9 +59,12 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
     const dClient = eventData.client.discord;
     if(!eventData.user["user-id"]) return true;
     const tUser = await new TwitchUser(dClient, eventData.user["user-id"]).getCacheData();
-    if(!tUser || !tUser.verified) return true;
+    if(!tUser || !tUser.verified)
+      return await eventData.client.say(eventData.channel, `@${eventData.user.username}, an error occured with the command! The developer has been notified.`) && true;
     await dClient.redis.set(`userSentryErrorID:${tUser.memberid}`, eventID, "EX", 1800);
+    await eventData.client.say(eventData.channel, `@${eventData.user.username}, an error occured with the command! The developer has been notified. Since you have linked your discord ID, feel free to use the feedback command in the server to file a detailed report.`);
+
   }
-  
+
   return true;
 }
