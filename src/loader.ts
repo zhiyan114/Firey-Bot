@@ -10,7 +10,7 @@ import {existsSync, readFileSync} from "fs";
 if(process.env["COMMITHASH"] === undefined) {
   // Try to load the commit hash via file
   if(existsSync("commitHash")) {
-    console.log(`Loading commit from file...`);
+    console.log(`Loading commit hash from file...`);
     process.env["COMMITHASH"] = readFileSync("commitHash").toString();
   }
   else
