@@ -8,10 +8,13 @@ dotenv();
 
 // Load Commit Hash
 import {existsSync, readFileSync} from "fs";
-if(!process.env["COMMITHASH"]) {
+if(process.env["COMMITHASH"] === undefined) {
   // Try to load the commit hash via file
-  if(existsSync("commitHash"))
-    process.env["COMMITHASH"] = readFileSync("commitHash").toString();
+  if(existsSync("commitHash")) {
+    const hash = readFileSync("commitHash").toString();
+    console.log(`Commit hash file found, loading: ${hash}`);
+    process.env["COMMITHASH"] = hash;
+  }
   else
     console.warn("No commit hash found!");
 }
