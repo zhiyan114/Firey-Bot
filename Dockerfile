@@ -61,4 +61,4 @@ COPY --from=buildenv /source/commitHash /app/commitHash
 # Exposed web server port
 EXPOSE ${WEBSERVER_PORT}
 
-CMD node index.js
+CMD node loader.js
