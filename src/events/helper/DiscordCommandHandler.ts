@@ -7,7 +7,7 @@ import {
   softBanCommand, unbanCommand, FeedbackCommand
 } from "../../commands/discord";
 import { baseCommand } from "../../core/baseCommand";
-import { metrics } from "@sentry/node";
+import { captureException, metrics } from "@sentry/node";
 import { DiscordClient } from "../../core/DiscordClient";
 import { createHash, timingSafeEqual } from "crypto";
 
@@ -112,7 +112,13 @@ export class DiscordCommandHandler {
           type: interaction instanceof CommandInteraction ? "slash" : "context"
         }
       });
-    await command.execute(interaction);
+      
+    // Attach identifier to save the error ID on redis
+    try { await command.execute(interaction); }
+    catch(ex) {
+      const id = captureException(ex);
+      await this.client.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
+    }
   }
 
   public getCommandHash(): Buffer {
