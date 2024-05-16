@@ -1,5 +1,6 @@
 import { DiscordClient } from "./core/DiscordClient";
 import { existsSync, readFileSync, writeFileSync } from "fs";
+import { flush } from "@sentry/node";
 import {config as dotenv} from "dotenv";
 
 
@@ -52,6 +53,7 @@ async function quitSignalHandler() {
   await CoreClient.dispose();
   await CoreClient.twitch.dispose();
   await CoreClient.youtube.dispose();
+  await flush(15000);
   process.exit(0);
 }
 
