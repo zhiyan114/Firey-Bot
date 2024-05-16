@@ -3,7 +3,9 @@
 		"ms-azuretools.vscode-docker",
 		"dbaeumer.vscode-eslint",
 		"esbenp.prettier-vscode",
-		"Prisma.prisma"
+		"Prisma.prisma",
+		"tamasfe.even-better-toml",
+		"github.vscode-github-actions"
 	],
 	"unwantedRecommendations": [
 		"eamodio.gitlens",

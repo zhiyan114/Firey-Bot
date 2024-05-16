@@ -39,7 +39,8 @@ export class kickCommand extends baseCommand {
   }
   public async execute(interaction: CommandInteraction) {
     const targetMember = interaction.options.get("user")?.member as GuildMember | null;
-    if(!targetMember) return await interaction.reply("Invalid User has been supplied");
+    if(!targetMember || targetMember.user.bot)
+      return await interaction.reply("Invalid User has been supplied");
 
     // supplied info
     const reason = interaction.options.get("reason",true).value as string;

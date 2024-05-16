@@ -1,8 +1,9 @@
 import { ChatUserstate } from "tmi.js";
 import { TwitchClient } from "../../core/TwitchClient";
 import { baseTCommand } from "../../core/baseCommand";
-import { metrics } from "@sentry/node";
+import { captureException, metrics } from "@sentry/node";
 import { DiscordCommand, LinkCommand, LurkCommand } from "../../commands/twitch";
+import { TwitchUser } from "../../utils/TwitchUser";
 
 const commands: baseTCommand[] = [
   new LurkCommand(),
@@ -43,13 +44,27 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
       }
     });
 
-  await command.execute({
-    channel: eventData.channel,
-    user: eventData.user,
-    message: eventData.message,
-    self: eventData.self,
-    client: eventData.client,
-    args
-  });
+  try {
+    await command.execute({
+      channel: eventData.channel,
+      user: eventData.user,
+      message: eventData.message,
+      self: eventData.self,
+      client: eventData.client,
+      args
+    });
+  } catch(ex) {
+    // Feedback events are based on discord ID so there's that...
+    const eventID = captureException(ex);
+    const dClient = eventData.client.discord;
+    if(!eventData.user["user-id"]) return true;
+    const tUser = await new TwitchUser(dClient, eventData.user["user-id"]).getCacheData();
+    if(!tUser || !tUser.verified)
+      return await eventData.client.say(eventData.channel, `@${eventData.user.username}, an error occured with the command! The developer has been notified.`) && true;
+    await dClient.redis.set(`userSentryErrorID:${tUser.memberid}`, eventID, "EX", 1800);
+    await eventData.client.say(eventData.channel, `@${eventData.user.username}, an error occured with the command! The developer has been notified. Since you have linked your discord ID, feel free to use the feedback command in the server to file a detailed report.`);
+
+  }
+
   return true;
 }

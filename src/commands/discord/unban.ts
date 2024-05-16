@@ -41,7 +41,7 @@ export class unbanCommand extends baseCommand {
     const reason = interaction.options.get("reason", false);
     if(!guild)
       return interaction.reply({content: "This command can only be used in a server.", ephemeral: true});
-    if(!targetUser)
+    if(!targetUser || targetUser.bot)
       return interaction.reply({content: "Invalid User/User's ID", ephemeral: true});
     const target = new DiscordUser(this.client, targetUser);
     const issuer = new DiscordUser(this.client, interaction.user);
