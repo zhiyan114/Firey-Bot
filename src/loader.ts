@@ -109,4 +109,4 @@ registerInstrumentations({
 provider.register();
 
 // Start the main software
-import('./index');
+import './index';
