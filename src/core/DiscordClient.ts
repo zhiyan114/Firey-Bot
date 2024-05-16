@@ -1,5 +1,4 @@
-import { ActivityType, Client, GatewayIntentBits, Partials, DiscordAPIError, DefaultWebSocketManagerOptions } from "discord.js";
-import { APIErrors } from "../utils/discordErrorCode";
+import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketManagerOptions } from "discord.js";
 import config from '../config.json';
 import { PrismaClient } from "@prisma/client";
 import Redis from "ioredis";
@@ -7,22 +6,13 @@ import { connect, Connection } from "amqplib";
 import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents, AMQPEvents } from "../events";
 
-import { init as sentryInit, flush, extraErrorDataIntegration, rewriteFramesIntegration, expressIntegration, prismaIntegration } from "@sentry/node";
-import { Prisma } from "@prisma/client";
-import path from "path";
 import { ReactRoleLoader } from "../services/ReactRoleHandler";
 import { baseClient } from "./baseClient";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
 import { TwitchClient } from "./TwitchClient";
 import { YoutubeClient } from "./YoutubeClient";
 
-import { SEMRESATTRS_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
-import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
-import { PrismaInstrumentation } from '@prisma/instrumentation';
-import { Resource } from '@opentelemetry/resources';
+
 
 
 /**
@@ -87,12 +77,6 @@ export class DiscordClient extends Client implements baseClient {
     new RedisEvents(this)
       .registerEvents();
 
-    // Enable Telemetry Systems
-    if(process.env["SENTRY_DSN"]) {
-      this.configureOpenTelemetry();
-      this.initSentry();
-    }
-
     // Initialize Twitch Client
     if(!process.env["TWITCH_TOKEN"] || !process.env["TWITCH_USERNAME"])
       throw new Error("No twitch username/token provided");
@@ -137,13 +121,12 @@ export class DiscordClient extends Client implements baseClient {
   public async dispose() {
     // Close all connections
     await this.prisma.$disconnect();
-    await this.redis.disconnect();
+    await this.redis.quit();
     if(this.amqp) {
       this.events.amqp.noAutoReconnect = true;
       await this.amqp.close();
     }
     await this.destroy();
-    await flush();
   }
 
   public updateStatus() {
@@ -163,90 +146,6 @@ export class DiscordClient extends Client implements baseClient {
 
   private async loadServices() {
     await ReactRoleLoader(this);
-  }
-
-
-  /* Telemetry Systems Below */
-
-  private initSentry() {
-    sentryInit({
-      dsn: process.env["SENTRY_DSN"],
-      maxValueLength: 1000,
-      tracesSampleRate: 0.1,
-
-      integrations: [
-        extraErrorDataIntegration({
-          depth: 5
-        }),
-        rewriteFramesIntegration({
-          iteratee: (frame) => {
-            const absPath = frame.filename;
-            if(!absPath) return frame;
-            // Set the base path as the dist output to match the naming artifact on sentry
-            frame.filename = `/${path.relative(__dirname, absPath).replace(/\\/g, "/")}`;
-            return frame;
-          }
-        }),
-        prismaIntegration(),
-        expressIntegration(),
-      ],
-    
-      beforeBreadcrumb: (breadcrumb) => {
-        // List of urls to ignore
-        const ignoreUrl = [
-          "https://api.twitch.tv",
-          "https://discord.com",
-          "https://cdn.discordapp.com"
-        ];
-    
-        // Ignore Http Breadcrumbs from the blacklisted url
-        if(breadcrumb.category === "http" && 
-          ignoreUrl.filter(url=>breadcrumb.data?.url.startsWith(url)).length > 0) return null;
-        return breadcrumb;
-      },
-    
-      ignoreErrors: [
-        "ETIMEDOUT",
-        "EADDRINUSE",
-        "ENOTFOUND",
-        "TimeoutError",
-        "AbortError",
-        "NetworkError",
-        "ECONNREFUSED",
-        "ECONNRESET",
-      ],
-
-      beforeSend : (evnt, hint) => {
-        const ex = hint.originalException;
-        if(ex instanceof DiscordAPIError && ex.code === APIErrors.UNKNOWN_INTERACTION) return null;
-        // Somehow prisma bugged and threw this error :/
-        if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null;
-        return evnt;
-      },
-
-      release: process.env['COMMITHASH'],
-      environment: process.env["ENVIRONMENT"]
-    });
-  }
-
-  private configureOpenTelemetry() {
-    // Default Prisma Configuration
-
-    const provider = new NodeTracerProvider({
-      resource: new Resource({
-        [SEMRESATTRS_SERVICE_NAME]: 'example application',
-      }),
-    });
-
-    provider.addSpanProcessor(new SimpleSpanProcessor(new OTLPTraceExporter()));
-
-    registerInstrumentations({
-      tracerProvider: provider,
-      instrumentations: [new PrismaInstrumentation()],
-    });
-
-    // Register the provider globally
-    provider.register();
   }
   
 }
