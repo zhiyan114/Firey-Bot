@@ -1,6 +1,5 @@
 /* Software Loader */
 
-
 // Load Env Variable
 import {config as dotenv} from "dotenv";
 dotenv();
@@ -109,4 +108,5 @@ registerInstrumentations({
 provider.register();
 
 // Start the main software
-import './index';
+//import './index';
+require("./index"); // Workaround for esbuild's non-ordered import
