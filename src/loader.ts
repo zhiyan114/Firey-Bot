@@ -56,7 +56,7 @@ sentryInit({
       
     // Ignore Http Breadcrumbs from the blacklisted url
     if(breadcrumb.category === "http" && 
-            ignoreUrl.filter(url=>breadcrumb.data?.url.startsWith(url)).length > 0) return null;
+      ignoreUrl.filter(url=>breadcrumb.data?.url.startsWith(url)).length > 0) return null;
     return breadcrumb;
   },
       
