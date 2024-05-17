@@ -40,10 +40,21 @@ CoreClient
  * Handle cleanups
  */
 async function quitSignalHandler() {
+  // Log initial shutdown message
+  await CoreClient.logger.sendLog({
+    type: "Info",
+    message: "Shutdown Initiated... View logs for shutdown completion."
+  });
+  console.log("Shutdown Initiated...");
+
+  // Perform cleanup
   await CoreClient.dispose();
   await CoreClient.twitch.dispose();
   await CoreClient.youtube.dispose();
   await flush(15000);
+
+  // Complete the shutdown
+  console.log("Shutdown Complete!");
   process.exit(0);
 }
 
