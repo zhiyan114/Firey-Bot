@@ -36,6 +36,13 @@ export class leaderboardCommand extends baseCommand {
           username: true,
           points: true
         },
+        where: {
+          username: {
+            not: {
+              contains: "Deleted Account"
+            }
+          }
+        },
         orderBy: {
           points: 'desc'
         },
