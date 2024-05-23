@@ -36,6 +36,7 @@ export class DiscordClient extends Client implements baseClient {
   events;
   twitch: TwitchClient;
   youtube: YoutubeClient;
+  trimCommitHash: string;
 
   constructor() {
     super({
@@ -54,6 +55,11 @@ export class DiscordClient extends Client implements baseClient {
         Partials.User
       ]
     });
+
+    // Initalize fields
+    this.trimCommitHash = process.env['COMMITHASH'] ?? "???";
+    if(this.trimCommitHash && this.trimCommitHash.length > 7)
+      this.trimCommitHash = this.trimCommitHash.substring(0, 7);
 
     // Initalize components
     this.logger = new eventLogger(this);
@@ -130,15 +136,10 @@ export class DiscordClient extends Client implements baseClient {
   }
 
   public updateStatus() {
-    // Get and trim the commit hash
-    let commitHash = process.env['COMMITHASH'];
-    if(commitHash && commitHash.length > 7)
-      commitHash = commitHash.substring(0, 7);
-
     this.user?.setPresence({
       status: "online",
       activities: [{
-        name: `${this.guilds.cache.find(g=>g.id===this.config.guildID)?.memberCount} cuties :Þ | ver ${commitHash ?? "???"}`,
+        name: `${this.guilds.cache.find(g=>g.id===this.config.guildID)?.memberCount} cuties :Þ | ver ${this.trimCommitHash}`,
         type: ActivityType.Watching,
       }],
     });

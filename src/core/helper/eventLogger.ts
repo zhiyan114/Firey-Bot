@@ -67,7 +67,7 @@ export class eventLogger {
       .setDescription(log.message)
       .setColor(this.EmbedColor(log.type))
       .setTimestamp()
-      .setFooter({text: "Internal Report System"});
+      .setFooter({text: `Internal Report System | ver ${this.client.trimCommitHash}`});
 
     // Add the metadata if it exists
     if(log.metadata)
