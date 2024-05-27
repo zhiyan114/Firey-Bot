@@ -1,4 +1,4 @@
-import { ChannelType, DiscordAPIError, EmbedBuilder, GuildMember, Interaction, Message, PartialUser, User } from "discord.js";
+import { ChannelType, DiscordAPIError, EmbedBuilder, GuildMember, Interaction, Message, PartialUser, User, VoiceState } from "discord.js";
 import { DiscordClient } from "../core/DiscordClient";
 import { baseEvent } from "../core/baseEvent";
 import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
@@ -24,6 +24,7 @@ export class DiscordEvents extends baseEvent {
     this.client.on("guildMemberAdd", this.guildMemberAdd.bind(this));
     this.client.on("userUpdate", this.userUpdate.bind(this));
     this.client.on("guildMemberRemove", this.guildMemberRemove.bind(this));
+    this.client.on("voiceStateUpdate", this.voiceStateUpdate.bind(this));
   }
 
   private async onReady() {
@@ -107,5 +108,41 @@ export class DiscordEvents extends baseEvent {
 
   private guildMemberRemove() {
     this.client.updateStatus();
+  }
+
+  private async voiceStateUpdate(old: VoiceState, now: VoiceState) {
+
+    // Checking to see if the user needs to be reported on the log
+    const config = this.client.config.VCJoinLog;
+    const channel = await this.client.channels.fetch(config.channelID);
+    if(!channel || channel.type !== ChannelType.GuildText) return;
+    if(!now.member || now.member.user.bot) return;
+    if(!now.channel) return;
+    if(config.excludeChannels.includes(now.channel.id)) return;
+
+    // Prepare embed
+    const embed = new EmbedBuilder()
+      .setColor("#00FFFF")
+      .setTitle("Voice Channel Join")
+      .setDescription(`**${now.member.user.displayName}** has joined the voice channel **${now.channel.name}**`)
+      .setFields([
+        {
+          name: "User ID",
+          value: now.member.user.id
+        },
+        {
+          name: "Channel ID",
+          value: now.channel.id
+        }
+      ]);
+    
+    // See if username needs to be added as well
+    if(now.member.user.username !== now.member.user.displayName)
+      embed.addFields({
+        name: "Username",
+        value: now.member.user.username
+      });
+    
+    await channel.send({embeds: [embed]});
   }
 }

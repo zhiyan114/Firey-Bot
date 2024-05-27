@@ -47,12 +47,13 @@ export class DiscordClient extends Client implements baseClient {
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildPresences
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.GuildVoiceStates,
       ],
       partials: [
         Partials.Channel,
         Partials.GuildMember,
-        Partials.User
+        Partials.User,
       ]
     });
 

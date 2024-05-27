@@ -10,6 +10,10 @@
         "channel": ["Channel ID Where Points Wont Be Awarded"],
         "category": ["Category ID Where Points Wont Be Awarded"]
     },
+    "VCJoinLog": {
+        "channelID": "Channel where the logs will be sent to. Seperated from service log.",
+        "excludeChannels": ["Channels where VC Joins will not be logged"]
+    },
     "youtube": {
         "youtubeChannelID": "Channel to listen for",
         "guildChannelID": "Guild channel to post the notification",
