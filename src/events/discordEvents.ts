@@ -125,7 +125,9 @@ export class DiscordEvents extends baseEvent {
     const embed = new EmbedBuilder()
       .setColor("#00FFFF")
       .setTitle("Voice Channel Join")
+      .setThumbnail(now.member.user.displayAvatarURL({size: 512}))
       .setDescription(`**${now.member.user.displayName}** has joined the voice channel **${now.channel.name}**`)
+      .setTimestamp()
       .setFields([
         {
           name: "User ID",
