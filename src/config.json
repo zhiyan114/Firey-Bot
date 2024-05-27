@@ -10,6 +10,10 @@
         "channel": ["907121158376288307"],
         "category": ["971814606265806849", "907313940986466374"]
     },
+    "VCJoinLog": {
+        "channelID": "1244453386494017706",
+        "excludeChannels": ["1020755369280151653"]
+    },
     "youtube": {
         "youtubeChannelID": "UCKsRmVfwU-IkVWhfiSVp1ig",
         "guildChannelID": "912150616908890142",
