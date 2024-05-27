@@ -126,7 +126,7 @@ export class DiscordEvents extends baseEvent {
       .setColor("#00FFFF")
       .setTitle("Voice Channel Join")
       .setThumbnail(now.member.user.displayAvatarURL({size: 512}))
-      .setDescription(`**${now.member.user.displayName}** has joined the voice channel **${now.channel.name}**`)
+      .setDescription(`<@${now.member.user.id}> has joined the voice channel **${now.channel.name}**`)
       .setTimestamp()
       .setFields([
         {
