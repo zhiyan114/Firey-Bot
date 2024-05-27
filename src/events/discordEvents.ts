@@ -116,8 +116,9 @@ export class DiscordEvents extends baseEvent {
     const config = this.client.config.VCJoinLog;
     const channel = await this.client.channels.fetch(config.channelID);
     if(!channel || channel.type !== ChannelType.GuildText) return;
-    if(!now.member || now.member.user.bot) return;
     if(!now.channel) return;
+    if(old.channel?.id === now.channel.id) return;
+    if(!now.member || now.member.user.bot) return;
     if(config.excludeChannels.includes(now.channel.id)) return;
 
     // Prepare embed
