@@ -47,7 +47,8 @@ export class StreamEvents extends baseTEvent {
       .setURL(streamUrl)
       .setImage(data.thumbnail_url);
 
-    await channel.send({content: `<@${this.config.notification.roleToPing}> Derg is streaming right now, come join!`, embeds: [embed]});
+    const roleID = this.config.notification.roleToPing;
+    await channel.send({content: `${roleID === "everyone" ? "@everyone" : `<@&${roleID}`} Derg is streaming right now, come join!`, embeds: [embed]});
   }
 
   private async onStreamEnd() {

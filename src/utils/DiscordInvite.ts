@@ -71,7 +71,8 @@ export class DiscordInvite {
      * Create a templorary reusable invite link if vanity URL does not exist
      * @param inviteOpt Discord.js's Create Invite Options and the
      * default value for maxAge is 1 day
-     * @param rawCode Whether to return an invite code or a full invite link
+     * @param rawCode Whether to return an invite code or a full invite link (inside inviteOpt)
+     * @param nocache Whether to ignore the cache and create a new invite (inside inviteOpt)
      * @returns The invite link or the code
      */
   public async getTempInvite(inviteOpt?: tempInviteOption) {
