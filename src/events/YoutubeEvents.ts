@@ -22,8 +22,11 @@ export class YoutubeEvents extends baseYEvent {
   }
 
   private async notified(data: NotifiedEvent) {
-    await this.getChannel();
+    if(!this.NotificationChannel)
+      await this.getChannel();
     if(data.published.getTime() < (new Date().getTime()) - 2592000000 || data.updated.getTime() < (new Date().getTime()) - 2592000000)
+      return;
+    if(data.video.title.toLowerCase().includes("[live]")) // Prevent youtube stream from being posted
       return;
 
     console.log(`Video (${data.video.id}) was notified with Publish: ${data.published} and Updated: ${data.updated}`);
@@ -31,8 +34,6 @@ export class YoutubeEvents extends baseYEvent {
   }
 
   private async subscribe(data: SubEvent) {
-    await this.getChannel();
-
     console.log("Youtube Notification Service: PubSubHubbub has been Subscribed...");
     await this.client.discord.logger.sendLog({
       type: "Info",
@@ -51,8 +52,6 @@ export class YoutubeEvents extends baseYEvent {
   }
 
   private async unsubscribe() {
-    await this.getChannel();
-
     console.log("Youtube Notification Service: Even has been unsubscribed, resubscribing...");
     await this.client.discord.logger.sendLog({
       type: "Warning",
