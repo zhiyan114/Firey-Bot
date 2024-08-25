@@ -120,7 +120,7 @@ export class DiscordCommandHandler {
       await this.client.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
 
       // Let the user know that something went wrong
-      if(interaction.replied)
+      if(interaction.replied || interaction.deferred)
         await interaction.followUp({content: "An error occur during command execution, please use the feedback command to submit a report.", ephemeral: true});
       else
         await interaction.reply({content: "An error occur during command execution, please use the feedback command to submit a report.", ephemeral: true});

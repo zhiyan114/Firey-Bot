@@ -109,4 +109,6 @@ provider.register();
 
 // Start the main software
 //import './index';
-require("./index"); // Workaround for esbuild's non-ordered import
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+require("./index"); // Workaround for esbuild's non-order transpilation

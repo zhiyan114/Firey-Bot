@@ -7,6 +7,7 @@ import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
 import { captureException } from "@sentry/node";
 import { BannerPic } from "../utils/bannerGen";
+import { Prisma } from "@prisma/client";
 
 export class DiscordEvents extends baseEvent {
   client: DiscordClient;
@@ -66,6 +67,14 @@ export class DiscordEvents extends baseEvent {
     const user = new DiscordUser(this.client, member.user);
     const channel = await this.client.channels.fetch(this.client.config.welcomeChannelID);
     if(!channel || channel.type !== ChannelType.GuildText) return;
+
+    // Create new user entry
+    try {
+      await user.createNewUser();
+    } catch(ex) {
+      if(!(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002"))
+        captureException(ex);
+    }
 
     // Send welcome message to user
     const embed = new EmbedBuilder()
