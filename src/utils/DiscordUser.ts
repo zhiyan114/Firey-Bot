@@ -227,15 +227,26 @@ export class DiscordUser {
     * @param metadata Additional data to be added for sendLog
     */
   public async actionLog(opt: ActionLogOpt) {
-    await this.client.prisma.modlog.create({
-      data: {
-        targetid: opt.target?.user.id,
-        moderatorid: this.user.id,
-        action: opt.actionName,
-        reason: opt.reason,
-        metadata: opt.metadata
-      }
-    });
+    try {
+      await this.client.prisma.modlog.create({
+        data: {
+          targetid: opt.target?.user.id,
+          moderatorid: this.user.id,
+          action: opt.actionName,
+          reason: opt.reason,
+          metadata: opt.metadata
+        }
+      });
+    } catch(ex) {
+      if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2003") 
+        await this.client.logger.sendLog({
+          type: "Warning",
+          message: "actionLog failed due to missing target in the database",
+          ...opt.metadata
+        });
+      else captureException(ex);
+    }
+    
     await this.client.logger.sendLog({
       type: "Interaction",
       message: opt.message,
