@@ -9,7 +9,7 @@ RUN apt-get install python3 make g++ git -y
 
 # Install npm packages
 COPY package.json package-lock.json ./
-RUN npm install --cpu=x64 --os=linux --libc=glibc
+RUN npm ci
 
 # Env Setup
 COPY tsconfig.json ./
