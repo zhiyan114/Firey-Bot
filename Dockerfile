@@ -1,5 +1,5 @@
 # Setup build image
-FROM node:22-buster-slim as buildenv
+FROM node:22-slim as buildenv
 WORKDIR /source/
 RUN npm install -g npm@latest
 
@@ -42,7 +42,7 @@ RUN npm prune --omit=dev
 
 
 # Setup production image
-FROM node:22-buster-slim
+FROM node:22-slim
 
 # Setup the environment?
 WORKDIR /app/
