@@ -1,5 +1,5 @@
 # Setup build image
-FROM node:20-slim as buildenv
+FROM node:20-buster-slim as buildenv
 WORKDIR /source/
 RUN npm install -g npm@latest
 
@@ -9,7 +9,7 @@ RUN apt-get install python3 make g++ git -y
 
 # Install npm packages
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci
 
 # Env Setup
 COPY tsconfig.json ./
@@ -42,7 +42,7 @@ RUN npm prune --omit=dev
 
 
 # Setup production image
-FROM node:20-slim
+FROM node:20-buster-slim
 
 # Setup the environment?
 WORKDIR /app/
