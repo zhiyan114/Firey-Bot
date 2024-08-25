@@ -21,8 +21,8 @@ export class AMQPEvents extends baseEvent {
     // type check stuff lmao
     if(!this.client.amqp) return;
     this.initSetup();
-    this.client.amqp.on("error", this.error.bind(this));
-    this.client.amqp.on("close", this.close.bind(this));
+    //this.client.amqp.on("error", this.error.bind(this));
+    //this.client.amqp.on("close", this.close.bind(this));
   }
 
   public initSetup() {
