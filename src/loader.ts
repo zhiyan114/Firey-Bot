@@ -19,7 +19,7 @@ if(process.env["COMMITHASH"] === undefined) {
 
 
 // Run Sentry first as required by the docs
-import { expressIntegration, extraErrorDataIntegration, prismaIntegration, rewriteFramesIntegration, init as sentryInit } from "@sentry/node";
+import { expressIntegration, extraErrorDataIntegration, prismaIntegration, redisIntegration, rewriteFramesIntegration, init as sentryInit } from "@sentry/node";
 import { DiscordAPIError } from "discord.js";
 import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
@@ -44,6 +44,7 @@ sentryInit({
       }
     }),
     prismaIntegration(),
+    redisIntegration(),
     expressIntegration(),
   ],
       
@@ -78,6 +79,13 @@ sentryInit({
     // Somehow prisma bugged and threw this error :/
     if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null;
     return evnt;
+  },
+  
+  beforeSendTransaction: (transaction) => {
+    // Ignore callback stuff from PubSubHubbub
+    if(transaction.transaction == "POST /UwU/youtube/callback/")
+      return null;
+    return transaction;
   },
   
   release: process.env['COMMITHASH'],
