@@ -2,9 +2,8 @@ import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketMana
 import config from '../config.json';
 import { PrismaClient } from "@prisma/client";
 import Redis from "ioredis";
-import { connect, Connection } from "amqplib";
 import { eventLogger } from "./helper/eventLogger";
-import { DiscordEvents, RedisEvents, AMQPEvents } from "../events";
+import { DiscordEvents, RedisEvents } from "../events";
 
 import { ReactRoleLoader } from "../services/ReactRoleHandler";
 import { baseClient } from "./baseClient";
@@ -20,7 +19,6 @@ import { YoutubeClient } from "./YoutubeClient";
  * @class DiscordClient
  * @property {PrismaClient} prisma - Prisma ORM Client
  * @property {RedisClientType} redis - Redis Client
- * @property {Connection} amqp - AMQP Connection
  * @property {eventLogger} logger - Event Logger
  * @property {config} config - Configuration
  * @method start - Start the client
@@ -31,9 +29,7 @@ export class DiscordClient extends Client implements baseClient {
   config = config;
   prisma: PrismaClient;
   redis: Redis;
-  amqp?: Connection;
   logger: eventLogger;
-  events;
   twitch: TwitchClient;
   youtube: YoutubeClient;
   trimCommitHash: string;
@@ -75,10 +71,6 @@ export class DiscordClient extends Client implements baseClient {
     //@ts-expect-error Override readonly property
     DefaultWebSocketManagerOptions.identifyProperties.browser = "Discord iOS";
     
-    // Initialize Events
-    this.events = {
-      amqp: new AMQPEvents(this)
-    };
     new DiscordEvents(this)
       .registerEvents();
     new RedisEvents(this)
@@ -110,11 +102,6 @@ export class DiscordClient extends Client implements baseClient {
       await this.redis.connect();
     await this.login(token);
 
-    if(process.env["AMQP_CONN"]) {
-      this.amqp = await connect(process.env["AMQP_CONN"]);
-      this.events.amqp.registerEvents();
-    }
-
     // Start all services
     await new DiscordCommandHandler(this).commandRegister();
     await this.loadServices();
@@ -129,10 +116,6 @@ export class DiscordClient extends Client implements baseClient {
     // Close all connections
     await this.prisma.$disconnect();
     await this.redis.quit();
-    if(this.amqp) {
-      this.events.amqp.noAutoReconnect = true;
-      await this.amqp.close();
-    }
     await this.destroy();
   }
 
