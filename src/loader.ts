@@ -83,7 +83,7 @@ sentryInit({
   
   beforeSendTransaction: (transaction) => {
     // Ignore callback stuff from PubSubHubbub
-    if(transaction.transaction == "POST /UwU/youtube/callback/")
+    if(new RegExp("/UwU/youtube/callback/").test(transaction.transaction ?? ""))
       return null;
     return transaction;
   },
