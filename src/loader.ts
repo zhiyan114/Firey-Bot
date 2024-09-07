@@ -28,7 +28,7 @@ import { Prisma } from "@prisma/client";
 sentryInit({
   dsn: process.env["SENTRY_DSN"],
   maxValueLength: 1000,
-  tracesSampleRate: 0.1,
+  tracesSampleRate: 0.8,
   
   integrations: [
     extraErrorDataIntegration({
@@ -86,7 +86,7 @@ sentryInit({
 
 
 // Load OpenTelemetry Config
-import { SEMRESATTRS_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
+import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
@@ -96,7 +96,7 @@ import { Resource } from '@opentelemetry/resources';
 
 const provider = new NodeTracerProvider({
   resource: new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: 'example application',
+    [ATTR_SERVICE_NAME]: "Firey's Bot",
   }),
 });
 provider.addSpanProcessor(new SimpleSpanProcessor(new OTLPTraceExporter()));

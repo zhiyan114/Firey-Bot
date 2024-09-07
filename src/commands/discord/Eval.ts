@@ -46,7 +46,8 @@ export class EvalCommand extends baseCommand {
       if(typeof msg === "object") msg = JSON.stringify(msg);
       if(msg === undefined || msg === null) msg = "undefined";
       else msg = msg.toString();
-      await channel?.send(msg as string);
+      if(channel?.type === ChannelType.GuildText)
+        await channel?.send(msg as string);
     };
 
     await interaction.deferReply({ephemeral: true});
