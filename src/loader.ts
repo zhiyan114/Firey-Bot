@@ -92,6 +92,7 @@ import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { PrismaInstrumentation } from '@prisma/instrumentation';
+import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis";
 import { Resource } from '@opentelemetry/resources';
 
 const provider = new NodeTracerProvider({
@@ -103,7 +104,10 @@ provider.addSpanProcessor(new SimpleSpanProcessor(new OTLPTraceExporter()));
 
 registerInstrumentations({
   tracerProvider: provider,
-  instrumentations: [new PrismaInstrumentation()],
+  instrumentations: [
+    new PrismaInstrumentation(),
+    new IORedisInstrumentation(),
+  ],
 });
 provider.register();
 
