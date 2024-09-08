@@ -29,7 +29,6 @@ import { Prisma } from "@prisma/client";
 sentryInit({
   dsn: process.env["SENTRY_DSN"],
   maxValueLength: 1000,
-  tracesSampleRate: 0.8,
   tracesSampler: (samplingContext) => {
     // We only care about database performance, not so much for the callback web services.
     const ctxName = samplingContext.name.toLowerCase();
