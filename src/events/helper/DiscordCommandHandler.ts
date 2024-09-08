@@ -7,7 +7,7 @@ import {
   softBanCommand, unbanCommand, FeedbackCommand
 } from "../../commands/discord";
 import { baseCommand } from "../../core/baseCommand";
-import { captureException, metrics } from "@sentry/node";
+import { captureException } from "@sentry/node";
 import { DiscordClient } from "../../core/DiscordClient";
 import { createHash, timingSafeEqual } from "crypto";
 
@@ -103,15 +103,6 @@ export class DiscordCommandHandler {
       }
 
     }
-
-    // Execute command, assuming all the checks are passed (and track their usages)
-    if(interaction.user.id !== "233955058604179457")
-      metrics.increment("discord.command.executed", 1, {
-        tags: {
-          command: interaction.commandName,
-          type: interaction instanceof CommandInteraction ? "slash" : "context"
-        }
-      });
       
     // Attach identifier to save the error ID on redis
     try { await command.execute(interaction); }
