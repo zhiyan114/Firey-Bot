@@ -19,7 +19,7 @@ if(process.env["COMMITHASH"] === undefined) {
 
 
 // Run Sentry first as required by the docs
-import { expressIntegration, extraErrorDataIntegration, prismaIntegration, rewriteFramesIntegration, init as sentryInit } from "@sentry/node";
+import { expressIntegration, extraErrorDataIntegration, prismaIntegration, redisIntegration, rewriteFramesIntegration, init as sentryInit } from "@sentry/node";
 import { DiscordAPIError } from "discord.js";
 import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
@@ -44,6 +44,7 @@ sentryInit({
       }
     }),
     prismaIntegration(),
+    redisIntegration(),
     expressIntegration(),
   ],
       
@@ -80,6 +81,13 @@ sentryInit({
     return evnt;
   },
   
+  beforeSendTransaction: (transaction) => {
+    // Ignore callback stuff from PubSubHubbub
+    if(new RegExp("/UwU/youtube/callback/").test(transaction.transaction ?? ""))
+      return null;
+    return transaction;
+  },
+  
   release: process.env['COMMITHASH'],
   environment: process.env["ENVIRONMENT"]
 });
@@ -92,6 +100,7 @@ import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { PrismaInstrumentation } from '@prisma/instrumentation';
+import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis";
 import { Resource } from '@opentelemetry/resources';
 
 const provider = new NodeTracerProvider({
@@ -103,7 +112,10 @@ provider.addSpanProcessor(new SimpleSpanProcessor(new OTLPTraceExporter()));
 
 registerInstrumentations({
   tracerProvider: provider,
-  instrumentations: [new PrismaInstrumentation()],
+  instrumentations: [
+    new PrismaInstrumentation(),
+    new IORedisInstrumentation(),
+  ],
 });
 provider.register();
 

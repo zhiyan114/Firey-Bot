@@ -1,7 +1,7 @@
 import { ChatUserstate } from "tmi.js";
 import { TwitchClient } from "../../core/TwitchClient";
 import { baseTCommand } from "../../core/baseCommand";
-import { captureException, metrics } from "@sentry/node";
+import { captureException } from "@sentry/node";
 import { DiscordCommand, LinkCommand, LurkCommand } from "../../commands/twitch";
 import { TwitchUser } from "../../utils/TwitchUser";
 
@@ -35,14 +35,6 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
     await eventData.client.say(eventData.channel, `@${eventData.user.username}, you do not have permission to use this command.`);
     return false;
   }
-
-  // Execute command, assuming all the checks are passed (and track their usages)
-  if(eventData.user.id !== "128185688")
-    metrics.increment("twitch.command.executed", 1, {
-      tags: {
-        command: cmdName
-      }
-    });
 
   try {
     await command.execute({
