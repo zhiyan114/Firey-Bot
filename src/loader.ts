@@ -2,6 +2,7 @@
 
 // Load Env Variable
 import {config as dotenv} from "dotenv";
+import {redisPrefix} from './config.json';
 dotenv();
 
 
@@ -44,7 +45,7 @@ sentryInit({
       }
     }),
     prismaIntegration(),
-    redisIntegration(),
+    redisIntegration({cachePrefixes: [redisPrefix]}),
     expressIntegration(),
   ],
       
