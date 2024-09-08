@@ -30,6 +30,13 @@ sentryInit({
   dsn: process.env["SENTRY_DSN"],
   maxValueLength: 1000,
   tracesSampleRate: 0.8,
+  tracesSampler: (samplingContext) => {
+    // We only care about database performance, not so much for the callback web services.
+    const ctxName = samplingContext.name.toLowerCase();
+    if(ctxName.includes("prisma") || ctxName.includes("redis"))
+      return 1;
+    return 0.6;
+  },
   
   integrations: [
     extraErrorDataIntegration({
@@ -54,7 +61,8 @@ sentryInit({
     const ignoreUrl = [
       "https://api.twitch.tv",
       "https://discord.com",
-      "https://cdn.discordapp.com"
+      "https://cdn.discordapp.com",
+      "https://o125145.ingest.sentry.io", // Why is sentry being added to BC?????
     ];
       
     // Ignore Http Breadcrumbs from the blacklisted url
