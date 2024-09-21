@@ -107,7 +107,7 @@ export class DiscordCommandHandler {
     // Attach identifier to save the error ID on redis
     try { await command.execute(interaction); }
     catch(ex) {
-      const id = captureException(ex);
+      const id = captureException(ex, {tags: {handled: "no"}});
       await this.client.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
 
       // Let the user know that something went wrong
