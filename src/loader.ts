@@ -29,13 +29,7 @@ import { Prisma } from "@prisma/client";
 sentryInit({
   dsn: process.env["SENTRY_DSN"],
   maxValueLength: 1000,
-  tracesSampler: (samplingContext) => {
-    // We only care about database performance, not so much for the callback web services.
-    const ctxName = samplingContext.name.toLowerCase();
-    if(ctxName.includes("prisma") || ctxName.includes("redis"))
-      return 1;
-    return 0.6;
-  },
+  tracesSampleRate: 1.0,
   
   integrations: [
     extraErrorDataIntegration({
@@ -83,9 +77,11 @@ sentryInit({
   
   beforeSend : (evnt, hint) => {
     const ex = hint.originalException;
+    
+    // Ignore the unhandlable errors
     if(ex instanceof DiscordAPIError && ex.code === APIErrors.UNKNOWN_INTERACTION) return null;
-    // Somehow prisma bugged and threw this error :/
     if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null;
+
     return evnt;
   },
   
