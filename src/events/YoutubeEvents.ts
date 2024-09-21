@@ -26,9 +26,14 @@ export class YoutubeEvents extends baseYEvent {
       await this.getChannel();
     if(data.published.getTime() < (new Date().getTime()) - 2592000000 || data.updated.getTime() < (new Date().getTime()) - 2592000000)
       return;
-    if(data.video.title.toLowerCase().includes("[live]")) // Prevent youtube stream from being posted
+    // Prevent youtube stream from being posted
+    if(data.video.title.toLowerCase().includes("[live]"))
+      return;
+    // Prevent duplicated video links from being posted, which somehow is an issue???
+    if(await this.client.discord.redis.get(`youtube:${data.video.id}`) != null)
       return;
 
+    await this.client.discord.redis.set(`youtube:${data.video.id}`, "true", "EX", 43200);
     console.log(`Video (${data.video.id}) was notified with Publish: ${data.published} and Updated: ${data.updated}`);
     this.NotificationChannel?.send({ content: `<@&${this.config.pingRoleID}> New Video is out!! Check it out here: ${data.video.link}` });
   }
