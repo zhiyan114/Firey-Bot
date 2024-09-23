@@ -1,13 +1,13 @@
 // This should handle all command callbacks and registerations
 
-import { ChannelType, CommandInteraction, ContextMenuCommandInteraction, REST, Routes } from "discord.js";
+import { ChannelType, CommandInteraction, ContextMenuCommandInteraction, GuildMember, REST, Routes } from "discord.js";
 import { 
   EvalCommand, TwitchChatRelay, TwitchVerify, banCommand,
   getPointsCommand, kickCommand, leaderboardCommand, purgeCommand,
   softBanCommand, unbanCommand, FeedbackCommand
 } from "../../commands/discord";
 import { baseCommand } from "../../core/baseCommand";
-import { captureException } from "@sentry/node";
+import { captureException, withScope } from "@sentry/node";
 import { DiscordClient } from "../../core/DiscordClient";
 import { createHash, timingSafeEqual } from "crypto";
 
@@ -105,17 +105,28 @@ export class DiscordCommandHandler {
     }
       
     // Attach identifier to save the error ID on redis
-    try { await command.execute(interaction); }
-    catch(ex) {
-      const id = captureException(ex);
-      await this.client.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
+    await withScope(async (scope) => {
+      const gMember = interaction.member as GuildMember | null;
+      scope.setUser({
+        id: interaction.user.id,
+        username: interaction.user.username,
+        isStaff: gMember?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? false,
+        isVerified: gMember?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? false
+      });
+      scope.setTag("platform", "discord");
 
-      // Let the user know that something went wrong
-      if(interaction.replied || interaction.deferred)
-        await interaction.followUp({content: "An error occur during command execution, please use the feedback command to submit a report.", ephemeral: true});
-      else
-        await interaction.reply({content: "An error occur during command execution, please use the feedback command to submit a report.", ephemeral: true});
-    }
+      try { await command.execute(interaction); }
+      catch(ex) {
+        const id = captureException(ex, {tags: {handled: "no"}});
+        await this.client.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
+
+        // Let the user know that something went wrong
+        if(interaction.replied || interaction.deferred)
+          await interaction.followUp({content: "An error occur during command execution, please use the feedback command to submit a report.", ephemeral: true});
+        else
+          await interaction.reply({content: "An error occur during command execution, please use the feedback command to submit a report.", ephemeral: true});
+      }
+    });    
   }
 
   public getCommandHash(): Buffer {
