@@ -82,7 +82,6 @@ export class FeedbackCommand extends baseCommand {
         return await interaction.followUp({content: "You took too long to submit the request!", ephemeral: true});
       captureException(ex);
     }
-    
   }
 
   private async processResult(result: ModalSubmitInteraction, allowDevDM: boolean, sentryEventID?: string) {
