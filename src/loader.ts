@@ -3,8 +3,8 @@
 // Load Env Variable
 import {config as dotenv} from "dotenv";
 import {redisPrefix} from './config.json';
+import {errors} from 'undici';
 dotenv();
-
 
 // Load Commit Hash
 import {existsSync, readFileSync} from "fs";
@@ -79,9 +79,11 @@ sentryInit({
     const ex = hint.originalException;
     
     // Ignore the unhandlable errors
-    if(ex instanceof DiscordAPIError && ex.code === APIErrors.UNKNOWN_INTERACTION) return null;
-    if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null;
-
+    if(ex instanceof DiscordAPIError && ex.code === APIErrors.UNKNOWN_INTERACTION) return null; // Nothing we can do, really...
+    if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null; // Somehow...
+    if(ex instanceof Error && ex.message.includes('Could not load the "sharp"')) return null; // Holy Hell, sharp...
+    if(ex instanceof errors.SocketError && ex.message === "other side closed") return null; // Probably just discord's WS downtime
+    
     return evnt;
   },
   
