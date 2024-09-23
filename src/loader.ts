@@ -20,16 +20,17 @@ if(process.env["COMMITHASH"] === undefined) {
 
 
 // Run Sentry first as required by the docs
-import { expressIntegration, extraErrorDataIntegration, prismaIntegration, redisIntegration, rewriteFramesIntegration, init as sentryInit } from "@sentry/node";
+import { expressIntegration, extraErrorDataIntegration, prismaIntegration, redisIntegration, rewriteFramesIntegration, SentryContextManager, init as sentryInit, validateOpenTelemetrySetup } from "@sentry/node";
 import { DiscordAPIError } from "discord.js";
 import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
 
-sentryInit({
+const sentryCli = sentryInit({
   dsn: process.env["SENTRY_DSN"],
   maxValueLength: 1000,
   tracesSampleRate: 1.0,
+  skipOpenTelemetrySetup: true,
   
   integrations: [
     extraErrorDataIntegration({
@@ -108,13 +109,20 @@ import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { PrismaInstrumentation } from '@prisma/instrumentation';
 import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis";
 import { Resource } from '@opentelemetry/resources';
+import {
+  SentrySpanProcessor,
+  SentryPropagator,
+  SentrySampler,
+} from '@sentry/opentelemetry';
 
 const provider = new NodeTracerProvider({
   resource: new Resource({
     [ATTR_SERVICE_NAME]: "Firey's Bot",
   }),
+  sampler: sentryCli ? new SentrySampler(sentryCli) : undefined
 });
 provider.addSpanProcessor(new SimpleSpanProcessor(new OTLPTraceExporter()));
+provider.addSpanProcessor(new SentrySpanProcessor());
 
 registerInstrumentations({
   tracerProvider: provider,
@@ -123,7 +131,11 @@ registerInstrumentations({
     new IORedisInstrumentation(),
   ],
 });
-provider.register();
+provider.register({
+  propagator: new SentryPropagator(),
+  contextManager: new SentryContextManager(),
+});
+validateOpenTelemetrySetup();
 
 // Start the main software
 //import './index';
