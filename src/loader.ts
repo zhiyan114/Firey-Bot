@@ -102,9 +102,7 @@ const sentryCli = sentryInit({
 
 // Load OpenTelemetry Config
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { PrismaInstrumentation } from '@prisma/instrumentation';
 import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis";
@@ -119,16 +117,17 @@ const provider = new NodeTracerProvider({
   resource: new Resource({
     [ATTR_SERVICE_NAME]: "Firey's Bot",
   }),
-  sampler: sentryCli ? new SentrySampler(sentryCli) : undefined
+  sampler: sentryCli ? new SentrySampler(sentryCli) : undefined,
 });
-provider.addSpanProcessor(new SimpleSpanProcessor(new OTLPTraceExporter()));
 provider.addSpanProcessor(new SentrySpanProcessor());
 
 registerInstrumentations({
   tracerProvider: provider,
   instrumentations: [
     new PrismaInstrumentation(),
-    new IORedisInstrumentation(),
+    new IORedisInstrumentation({
+      requireParentSpan: false,
+    }),
   ],
 });
 provider.register({
