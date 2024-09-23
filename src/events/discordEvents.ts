@@ -5,7 +5,7 @@ import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VertificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
-import { captureException } from "@sentry/node";
+import { captureException, withScope } from "@sentry/node";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
 
@@ -39,12 +39,23 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async createCommand(interaction: Interaction) {
-    if(interaction.isCommand() || interaction.isContextMenuCommand())
-      return await this.commandHandler.commandEvent(interaction);
+    await withScope(async (scope) => {
+      const gMember = interaction.member as GuildMember | null;
+      scope.setUser({
+        id: interaction.user.id,
+        username: interaction.user.username,
+        isStaff: gMember?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? false,
+        isVerified: gMember?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? false
+      });
+      scope.setTag("platform", "discord");
 
-    if(interaction.isButton())
-      if(interaction.customId === "RuleConfirm")
-        return await VertificationHandler(this.client, interaction);
+      if(interaction.isCommand() || interaction.isContextMenuCommand())
+        return await this.commandHandler.commandEvent(interaction);
+  
+      if(interaction.isButton())
+        if(interaction.customId === "RuleConfirm")
+          return await VertificationHandler(this.client, interaction);
+    });
   }
 
   private async messageCreate(message: Message) {
