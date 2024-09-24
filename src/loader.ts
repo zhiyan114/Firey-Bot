@@ -2,7 +2,6 @@
 
 // Load Env Variable
 import {config as dotenv} from "dotenv";
-import {redisPrefix} from './config.json';
 import {errors} from 'undici';
 dotenv();
 
@@ -20,7 +19,7 @@ if(process.env["COMMITHASH"] === undefined) {
 
 
 // Run Sentry first as required by the docs
-import { expressIntegration, extraErrorDataIntegration, prismaIntegration, redisIntegration, rewriteFramesIntegration, SentryContextManager, init as sentryInit, validateOpenTelemetrySetup } from "@sentry/node";
+import {  extraErrorDataIntegration, prismaIntegration, redisIntegration, rewriteFramesIntegration, SentryContextManager, init as sentryInit, validateOpenTelemetrySetup } from "@sentry/node";
 import { DiscordAPIError } from "discord.js";
 import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
@@ -46,8 +45,7 @@ const sentryCli = sentryInit({
       }
     }),
     prismaIntegration(),
-    redisIntegration({cachePrefixes: [redisPrefix]}),
-    expressIntegration(),
+    redisIntegration(),
   ],
       
   beforeBreadcrumb: (breadcrumb) => {
@@ -88,12 +86,12 @@ const sentryCli = sentryInit({
     return evnt;
   },
   
-  beforeSendTransaction: (transaction) => {
-    // Ignore callback stuff from PubSubHubbub
-    if(new RegExp("/UwU/youtube/callback/").test(transaction.transaction ?? ""))
-      return null;
-    return transaction;
-  },
+  // beforeSendTransaction: (transaction) => {
+  //   // Ignore callback stuff from PubSubHubbub
+  //   if(new RegExp("/UwU/youtube/callback/").test(transaction.transaction ?? ""))
+  //     return null;
+  //   return transaction;
+  // },
   
   release: process.env['COMMITHASH'],
   environment: process.env["ENVIRONMENT"]
