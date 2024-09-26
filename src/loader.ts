@@ -86,12 +86,14 @@ const sentryCli = sentryInit({
     return evnt;
   },
   
-  // beforeSendTransaction: (transaction) => {
-  //   // Ignore callback stuff from PubSubHubbub
-  //   if(new RegExp("/UwU/youtube/callback/").test(transaction.transaction ?? ""))
-  //     return null;
-  //   return transaction;
-  // },
+  beforeSendTransaction: (transaction) => {
+    // Ignore callback stuff from PubSubHubbub
+    if(new RegExp("/UwU/youtube/callback/").test(transaction.transaction ?? ""))
+      return null;
+    if(new RegExp("/test/").test(transaction.transaction ?? ""))
+      return null;
+    return transaction;
+  },
   
   release: process.env['COMMITHASH'],
   environment: process.env["ENVIRONMENT"]
