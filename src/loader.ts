@@ -19,7 +19,15 @@ if(process.env["COMMITHASH"] === undefined) {
 
 
 // Run Sentry first as required by the docs
-import {  expressIntegration, extraErrorDataIntegration, prismaIntegration, redisIntegration, rewriteFramesIntegration, SentryContextManager, init as sentryInit, validateOpenTelemetrySetup } from "@sentry/node";
+import { 
+  expressIntegration, 
+  extraErrorDataIntegration, 
+  prismaIntegration, 
+  redisIntegration, 
+  rewriteFramesIntegration, 
+  SentryContextManager, init as sentryInit, 
+  validateOpenTelemetrySetup 
+} from "@sentry/node";
 import { DiscordAPIError } from "discord.js";
 import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
@@ -91,7 +99,7 @@ const sentryCli = sentryInit({
     // Ignore callback stuff from PubSubHubbub
     if(new RegExp("/UwU/youtube/callback/").test(transaction.transaction ?? ""))
       return null;
-    if(new RegExp("/test").test(transaction.transaction ?? ""))
+    if(new RegExp("/test/").test(transaction.transaction ?? ""))
       return null;
     return transaction;
   },
