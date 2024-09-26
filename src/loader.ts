@@ -22,7 +22,7 @@ if(process.env["COMMITHASH"] === undefined) {
 import { 
   expressIntegration, 
   extraErrorDataIntegration, 
-  //prismaIntegration, 
+  prismaIntegration, 
   redisIntegration, 
   rewriteFramesIntegration, 
   init as sentryInit, 
@@ -37,7 +37,6 @@ sentryInit({
   dsn: process.env["SENTRY_DSN"],
   maxValueLength: 1000,
   tracesSampleRate: 1.0,
-  skipOpenTelemetrySetup: true,
   
   integrations: [
     extraErrorDataIntegration({
@@ -52,7 +51,7 @@ sentryInit({
         return frame;
       }
     }),
-    //prismaIntegration(),
+    prismaIntegration(),
     redisIntegration({cachePrefixes: [redisPrefix]}),
     expressIntegration(),
   ],
