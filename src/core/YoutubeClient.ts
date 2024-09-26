@@ -101,7 +101,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
   }
 
   public async start() {
-    this.express.get("/test", this.HealthRoute);
+    this.express.get("/test/", this.HealthRoute);
     await new Promise<void>((resolve) => this.httpServer.listen(this.port, ()=>resolve()));
     await this.discord.logger.sendLog({
       type: "Info",

@@ -19,7 +19,7 @@ if(process.env["COMMITHASH"] === undefined) {
 
 
 // Run Sentry first as required by the docs
-import {  extraErrorDataIntegration, prismaIntegration, redisIntegration, rewriteFramesIntegration, SentryContextManager, init as sentryInit, validateOpenTelemetrySetup } from "@sentry/node";
+import {  expressIntegration, extraErrorDataIntegration, prismaIntegration, redisIntegration, rewriteFramesIntegration, SentryContextManager, init as sentryInit, validateOpenTelemetrySetup } from "@sentry/node";
 import { DiscordAPIError } from "discord.js";
 import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
@@ -46,6 +46,7 @@ const sentryCli = sentryInit({
     }),
     prismaIntegration(),
     redisIntegration(),
+    expressIntegration(),
   ],
       
   beforeBreadcrumb: (breadcrumb) => {
@@ -138,6 +139,14 @@ validateOpenTelemetrySetup();
 
 // Start the main software
 //import './index';
+
+// Clear import caches. Some libraries like Prisma will be used by sentry before OpenTeletry is registered...
+const cacheClear = ["@prisma"];
+for(const cache of cacheClear) {
+  const cacheKey = Object.keys(require.cache).find(key => key.includes(cache));
+  if(cacheKey)
+    delete require.cache[cacheKey];
+}
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require("./index"); // Workaround for esbuild's non-order transpilation
