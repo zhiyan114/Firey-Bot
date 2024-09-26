@@ -1,13 +1,6 @@
 {
   "dependencies": {
     "@discordjs/rest": "^2.0.0",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.53.0",
-    "@opentelemetry/instrumentation": "^0.53.0",
-    "@opentelemetry/instrumentation-ioredis": "^0.43.0",
-    "@opentelemetry/resources": "^1.24.1",
-    "@opentelemetry/sdk-trace-base": "^1.24.1",
-    "@opentelemetry/sdk-trace-node": "^1.24.1",
-    "@opentelemetry/semantic-conventions": "^1.24.1",
     "@prisma/client": "^5.0.0",
     "@sentry/node": "^8.0.0",
     "axios": "^1.1.2",
@@ -36,7 +29,7 @@
   },
   "devDependencies": {
     "@sentry/cli": "^2.31.2",
-    "@types/express": "^4.17.13",
+    "@types/express": "^5.0.0",
     "@types/fluent-ffmpeg": "^2.1.21",
     "@types/jest": "^29.5.12",
     "@types/node": "^22.5.0",
