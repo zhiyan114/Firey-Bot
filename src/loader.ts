@@ -22,7 +22,7 @@ if(process.env["COMMITHASH"] === undefined) {
 import { 
   expressIntegration, 
   extraErrorDataIntegration, 
-  prismaIntegration, 
+  //prismaIntegration, 
   redisIntegration, 
   rewriteFramesIntegration, 
   init as sentryInit, 
@@ -52,7 +52,7 @@ sentryInit({
         return frame;
       }
     }),
-    prismaIntegration(),
+    //prismaIntegration(),
     redisIntegration({cachePrefixes: [redisPrefix]}),
     expressIntegration(),
   ],
