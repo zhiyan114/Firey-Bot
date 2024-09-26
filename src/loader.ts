@@ -31,6 +31,7 @@ import { DiscordAPIError } from "discord.js";
 import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
+import { redisPrefix } from './config.json';
 
 sentryInit({
   dsn: process.env["SENTRY_DSN"],
@@ -52,7 +53,7 @@ sentryInit({
       }
     }),
     prismaIntegration(),
-    redisIntegration(),
+    redisIntegration({cachePrefixes: [redisPrefix]}),
     expressIntegration(),
   ],
       
