@@ -25,15 +25,15 @@ import {
   prismaIntegration, 
   redisIntegration, 
   rewriteFramesIntegration, 
-  SentryContextManager, init as sentryInit, 
-  validateOpenTelemetrySetup 
+  init as sentryInit, 
 } from "@sentry/node";
 import { DiscordAPIError } from "discord.js";
 import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
+import { redisPrefix } from "./config.json";
 
-const sentryCli = sentryInit({
+sentryInit({
   dsn: process.env["SENTRY_DSN"],
   maxValueLength: 1000,
   tracesSampleRate: 1.0,
@@ -53,7 +53,7 @@ const sentryCli = sentryInit({
       }
     }),
     prismaIntegration(),
-    redisIntegration(),
+    redisIntegration({cachePrefixes: [redisPrefix]}),
     expressIntegration(),
   ],
       
@@ -108,42 +108,6 @@ const sentryCli = sentryInit({
   environment: process.env["ENVIRONMENT"]
 });
 
-
-// Load OpenTelemetry Config
-import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
-import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
-import { PrismaInstrumentation } from '@prisma/instrumentation';
-import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis";
-import { Resource } from '@opentelemetry/resources';
-import {
-  SentrySpanProcessor,
-  SentryPropagator,
-  SentrySampler,
-} from '@sentry/opentelemetry';
-
-const provider = new NodeTracerProvider({
-  resource: new Resource({
-    [ATTR_SERVICE_NAME]: "Firey's Bot",
-  }),
-  sampler: sentryCli ? new SentrySampler(sentryCli) : undefined,
-});
-provider.addSpanProcessor(new SentrySpanProcessor());
-
-registerInstrumentations({
-  tracerProvider: provider,
-  instrumentations: [
-    new PrismaInstrumentation(),
-    new IORedisInstrumentation({
-      requireParentSpan: false,
-    }),
-  ],
-});
-provider.register({
-  propagator: new SentryPropagator(),
-  contextManager: new SentryContextManager(),
-});
-validateOpenTelemetrySetup();
 
 // Start the main software
 //import './index';
