@@ -31,7 +31,7 @@ import { DiscordAPIError } from "discord.js";
 import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
-import { redisPrefix } from './config.json';
+import { redisPrefix } from "./config.json";
 
 sentryInit({
   dsn: process.env["SENTRY_DSN"],
@@ -107,6 +107,7 @@ sentryInit({
   release: process.env['COMMITHASH'],
   environment: process.env["ENVIRONMENT"]
 });
+
 
 // Start the main software
 //import './index';
