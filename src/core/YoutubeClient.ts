@@ -5,6 +5,7 @@ import { baseClient } from "./baseClient";
 import http from 'http';
 import https from 'https';
 import { YoutubeEvents } from "../events";
+import { setupExpressErrorHandler } from "@sentry/node";
 
 /*
 Example Reference
@@ -91,7 +92,8 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
     this.express.use(config.Path, this.listener());
     this.httpServer = config.https ? https.createServer(this.express) : http.createServer(this.express);
     
-    // Add express integration to Sentry (Removed, otherwise add it below here)
+    // Add express integration to Sentry
+    setupExpressErrorHandler(this.express);
 
     // Register events
     new YoutubeEvents(this)
@@ -99,7 +101,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
   }
 
   public async start() {
-    this.express.get("/test", this.HealthRoute);
+    this.express.get("/test/", this.HealthRoute);
     await new Promise<void>((resolve) => this.httpServer.listen(this.port, ()=>resolve()));
     await this.discord.logger.sendLog({
       type: "Info",
