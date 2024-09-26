@@ -90,7 +90,7 @@ const sentryCli = sentryInit({
     // Ignore callback stuff from PubSubHubbub
     if(new RegExp("/UwU/youtube/callback/").test(transaction.transaction ?? ""))
       return null;
-    if(new RegExp("/test/").test(transaction.transaction ?? ""))
+    if(new RegExp("/test").test(transaction.transaction ?? ""))
       return null;
     return transaction;
   },
