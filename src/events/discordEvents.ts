@@ -8,6 +8,7 @@ import { APIErrors } from "../utils/discordErrorCode";
 import { captureException, withScope } from "@sentry/node";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
+import { randomBytes } from "crypto";
 
 export class DiscordEvents extends baseEvent {
   client: DiscordClient;
@@ -40,6 +41,12 @@ export class DiscordEvents extends baseEvent {
 
   private async createCommand(interaction: Interaction) {
     await withScope(async (scope) => {
+      scope.setTransactionName("Discord Interaction Handler");
+      scope.setPropagationContext({
+        traceId: randomBytes(16).toString("hex"),
+        spanId: randomBytes(16).toString("hex"),
+      });
+      
       const gMember = interaction.member as GuildMember | null;
       scope.setUser({
         id: interaction.user.id,
@@ -52,6 +59,7 @@ export class DiscordEvents extends baseEvent {
 
       if(interaction.isCommand() || interaction.isContextMenuCommand())
         return await this.commandHandler.commandEvent(interaction);
+        
   
       if(interaction.isButton())
         if(interaction.customId === "RuleConfirm")
@@ -61,6 +69,10 @@ export class DiscordEvents extends baseEvent {
 
   private async messageCreate(message: Message) {
     await withScope(async (scope) => {
+      scope.setPropagationContext({
+        traceId: randomBytes(16).toString("hex"),
+        spanId: randomBytes(16).toString("hex"),
+      });
       scope.setUser({
         id: message.author.id,
         username: message.author.username,
@@ -87,6 +99,10 @@ export class DiscordEvents extends baseEvent {
 
   private async guildMemberAdd(member: GuildMember) {
     await withScope(async (scope) => {
+      scope.setPropagationContext({
+        traceId: randomBytes(16).toString("hex"),
+        spanId: randomBytes(16).toString("hex"),
+      });
       scope.setUser({
         id: member.user.id,
         username: member.user.username,
@@ -132,6 +148,10 @@ export class DiscordEvents extends baseEvent {
 
   private async userUpdate(oldUser: User | PartialUser, newUser: User) {
     await withScope(async (scope) => {
+      scope.setPropagationContext({
+        traceId: randomBytes(16).toString("hex"),
+        spanId: randomBytes(16).toString("hex"),
+      });
       scope.setUser({
         id: newUser.id,
         username: newUser.username,
@@ -164,6 +184,10 @@ export class DiscordEvents extends baseEvent {
 
   private async voiceStateUpdate(old: VoiceState, now: VoiceState) {
     await withScope(async (scope) => {
+      scope.setPropagationContext({
+        traceId: randomBytes(16).toString("hex"),
+        spanId: randomBytes(16).toString("hex"),
+      });
       scope.setUser({
         id: now.member?.user.id,
         username: now.member?.user.username,

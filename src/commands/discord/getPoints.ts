@@ -1,4 +1,4 @@
-import { ApplicationCommandType, ContextMenuCommandBuilder, EmbedBuilder, UserContextMenuCommandInteraction } from "discord.js";
+import { ContextMenuCommandBuilder, EmbedBuilder, UserContextMenuCommandInteraction } from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
@@ -16,7 +16,7 @@ export class getPointsCommand extends baseCommand {
     this.client = client;
     this.metadata = new ContextMenuCommandBuilder()
       .setName("getpoints")
-      .setType(ApplicationCommandType.User);
+      .setType(2); // Workaround for ApplicationCommandType.User since it's throwing type error despite being correct??
   }
 
   public async execute(interaction: UserContextMenuCommandInteraction) {
