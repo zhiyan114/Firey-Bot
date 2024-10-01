@@ -52,7 +52,7 @@ sentryInit({
       }
     }),
     prismaIntegration(),
-    redisIntegration({cachePrefixes: [redisPrefix]}),
+    redisIntegration({cachePrefixes: [`${redisPrefix}:`]}),
     expressIntegration(),
   ],
       
