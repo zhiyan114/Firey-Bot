@@ -39,7 +39,6 @@ sentryInit({
   dsn: process.env["SENTRY_DSN"],
   maxValueLength: 1000,
   tracesSampleRate: 1.0,
-  debug: true,
   
   integrations: [
     extraErrorDataIntegration({
