@@ -102,17 +102,17 @@ export class DiscordCommandHandler {
         }
       }
     }
-
-    startSpan({
+    await startSpan({
       name: `Discord Command: ${command.metadata.name}`,
       op: `discord.cmd.${command.metadata.name}`,
     }, async () => {
-
-      try { await command.execute(interaction); }
+      try {
+        await command.execute(interaction);
+      }
       catch(ex) {
         const id = captureException(ex, {tags: {handled: "no"}});
         await this.client.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
-
+  
         // Let the user know that something went wrong
         if(interaction.replied)
           await interaction.followUp({content: "An error occur during command execution, please use the feedback command to submit a report.", ephemeral: true});
@@ -121,7 +121,7 @@ export class DiscordCommandHandler {
         else
           await interaction.reply({content: "An error occur during command execution, please use the feedback command to submit a report.", ephemeral: true});
       }
-    }); 
+    });
   }
 
   public getCommandHash(): Buffer {

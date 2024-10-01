@@ -43,6 +43,7 @@ const out = esbuild.buildSync({
   banner: { js: `/* 2022-${start.getFullYear()} © zhiyan114 GPLv3 UwU | Build: ${commitHash} */` },
   outdir: "dist",
 });
+
 if(out.errors.length > 0)
   console.error(`Build Failed: ${JSON.stringify(out.errors)}`);
 const end = Date.now();

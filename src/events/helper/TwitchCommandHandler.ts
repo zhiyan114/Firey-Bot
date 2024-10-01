@@ -36,7 +36,7 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
     return false;
   }
   
-  startSpan({
+  await startSpan({
     name: `Twitch Command: ${command.name}`,
     op: `twitch.cmd.${command.name}`,
   }, async () => {
