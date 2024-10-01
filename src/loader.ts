@@ -17,6 +17,8 @@ if(process.env["COMMITHASH"] === undefined) {
     console.warn("No commit hash found!");
 }
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+require("./index"); // Workaround for esbuild's non-order transpilation
 
 // Run Sentry first as required by the docs
 import { 
@@ -37,6 +39,7 @@ sentryInit({
   dsn: process.env["SENTRY_DSN"],
   maxValueLength: 1000,
   tracesSampleRate: 1.0,
+  debug: true,
   
   integrations: [
     extraErrorDataIntegration({
@@ -109,7 +112,4 @@ sentryInit({
 
 
 // Start the main software
-import './index';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-//require("./index"); // Workaround for esbuild's non-order transpilation
+//import './index';
