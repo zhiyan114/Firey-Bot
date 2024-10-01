@@ -22,13 +22,12 @@ export class TwitchEvents extends baseTEvent {
     if(self) return;
 
     await withScope(async (scope) => {
+      if(!userstate["user-id"] || !userstate['username']) return;
+
       scope.setPropagationContext({
         traceId: randomBytes(16).toString("hex"),
         spanId: randomBytes(16).toString("hex"),
       });
-
-      if(!userstate["user-id"] || !userstate['username']) return;
-
       scope.setUser({
         id: userstate["user-id"],
         username: userstate.username,
