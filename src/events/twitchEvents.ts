@@ -4,6 +4,7 @@ import { baseTEvent } from "../core/baseEvent";
 import { TwitchUser } from "../utils/TwitchUser";
 import { processCommand } from "./helper/TwitchCommandHandler";
 import { withScope } from "@sentry/node";
+import { randomBytes } from "crypto";
 
 
 export class TwitchEvents extends baseTEvent {
@@ -21,9 +22,12 @@ export class TwitchEvents extends baseTEvent {
     if(self) return;
 
     await withScope(async (scope) => {
-
       if(!userstate["user-id"] || !userstate['username']) return;
 
+      scope.setPropagationContext({
+        traceId: randomBytes(16).toString("hex"),
+        spanId: randomBytes(16).toString("hex"),
+      });
       scope.setUser({
         id: userstate["user-id"],
         username: userstate.username,

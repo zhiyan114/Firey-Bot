@@ -52,7 +52,7 @@ sentryInit({
       }
     }),
     prismaIntegration(),
-    redisIntegration({cachePrefixes: [redisPrefix]}),
+    redisIntegration({cachePrefixes: [`${redisPrefix}:`]}),
     expressIntegration(),
   ],
       
@@ -109,15 +109,7 @@ sentryInit({
 
 
 // Start the main software
-//import './index';
-
-// Clear import caches. Some libraries like Prisma will be used by sentry before OpenTeletry is registered...
-const cacheClear = ["@prisma"];
-for(const cache of cacheClear) {
-  const cacheKey = Object.keys(require.cache).find(key => key.includes(cache));
-  if(cacheKey)
-    delete require.cache[cacheKey];
-}
+import './index';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-require("./index"); // Workaround for esbuild's non-order transpilation
+//require("./index"); // Workaround for esbuild's non-order transpilation
