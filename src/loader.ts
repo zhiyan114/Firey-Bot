@@ -2,7 +2,6 @@
 
 // Load Env Variable
 import {config as dotenv} from "dotenv";
-import {errors} from 'undici';
 dotenv();
 
 // Load Commit Hash
@@ -16,9 +15,6 @@ if(process.env["COMMITHASH"] === undefined) {
   else
     console.warn("No commit hash found!");
 }
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-require("./index"); // Workaround for esbuild's non-order transpilation
 
 // Run Sentry first as required by the docs
 import { 
@@ -34,6 +30,7 @@ import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
 import { redisPrefix } from "./config.json";
+import {errors} from 'undici';
 
 sentryInit({
   dsn: process.env["SENTRY_DSN"],
@@ -109,6 +106,8 @@ sentryInit({
   environment: process.env["ENVIRONMENT"]
 });
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+require("./index"); // Workaround for esbuild's non-order transpilation
 
 // Start the main software
 //import './index';
