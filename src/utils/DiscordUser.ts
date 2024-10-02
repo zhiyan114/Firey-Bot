@@ -1,6 +1,6 @@
 import { APIEmbedField, ColorResolvable, DiscordAPIError, EmbedBuilder, User } from "discord.js";
 import { APIErrors } from "./discordErrorCode";
-import { captureException } from "@sentry/node";
+import { captureException, startSpan } from "@sentry/node";
 import { Prisma } from "@prisma/client";
 import { createHash } from "crypto";
 import { DiscordClient } from "../core/DiscordClient";
@@ -72,26 +72,32 @@ export class DiscordUser {
      * @returns {cacheData | undefined} returns undefined if the user does not exist in the database, otherwise returns cacheData
      */
   public async getCacheData(): Promise<cacheData | undefined> {
-    // Check if the record already exist in redis
-    if(await this.cacheExists()) {
+    return await startSpan({
+      name: "Get Discord Cache Data",
+      op: "discordUser.getCacheData",
+      onlyIfParent: true,
+    }, async()=>{
+      // Check if the record already exist in redis
+      if(await this.cacheExists()) {
       // Pull it up and use it
-      const data = await this.client.redis.hgetall(this.cachekey);
-      return {
-        rulesconfirmedon: data.rulesconfirmedon ? new Date(data.rulesconfirmedon) : undefined,
-        points: data.points ? Number(data.points) : undefined,
-        lastgrantedpoint: data.lastgrantedpoint ? new Date(data.lastgrantedpoint) : undefined,
+        const data = await this.client.redis.hgetall(this.cachekey);
+        return {
+          rulesconfirmedon: data.rulesconfirmedon ? new Date(data.rulesconfirmedon) : undefined,
+          points: data.points ? Number(data.points) : undefined,
+          lastgrantedpoint: data.lastgrantedpoint ? new Date(data.lastgrantedpoint) : undefined,
+        };
+      }
+      // Data doesn't exist in redis, Update the cache
+      const dbData = await this.getUserFromDB();
+      if(!dbData) return;
+      const finalData: cacheData = {
+        rulesconfirmedon: dbData.rulesconfirmedon ?? undefined,
+        points: dbData.points,
+        lastgrantedpoint: dbData.lastgrantedpoint,
       };
-    }
-    // Data doesn't exist in redis, Update the cache
-    const dbData = await this.getUserFromDB();
-    if(!dbData) return;
-    const finalData: cacheData = {
-      rulesconfirmedon: dbData.rulesconfirmedon ?? undefined,
-      points: dbData.points,
-      lastgrantedpoint: dbData.lastgrantedpoint,
-    };
-    await this.updateCacheData(finalData);
-    return finalData;
+      await this.updateCacheData(finalData);
+      return finalData;
+    });
   }
   /**
      * Update the current cache with new data (use updateUserData instead)
@@ -99,16 +105,21 @@ export class DiscordUser {
      *
      */
   public async updateCacheData(newData: cacheData) {
-    // Clear out all the undefined and null objects
-    const filteredData: {[key: string]: string} = {};
-    if(newData.rulesconfirmedon !== undefined) filteredData["rulesconfirmedon"] = newData.rulesconfirmedon.toString();
-    if(newData.points !== undefined) filteredData["points"] = newData.points.toString();
-    if(newData.lastgrantedpoint !== undefined) filteredData["lastgrantedpoint"] = newData.lastgrantedpoint.toString();
-    // Update the cache   
-    await this.client.redis.hset(this.cachekey, filteredData);
-    // set redis expire key in 5 hours
-    await this.client.redis.expire(this.cachekey, 18000);
-    return;
+    await startSpan({
+      name: "Update Discord Cache Data",
+      op: "discordUser.updateCacheData",
+      onlyIfParent: true,
+    }, async()=>{
+      // Clear out all the undefined and null objects
+      const filteredData: {[key: string]: string} = {};
+      if(newData.rulesconfirmedon !== undefined) filteredData["rulesconfirmedon"] = newData.rulesconfirmedon.toString();
+      if(newData.points !== undefined) filteredData["points"] = newData.points.toString();
+      if(newData.lastgrantedpoint !== undefined) filteredData["lastgrantedpoint"] = newData.lastgrantedpoint.toString();
+      // Update the cache   
+      await this.client.redis.hset(this.cachekey, filteredData);
+      // set redis expire key in 5 hours
+      await this.client.redis.expire(this.cachekey, 18000);
+    });
   }
   /**
      * Get the user data from the database directly, should only be used when the cache didn't have the data.
@@ -142,32 +153,38 @@ export class DiscordUser {
      * @returns whether the operation was successful or not
      */
   public async updateUserData(data?: updateUserData) {
-    try {
-      const newData = await this.client.prisma.members.update({
-        data: {
-          username: data ? data.username : this.getUsername(),
-          displayname: data ? data.displayName : this.user.displayName,
-          rulesconfirmedon: data?.rulesconfirmedon,
-        },
-        where: {
-          id: this.user.id
-        }
-      });
-      await this.updateCacheData({
-        rulesconfirmedon: newData.rulesconfirmedon ?? undefined,
-        points: newData.points,
-        lastgrantedpoint: newData.lastgrantedpoint
-      });
-      return true;
-    } catch(ex) {
-      if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2025") {
-        // User not found, create one
-        await this.createNewUser(data?.rulesconfirmedon);
+    await startSpan({
+      name: "Update Discord User Data",
+      op: "discordUser.updateUserData",
+      onlyIfParent: true,
+    }, async() => {
+      try {
+        const newData = await this.client.prisma.members.update({
+          data: {
+            username: data ? data.username : this.getUsername(),
+            displayname: data ? data.displayName : this.user.displayName,
+            rulesconfirmedon: data?.rulesconfirmedon,
+          },
+          where: {
+            id: this.user.id
+          }
+        });
+        await this.updateCacheData({
+          rulesconfirmedon: newData.rulesconfirmedon ?? undefined,
+          points: newData.points,
+          lastgrantedpoint: newData.lastgrantedpoint
+        });
         return true;
+      } catch(ex) {
+        if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2025") {
+          // User not found, create one
+          await this.createNewUser(data?.rulesconfirmedon);
+          return true;
+        }
+        captureException(ex);
+        return false;
       }
-      captureException(ex);
-      return false;
-    }
+    });
   }
   /**
      * create the user in the database directly
@@ -227,30 +244,41 @@ export class DiscordUser {
     * @param metadata Additional data to be added for sendLog
     */
   public async actionLog(opt: ActionLogOpt) {
-    try {
-      await this.client.prisma.modlog.create({
-        data: {
-          targetid: opt.target?.user.id,
-          moderatorid: this.user.id,
-          action: opt.actionName,
-          reason: opt.reason,
-          metadata: opt.metadata
-        }
-      });
-    } catch(ex) {
-      if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2003") 
-        await this.client.logger.sendLog({
-          type: "Warning",
-          message: "actionLog failed due to missing target in the database",
-          ...opt.metadata
+    await startSpan({
+      name: "Action Logger",
+      op: "discordUser.actionLog",
+      onlyIfParent: true,
+    }, async(span)=>{
+      try {
+        await this.client.prisma.modlog.create({
+          data: {
+            targetid: opt.target?.user.id,
+            moderatorid: this.user.id,
+            action: opt.actionName,
+            reason: opt.reason,
+            metadata: opt.metadata
+          }
         });
-      else captureException(ex);
-    }
-    
-    await this.client.logger.sendLog({
-      type: "Interaction",
-      message: opt.message,
-      ...opt.metadata
+      } catch(ex) {
+        span.setStatus({
+          code: 2,
+          message: "Prisma experience error when creating log"
+        });
+
+        if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2003")
+          await this.client.logger.sendLog({
+            type: "Warning",
+            message: "actionLog failed due to missing target in the database",
+            ...opt.metadata
+          });
+        else captureException(ex);
+      }
+      
+      await this.client.logger.sendLog({
+        type: "Interaction",
+        message: opt.message,
+        ...opt.metadata
+      });
     });
   }
 }
@@ -286,7 +314,6 @@ class UserEconomy {
      * Grant the user certain amount of points
      * @param options Customize the way points are granted
      * @param updateTimestampOnly Whether to only update the timestamp of the granted points or not (useful for auto-granting point system to deter spammers)
-     * @returns whether the points has been successfully granted or not
      */
   public async grantPoints(points: number) {
     // User exist and condition passes, grant the user the points
@@ -303,7 +330,6 @@ class UserEconomy {
       points: newData.points,
       lastgrantedpoint: newData.lastgrantedpoint
     });
-    return true;
   }
   /**
      * Deduct certain amount of points from the user
