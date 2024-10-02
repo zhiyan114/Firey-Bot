@@ -40,7 +40,7 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
     name: `Twitch Command: ${command.name}`,
     op: `twitch.cmd.${command.name}`,
     parentSpan: null,
-  }, async () => {
+  }, async (span) => {
     try {
       await command.execute({
         channel: eventData.channel,
@@ -51,6 +51,10 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
         args
       });
     } catch(ex) {
+      span.setStatus({
+        code: 2,
+        message: "Command Execution Error"
+      });
       // Feedback events are based on discord ID so there's that...
       const eventID = captureException(ex, {tags: {handled: "no"}});
       const dClient = eventData.client.discord;
