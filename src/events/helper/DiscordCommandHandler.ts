@@ -105,6 +105,7 @@ export class DiscordCommandHandler {
     await startSpan({
       name: `Discord Command: ${command.metadata.name}`,
       op: `discord.cmd.${command.metadata.name}`,
+      parentSpan: null,
     }, async () => {
       try {
         await command.execute(interaction);
