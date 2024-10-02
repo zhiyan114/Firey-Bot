@@ -106,11 +106,15 @@ export class DiscordCommandHandler {
       name: `Discord Command: ${command.metadata.name}`,
       op: `discord.cmd.${command.metadata.name}`,
       parentSpan: null,
-    }, async () => {
+    }, async (span) => {
       try {
         await command.execute(interaction);
       }
       catch(ex) {
+        span.setStatus({
+          code: 2,
+          message: "Command Execution Error"
+        });
         const id = captureException(ex, {tags: {handled: "no"}});
         await this.client.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
   

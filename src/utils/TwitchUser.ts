@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { captureException } from "@sentry/node";
+import { captureException, startSpan } from "@sentry/node";
 import { DiscordUser } from "./DiscordUser";
 import { createHash } from "crypto";
 import { DiscordClient } from "../core/DiscordClient";
@@ -42,34 +42,40 @@ export class TwitchUser {
      * @returns Cache Data or undefined if the user does not exist
      */
   public async getCacheData(): Promise<cacheData | undefined> {
-    // Check if the record already exist in redis
-    if(await this.cacheExists()) {
+    return await startSpan({
+      name: "Twitch User Cache",
+      op: "twitch.getCacheData",
+      onlyIfParent: true,
+    }, async() => {
+      // Check if the record already exist in redis
+      if(await this.cacheExists()) {
       // Pull it up and use it
-      const data = await this.client.redis.hgetall(this.cachekey);
-      if(data.memberid === "-1")
+        const data = await this.client.redis.hgetall(this.cachekey);
+        if(data.memberid === "-1")
+          return;
+        return {
+          memberid: data.memberid,
+          username: data.username,
+          verified: (data.verified !== undefined) ? data.verified === "true" : undefined,
+        };
+      }
+      // Data doesn't exist in redis, Update the cache
+      const dbData = await this.getUserFromDB();
+      if(!dbData) {
+        const guestUserData = {
+          memberid: "-1",
+        };
+        await this.updateDataCache(guestUserData);
         return;
-      return {
-        memberid: data.memberid,
-        username: data.username,
-        verified: (data.verified !== undefined) ? data.verified === "true" : undefined,
+      }
+      const finalData: cacheData = {
+        memberid: dbData.memberid,
+        username: dbData.username,
+        verified: dbData.verified
       };
-    }
-    // Data doesn't exist in redis, Update the cache
-    const dbData = await this.getUserFromDB();
-    if(!dbData) {
-      const guestUserData = {
-        memberid: "-1",
-      };
-      await this.updateDataCache(guestUserData);
-      return;
-    }
-    const finalData: cacheData = {
-      memberid: dbData.memberid,
-      username: dbData.username,
-      verified: dbData.verified
-    };
-    await this.updateDataCache(finalData);
-    return finalData;
+      await this.updateDataCache(finalData);
+      return finalData;
+    });
   }
   /**
      * Checks if there is already a cache record for this user
@@ -87,16 +93,21 @@ export class TwitchUser {
         username?: string,
         verified?: boolean,
     }): Promise<void> {
-    // Clear out all the undefined and null objects
-    const filteredData: {[key: string]: string} = {};
-    if(newData.memberid !== undefined) filteredData["memberid"] = newData.memberid;
-    if(newData.username !== undefined) filteredData["username"] = newData.username;
-    if(newData.verified !== undefined) filteredData["verified"] = newData.verified.toString();
-    // Update the cache   
-    await this.client.redis.hset(this.cachekey, filteredData);
-    // set redis expire key in 3 hours
-    await this.client.redis.expire(this.cachekey, 10800);
-    return;
+    await startSpan({
+      name: "Twitch User Cache Update",
+      op: "TwitchUser.updateDataCache",
+      onlyIfParent: true,
+    }, async() => {
+      // Clear out all the undefined and null objects
+      const filteredData: {[key: string]: string} = {};
+      if(newData.memberid !== undefined) filteredData["memberid"] = newData.memberid;
+      if(newData.username !== undefined) filteredData["username"] = newData.username;
+      if(newData.verified !== undefined) filteredData["verified"] = newData.verified.toString();
+      // Update the cache   
+      await this.client.redis.hset(this.cachekey, filteredData);
+      // set redis expire key in 3 hours
+      await this.client.redis.expire(this.cachekey, 10800);
+    });
   }
   /**
      * Pull user data directly from PostgreSQL Database. Should only be used if the record does not already exist in cache.
@@ -139,32 +150,38 @@ export class TwitchUser {
      * @returns {boolean} The result of the operation. False means unsuccessful, while true means successful
      */
   public async updateUser(data: updateUser): Promise<boolean> {
-    try {
-      await this.client.prisma.twitch.update({
-        data: {
+    return await startSpan({
+      name: "Twitch User Update",
+      op: "TwitchUser.updateUser",
+      onlyIfParent: true,
+    }, async() => {
+      try {
+        await this.client.prisma.twitch.update({
+          data: {
+            memberid: data.memberid,
+            username: data.username,
+            verified: data.verified,
+          },
+          where: {
+            id: this.userid
+          }
+        });
+        await this.updateDataCache({
           memberid: data.memberid,
           username: data.username,
-          verified: data.verified,
-        },
-        where: {
-          id: this.userid
-        }
-      });
-      await this.updateDataCache({
-        memberid: data.memberid,
-        username: data.username,
-        verified: data.verified
-      });
-      return true;
-    } catch(ex) {
-      // Record already existed (if add failure) or Record does not exist (if update failure)
-      if(ex instanceof Prisma.PrismaClientKnownRequestError)
-        if(["P2002", "P2001"].find(v => v === (ex as Prisma.PrismaClientKnownRequestError).code))
-          return false;
-      // Some other errors, log it to sentry
-      captureException(ex);
-      return false;
-    }
+          verified: data.verified
+        });
+        return true;
+      } catch(ex) {
+        // Record already existed (if add failure) or Record does not exist (if update failure)
+        if(ex instanceof Prisma.PrismaClientKnownRequestError)
+          if(["P2002", "P2001"].find(v => v === (ex as Prisma.PrismaClientKnownRequestError).code))
+            return false;
+        // Some other errors, log it to sentry
+        captureException(ex);
+        return false;
+      }
+    });
   }
   public async getDiscordUser(): Promise<DiscordUser | undefined> {
     const data = await this.getCacheData();
