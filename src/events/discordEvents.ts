@@ -5,10 +5,9 @@ import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VertificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
-import { captureException, withScope } from "@sentry/node";
+import { captureException, startNewTrace, withIsolationScope } from "@sentry/node";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
-import { randomBytes } from "crypto";
 
 export class DiscordEvents extends baseEvent {
   client: DiscordClient;
@@ -40,39 +39,31 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async createCommand(interaction: Interaction) {
-    await withScope(async (scope) => {
-      scope.setTransactionName("Discord Interaction Handler");
-      scope.setPropagationContext({
-        traceId: randomBytes(16).toString("hex"),
-        spanId: randomBytes(16).toString("hex"),
-      });
-      
-      const gMember = interaction.member as GuildMember | null;
-      scope.setUser({
-        id: interaction.user.id,
-        username: interaction.user.username,
-        isStaff: gMember?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? "unknown",
-        isVerified: gMember?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? "unknown"
-      });
-      scope.setTag("platform", "discord");
-      scope.setTag("eventType", "interactionCreate");
+    return await withIsolationScope(async (scope) => {
+      await startNewTrace(async () => {
+        const gMember = interaction.member as GuildMember | null;
+        scope.setUser({
+          id: interaction.user.id,
+          username: interaction.user.username,
+          isStaff: gMember?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? "unknown",
+          isVerified: gMember?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? "unknown"
+        });
+        scope.setTag("platform", "discord");
+        scope.setTag("eventType", "interactionCreate");
 
-      if(interaction.isCommand() || interaction.isContextMenuCommand())
-        return await this.commandHandler.commandEvent(interaction);
+        if(interaction.isCommand() || interaction.isContextMenuCommand())
+          return await this.commandHandler.commandEvent(interaction);
         
   
-      if(interaction.isButton())
-        if(interaction.customId === "RuleConfirm")
-          return await VertificationHandler(this.client, interaction);
+        if(interaction.isButton())
+          if(interaction.customId === "RuleConfirm")
+            return await VertificationHandler(this.client, interaction);
+      });
     });
   }
 
   private async messageCreate(message: Message) {
-    await withScope(async (scope) => {
-      scope.setPropagationContext({
-        traceId: randomBytes(16).toString("hex"),
-        spanId: randomBytes(16).toString("hex"),
-      });
+    await withIsolationScope(async (scope) => {
       scope.setUser({
         id: message.author.id,
         username: message.author.username,
@@ -82,27 +73,25 @@ export class DiscordEvents extends baseEvent {
       scope.setTag("platform", "discord");
       scope.setTag("eventType", "messageCreate");
 
-      // Channel Checks
-      if(message.author.bot) return;
-      const channel = message.channel;
-      if(channel.type !== ChannelType.GuildText) return;
+      return await startNewTrace(async () => {
+        // Channel Checks
+        if(message.author.bot) return;
+        const channel = message.channel;
+        if(channel.type !== ChannelType.GuildText) return;
 
-      // Place where user wont be awarded with points
-      const noPointsConf = this.client.config.noPoints;
-      if(noPointsConf.channel.length > 0 && noPointsConf.channel.find(c=>c===channel.id)) return;
-      if(noPointsConf.category.length > 0 && noPointsConf.category.find(c=>channel.parentId === c)) return;
+        // Place where user wont be awarded with points
+        const noPointsConf = this.client.config.noPoints;
+        if(noPointsConf.channel.length > 0 && noPointsConf.channel.find(c=>c===channel.id)) return;
+        if(noPointsConf.category.length > 0 && noPointsConf.category.find(c=>channel.parentId === c)) return;
 
-      // Grant points
-      await (new DiscordUser(this.client, message.author)).economy.chatRewardPoints(message.content);
+        // Grant points
+        await (new DiscordUser(this.client, message.author)).economy.chatRewardPoints(message.content);
+      });
     });
   }
 
   private async guildMemberAdd(member: GuildMember) {
-    await withScope(async (scope) => {
-      scope.setPropagationContext({
-        traceId: randomBytes(16).toString("hex"),
-        spanId: randomBytes(16).toString("hex"),
-      });
+    await withIsolationScope(async (scope) => {
       scope.setUser({
         id: member.user.id,
         username: member.user.username,
@@ -112,46 +101,44 @@ export class DiscordEvents extends baseEvent {
       scope.setTag("platform", "discord");
       scope.setTag("eventType", "guildMemberAdd");
 
-      if(member.user.bot) return;
-      const user = new DiscordUser(this.client, member.user);
-      const channel = await this.client.channels.fetch(this.client.config.welcomeChannelID);
-      if(!channel || channel.type !== ChannelType.GuildText) return;
+      return await startNewTrace(async () => {
+        if(member.user.bot) return;
+        const user = new DiscordUser(this.client, member.user);
+        const channel = await this.client.channels.fetch(this.client.config.welcomeChannelID);
+        if(!channel || channel.type !== ChannelType.GuildText) return;
 
-      // Create new user entry
-      try {
-        await user.createNewUser();
-      } catch(ex) {
-        if(!(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002"))
-          captureException(ex);
-      }
+        // Create new user entry
+        try {
+          await user.createNewUser();
+        } catch(ex) {
+          if(!(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002"))
+            captureException(ex);
+        }
 
-      // Send welcome message to user
-      const embed = new EmbedBuilder()
-        .setColor("#00FFFF")
-        .setTitle("Welcome to the server!")
-        .setDescription(`Welcome to the Derg server, ${member.user.username}! Please read the rules and press the confirmation button to get full access.`);
-      try {
-        await member.send({embeds: [embed]});
-      } catch(ex) {
-        if(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)
-          await channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`, embeds: [embed]});
-        else captureException(ex);
-      }
+        // Send welcome message to user
+        const embed = new EmbedBuilder()
+          .setColor("#00FFFF")
+          .setTitle("Welcome to the server!")
+          .setDescription(`Welcome to the Derg server, ${member.user.username}! Please read the rules and press the confirmation button to get full access.`);
+        try {
+          await member.send({embeds: [embed]});
+        } catch(ex) {
+          if(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)
+            await channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`, embeds: [embed]});
+          else captureException(ex);
+        }
     
-      this.client.updateStatus();
+        this.client.updateStatus();
 
-      // Send a welcome banner
-      const BannerBuff = await (new BannerPic()).generate(user.getUsername(), member.user.displayAvatarURL({size: 512}));
-      await channel.send({files: [BannerBuff]});
+        // Send a welcome banner
+        const BannerBuff = await (new BannerPic()).generate(user.getUsername(), member.user.displayAvatarURL({size: 512}));
+        await channel.send({files: [BannerBuff]});
+      });
     });
   }
 
   private async userUpdate(oldUser: User | PartialUser, newUser: User) {
-    await withScope(async (scope) => {
-      scope.setPropagationContext({
-        traceId: randomBytes(16).toString("hex"),
-        spanId: randomBytes(16).toString("hex"),
-      });
+    await withIsolationScope(async (scope) => {
       scope.setUser({
         id: newUser.id,
         username: newUser.username,
@@ -159,21 +146,23 @@ export class DiscordEvents extends baseEvent {
       scope.setTag("platform", "discord");
       scope.setTag("eventType", "userUpdate");
 
-      if(oldUser.bot) return;
-      if(oldUser.tag === newUser.tag)
-        return;
-      const user = new DiscordUser(this.client, newUser);
+      return await startNewTrace(async() => {
+        if(oldUser.bot) return;
+        if(oldUser.tag === newUser.tag)
+          return;
+        const user = new DiscordUser(this.client, newUser);
 
-      // See if we need to update user's rule confirmation date
-      let updateVerifyStatus = false;
-      if(!(await user.getCacheData())?.rulesconfirmedon &&
+        // See if we need to update user's rule confirmation date
+        let updateVerifyStatus = false;
+        if(!(await user.getCacheData())?.rulesconfirmedon &&
       (await this.client.guilds.cache.find(g=>g.id === this.client.config.guildID)
         ?.members.fetch(newUser))
         ?.roles.cache.find(role=>role.id === this.client.config.newUserRoleID))
-        updateVerifyStatus = true;
+          updateVerifyStatus = true;
     
-      await user.updateUserData({
-        rulesconfirmedon: updateVerifyStatus ? new Date() : undefined
+        await user.updateUserData({
+          rulesconfirmedon: updateVerifyStatus ? new Date() : undefined
+        });
       });
     });
   }
@@ -183,11 +172,8 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async voiceStateUpdate(old: VoiceState, now: VoiceState) {
-    await withScope(async (scope) => {
-      scope.setPropagationContext({
-        traceId: randomBytes(16).toString("hex"),
-        spanId: randomBytes(16).toString("hex"),
-      });
+    await withIsolationScope(async (scope) => {
+      
       scope.setUser({
         id: now.member?.user.id,
         username: now.member?.user.username,
@@ -197,41 +183,43 @@ export class DiscordEvents extends baseEvent {
       scope.setTag("platform", "discord");
       scope.setTag("eventType", "voiceStateUpdate");
 
-      // Checking to see if the user needs to be reported on the log
-      const config = this.client.config.VCJoinLog;
-      const channel = await this.client.channels.fetch(config.channelID);
-      if(!channel || channel.type !== ChannelType.GuildText) return;
-      if(!now.channel) return;
-      if(old.channel?.id === now.channel.id) return;
-      if(!now.member || now.member.user.bot) return;
-      if(config.excludeChannels.includes(now.channel.id)) return;
+      return await startNewTrace(async()=>{
+        // Checking to see if the user needs to be reported on the log
+        const config = this.client.config.VCJoinLog;
+        const channel = await this.client.channels.fetch(config.channelID);
+        if(!channel || channel.type !== ChannelType.GuildText) return;
+        if(!now.channel) return;
+        if(old.channel?.id === now.channel.id) return;
+        if(!now.member || now.member.user.bot) return;
+        if(config.excludeChannels.includes(now.channel.id)) return;
 
-      // Prepare embed
-      const embed = new EmbedBuilder()
-        .setColor("#00FFFF")
-        .setTitle("Voice Channel Join")
-        .setThumbnail(now.member.user.displayAvatarURL({size: 512}))
-        .setDescription(`<@${now.member.user.id}> has joined the voice channel <#${now.channel.id}>`)
-        .setTimestamp()
-        .setFields([
-          {
-            name: "User ID",
-            value: now.member.user.id
-          },
-          {
-            name: "Channel ID",
-            value: now.channel.id
-          }
-        ]);
+        // Prepare embed
+        const embed = new EmbedBuilder()
+          .setColor("#00FFFF")
+          .setTitle("Voice Channel Join")
+          .setThumbnail(now.member.user.displayAvatarURL({size: 512}))
+          .setDescription(`<@${now.member.user.id}> has joined the voice channel <#${now.channel.id}>`)
+          .setTimestamp()
+          .setFields([
+            {
+              name: "User ID",
+              value: now.member.user.id
+            },
+            {
+              name: "Channel ID",
+              value: now.channel.id
+            }
+          ]);
 
-      // See if username needs to be added as well
-      if(now.member.user.username !== now.member.user.displayName)
-        embed.addFields({
-          name: "Username",
-          value: now.member.user.username
-        });
+        // See if username needs to be added as well
+        if(now.member.user.username !== now.member.user.displayName)
+          embed.addFields({
+            name: "Username",
+            value: now.member.user.username
+          });
 
-      await channel.send({embeds: [embed]});
+        await channel.send({embeds: [embed]});
+      });
     });
   }
 }
