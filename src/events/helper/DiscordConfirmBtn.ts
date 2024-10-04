@@ -10,7 +10,6 @@ export async function VertificationHandler(client: DiscordClient, interaction: B
   await startSpan({
     name: "Discord Verification Handler",
     op: "event.helper.VertificationHandler",
-    parentSpan: null
   }, async () => {
     const user = new DiscordUser(client, interaction.user);
     const member = interaction.member as GuildMember | null;
