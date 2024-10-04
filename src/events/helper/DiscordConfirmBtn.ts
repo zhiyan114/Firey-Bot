@@ -9,8 +9,7 @@ export async function VertificationHandler(client: DiscordClient, interaction: B
 
   await startSpan({
     name: "Discord Verification Handler",
-    op: "discord.verify",
-    parentSpan: null
+    op: "event.helper.VertificationHandler",
   }, async () => {
     const user = new DiscordUser(client, interaction.user);
     const member = interaction.member as GuildMember | null;
@@ -23,7 +22,7 @@ export async function VertificationHandler(client: DiscordClient, interaction: B
 
     await startSpan({
       name: "Update Verification Status",
-      op: "event.helper.VertificationHandler",
+      op: "VertificationHandler.updateStatus",
     }, async()=>{
       // Update the user
       await member.roles.add(newUserRole, "Confirmation Role");
