@@ -5,10 +5,9 @@ import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VertificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
-import { captureException, withScope } from "@sentry/node";
+import { captureException, startNewTrace, withIsolationScope } from "@sentry/node";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
-import { randomBytes } from "crypto";
 
 export class DiscordEvents extends baseEvent {
   client: DiscordClient;
@@ -40,39 +39,31 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async createCommand(interaction: Interaction) {
-    await withScope(async (scope) => {
-      scope.setTransactionName("Discord Interaction Handler");
-      scope.setPropagationContext({
-        traceId: randomBytes(16).toString("hex"),
-        spanId: randomBytes(16).toString("hex"),
-      });
-      
-      const gMember = interaction.member as GuildMember | null;
-      scope.setUser({
-        id: interaction.user.id,
-        username: interaction.user.username,
-        isStaff: gMember?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? "unknown",
-        isVerified: gMember?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? "unknown"
-      });
-      scope.setTag("platform", "discord");
-      scope.setTag("eventType", "interactionCreate");
+    return await withIsolationScope(async (scope) => {
+      await startNewTrace(async () => {
+        const gMember = interaction.member as GuildMember | null;
+        scope.setUser({
+          id: interaction.user.id,
+          username: interaction.user.username,
+          isStaff: gMember?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? "unknown",
+          isVerified: gMember?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? "unknown"
+        });
+        scope.setTag("platform", "discord");
+        scope.setTag("eventType", "interactionCreate");
 
-      if(interaction.isCommand() || interaction.isContextMenuCommand())
-        return await this.commandHandler.commandEvent(interaction);
+        if(interaction.isCommand() || interaction.isContextMenuCommand())
+          return await this.commandHandler.commandEvent(interaction);
         
   
-      if(interaction.isButton())
-        if(interaction.customId === "RuleConfirm")
-          return await VertificationHandler(this.client, interaction);
+        if(interaction.isButton())
+          if(interaction.customId === "RuleConfirm")
+            return await VertificationHandler(this.client, interaction);
+      });
     });
   }
 
   private async messageCreate(message: Message) {
-    await withScope(async (scope) => {
-      scope.setPropagationContext({
-        traceId: randomBytes(16).toString("hex"),
-        spanId: randomBytes(16).toString("hex"),
-      });
+    await withIsolationScope(async (scope) => {
       scope.setUser({
         id: message.author.id,
         username: message.author.username,
@@ -98,11 +89,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async guildMemberAdd(member: GuildMember) {
-    await withScope(async (scope) => {
-      scope.setPropagationContext({
-        traceId: randomBytes(16).toString("hex"),
-        spanId: randomBytes(16).toString("hex"),
-      });
+    await withIsolationScope(async (scope) => {
       scope.setUser({
         id: member.user.id,
         username: member.user.username,
@@ -147,11 +134,8 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async userUpdate(oldUser: User | PartialUser, newUser: User) {
-    await withScope(async (scope) => {
-      scope.setPropagationContext({
-        traceId: randomBytes(16).toString("hex"),
-        spanId: randomBytes(16).toString("hex"),
-      });
+    await withIsolationScope(async (scope) => {
+      
       scope.setUser({
         id: newUser.id,
         username: newUser.username,
@@ -183,11 +167,8 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async voiceStateUpdate(old: VoiceState, now: VoiceState) {
-    await withScope(async (scope) => {
-      scope.setPropagationContext({
-        traceId: randomBytes(16).toString("hex"),
-        spanId: randomBytes(16).toString("hex"),
-      });
+    await withIsolationScope(async (scope) => {
+      
       scope.setUser({
         id: now.member?.user.id,
         username: now.member?.user.username,
