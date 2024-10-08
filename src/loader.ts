@@ -35,7 +35,6 @@ import {errors} from 'undici';
 sentryInit({
   dsn: process.env["SENTRY_DSN"],
   maxValueLength: 1000,
-  tracesSampleRate: 1.0,
   
   integrations: [
     extraErrorDataIntegration({
@@ -92,6 +91,14 @@ sentryInit({
     
     return evnt;
   },
+
+  tracesSampler: (ctx) => {
+    // This will be messy anyway
+    if(ctx.name === "Chat Reward Points")
+      return 0.2;
+    return 1;
+
+  },
   
   beforeSendTransaction: (transaction) => {
     // Ignore callback stuff from PubSubHubbub
@@ -99,6 +106,7 @@ sentryInit({
       return null;
     if(new RegExp("/test/").test(transaction.transaction ?? ""))
       return null;
+    
     return transaction;
   },
   
