@@ -316,19 +316,25 @@ class UserEconomy {
      * @param updateTimestampOnly Whether to only update the timestamp of the granted points or not (useful for auto-granting point system to deter spammers)
      */
   public async grantPoints(points: number) {
-    // User exist and condition passes, grant the user the points
-    const newData = await this.user.client.prisma.members.update({
-      data: {
-        lastgrantedpoint: new Date(),
-        points: {increment: points}
-      },
-      where: {
-        id: this.userid
-      }
-    });
-    await this.user.updateCacheData({
-      points: newData.points,
-      lastgrantedpoint: newData.lastgrantedpoint
+    return await startSpan({
+      name: "Grant Points",
+      op: "discordUser.economy.grantPoints",
+      onlyIfParent: true,
+    }, async ()=>{
+      // User exist and condition passes, grant the user the points
+      const newData = await this.user.client.prisma.members.update({
+        data: {
+          lastgrantedpoint: new Date(),
+          points: {increment: points}
+        },
+        where: {
+          id: this.userid
+        }
+      });
+      await this.user.updateCacheData({
+        points: newData.points,
+        lastgrantedpoint: newData.lastgrantedpoint
+      });
     });
   }
   /**
@@ -365,12 +371,16 @@ class UserEconomy {
      * @returns whether the user has been successfully rewarded or not
      */
   public async chatRewardPoints(text: string, ignoreCooldown?: boolean) {
-    // Get user data and check to see if they met the cooldown eligibility
-    const userData = await this.user.getCacheData();
-    if(!userData) return false;
-    if(!ignoreCooldown && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false;
+    return await startSpan({
+      name: "Chat Reward Points",
+      op: "discordUser.economy.chatRewardPoints",
+    }, async() => {
+      // Get user data and check to see if they met the cooldown eligibility
+      const userData = await this.user.getCacheData();
+      if(!userData) return false;
+      if(!ignoreCooldown && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false;
 
-    /*
+      /*
       This algorithm checks to see if the user has a message that is
         - longer than 10 characters
         - does not only contain numbers, special character, emoji, or links
@@ -378,23 +388,24 @@ class UserEconomy {
       If the user is not eligible, their reward cooldown timer resets while not getting any points
       */
 
-    if(
-      text.length < 10 || // Length check
+      if(
+        text.length < 10 || // Length check
       (/^[0-9]+$/g).test(text) || // Number Check
       (/^[^a-zA-Z0-9]+$/g).test(text) || // Special Character check
       (/^(:[a-zA-Z0-9_]+: ?)+$/g).test(text) || // Emoji check
       (/(.)\1{3,}/g).test(text) || // Repeating character check
       (/https?:\/\/[^\s]+/g).test(text) // link check
-    ) {
-      await this.user.updateCacheData({
-        lastgrantedpoint: new Date()
-      });
-      return false;
-    }
+      ) {
+        await this.user.updateCacheData({
+          lastgrantedpoint: new Date()
+        });
+        return false;
+      }
         
-    // Grant the point
-    await this.grantPoints(this.rngRewardPoints(5,10));
-    return true;
+      // Grant the point
+      await this.grantPoints(this.rngRewardPoints(5,10));
+      return true;
+    });
   }
   public async getBalance() {
     return Number(await this.user.client.redis.hget(this.cacheKey,"points") ?? (await this.user.getCacheData())?.points ?? "0");
