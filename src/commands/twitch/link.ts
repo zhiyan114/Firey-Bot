@@ -33,6 +33,9 @@ export class LinkCommand extends baseTCommand {
 
     // Check if user has already joined in the discord server
     const dAccCount = await data.client.discord.prisma.members.findUnique({
+      select: {
+        rulesconfirmedon: true,
+      },
       where: {
         id: discordID,
       }

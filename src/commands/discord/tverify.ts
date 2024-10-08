@@ -35,6 +35,11 @@ export class TwitchVerify extends baseCommand {
 
     // Check for the request and status
     const userReq = await this.client.prisma.twitch.findUnique({
+      select: {
+        id: true,
+        username: true,
+        verified: true,
+      },
       where: {
         memberid: interaction.user.id,
         username: twitchUsername,

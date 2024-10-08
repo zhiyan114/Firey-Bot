@@ -1,6 +1,7 @@
 import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketManagerOptions } from "discord.js";
 import config from '../config.json';
 import { PrismaClient } from "@prisma/client";
+import { suppressTracing } from "@sentry/core";
 import Redis from "ioredis";
 import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents } from "../events";
@@ -97,27 +98,31 @@ export class DiscordClient extends Client implements baseClient {
   }
 
   public async start(token: string) {
-    // Connect all services
-    await this.prisma.$connect();
-    if(this.redis.status === "close")
-      await this.redis.connect();
-    await this.login(token);
+    return await suppressTracing(async()=>{
+      // Connect all services
+      await this.prisma.$connect();
+      if(this.redis.status === "close")
+        await this.redis.connect();
+      await this.login(token);
 
-    // Start all services
-    await new DiscordCommandHandler(this).commandRegister();
-    await this.loadServices();
-    this.updateStatus();
-    
-    // Start helper clients
-    await this.twitch.start();
-    await this.youtube.start();
+      // Start all services
+      await new DiscordCommandHandler(this).commandRegister();
+      await this.loadServices();
+      this.updateStatus();
+      
+      // Start helper clients
+      await this.twitch.start();
+      await this.youtube.start();
+    });
   }
 
   public async dispose() {
-    // Close all connections
-    await this.prisma.$disconnect();
-    await this.redis.quit();
-    await this.destroy();
+    return await suppressTracing(async() => {
+      // Close all connections
+      await this.prisma.$disconnect();
+      await this.redis.quit();
+      await this.destroy();
+    });
   }
 
   public updateStatus() {
