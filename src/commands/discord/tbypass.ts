@@ -26,6 +26,10 @@ export class TwitchChatRelay extends baseCommand {
     const uniqueID = randomUUID();
     
     const tUser = await this.client.prisma.twitch.findUnique({
+      select: {
+        verified: true,
+        username: true,
+      },
       where: {
         memberid: interaction.user.id
       }

@@ -65,7 +65,7 @@ sentryInit({
       
     // Ignore Http Breadcrumbs from the blacklisted url
     if(breadcrumb.category === "http" && 
-      ignoreUrl.filter(url=>breadcrumb.data?.url.startsWith(url)).length > 0) return null;
+      ignoreUrl.find(url=>breadcrumb.data?.url.startsWith(url))) return null;
     return breadcrumb;
   },
       
@@ -96,6 +96,8 @@ sentryInit({
     // This will be messy anyway
     if(ctx.name === "Chat Reward Points")
       return 0.2;
+    if(ctx.name == "Discord Command: eval") // Doesn't make sense to have this sampled lol
+      return 0;
     return 1;
 
   },
