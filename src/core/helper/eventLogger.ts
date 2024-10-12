@@ -1,5 +1,6 @@
 import { ColorResolvable, EmbedBuilder, TextChannel } from "discord.js";
 import { DiscordClient } from "../DiscordClient";
+import { suppressTracing } from "@sentry/core";
 
 
 export interface LogData {
@@ -46,17 +47,19 @@ export class eventLogger {
     this.logQueues = [];
   }
   async sendLog(log: LogData) {
-    // Queue the log if the channel is not initialized
-    if(!this.channel) {
-      console.log(`Log channel not initialized, this log will be added to the pre-initialization queue! (Log Message: ${log.message})`);
-      this.logQueues.push(log);
-      return;
-    }
+    await suppressTracing(async ()=>{
+      // Queue the log if the channel is not initialized
+      if(!this.channel) {
+        console.log(`Log channel not initialized, this log will be added to the pre-initialization queue! (Log Message: ${log.message})`);
+        this.logQueues.push(log);
+        return;
+      }
 
-    // Send the log
-    await this.channel.send({
-      content: log.type === "Error" ? "<@233955058604179457>" : undefined,
-      embeds: [this.prepareEmbed(log)]
+      // Send the log
+      await this.channel.send({
+        content: log.type === "Error" ? "<@233955058604179457>" : undefined,
+        embeds: [this.prepareEmbed(log)]
+      });
     });
   }
 
