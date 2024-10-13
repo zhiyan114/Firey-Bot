@@ -109,7 +109,7 @@ sentryInit({
     if(new RegExp("/test/").test(transaction.transaction ?? ""))
       return null;
     // Drop spans without parent
-    if(transaction.spans?.find(s=>s.op === "default"))
+    if(transaction.spans?.[0]?.op === "default")
       return null;
     
     return transaction;
