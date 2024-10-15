@@ -78,6 +78,7 @@ sentryInit({
     "NetworkError",
     "ECONNREFUSED",
     "ECONNRESET",
+    "getaddrinfo"
   ],
   
   beforeSend : (evnt, hint) => {
