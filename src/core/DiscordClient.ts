@@ -1,7 +1,7 @@
 import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketManagerOptions } from "discord.js";
 import config from '../config.json';
 import { PrismaClient } from "@prisma/client";
-import { suppressTracing } from "@sentry/core";
+import { suppressTracing } from "@sentry/node";
 import Redis from "ioredis";
 import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents } from "../events";
