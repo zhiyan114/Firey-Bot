@@ -1,25 +1,11 @@
-import { banCommand } from "./ban";
-import { EvalCommand } from "./Eval";
-import { FeedbackCommand } from "./feedback";
-import { getPointsCommand } from "./getPoints";
-import { kickCommand } from "./kick";
-import { leaderboardCommand } from "./leaderboard";
-import { purgeCommand } from "./Purge";
-import { softBanCommand } from "./softban";
-import { TwitchChatRelay } from "./tbypass";
-import { TwitchVerify } from "./tverify";
-import { unbanCommand } from "./unban";
-
-export {
-  banCommand,
-  EvalCommand,
-  getPointsCommand,
-  kickCommand,
-  leaderboardCommand,
-  purgeCommand,
-  softBanCommand,
-  unbanCommand,
-  TwitchVerify,
-  TwitchChatRelay,
-  FeedbackCommand
-};
+export { banCommand } from "./ban";
+export { EvalCommand } from "./Eval";
+export { FeedbackCommand } from "./feedback";
+export { getPointsCommand } from "./getPoints";
+export { kickCommand } from "./kick";
+export { leaderboardCommand } from "./leaderboard";
+export { purgeCommand } from "./Purge";
+export { softBanCommand } from "./softban";
+export { TwitchChatRelay } from "./tbypass";
+export { TwitchVerify } from "./tverify";
+export { unbanCommand } from "./unban";

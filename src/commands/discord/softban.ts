@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, SlashCommandBuilder } from "discord.js";
+import { CommandInteraction, GuildMember, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
@@ -19,7 +19,7 @@ export class softBanCommand extends baseCommand {
     this.metadata
       .setName("softban")
       .setDescription("Kicks the user but also deletes their message.")
-      .setDMPermission(false)
+      .setContexts([InteractionContextType.Guild])
       .addUserOption(option =>
         option.setName("user")
           .setDescription("The user to softban.")

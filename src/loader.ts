@@ -78,6 +78,7 @@ sentryInit({
     "NetworkError",
     "ECONNREFUSED",
     "ECONNRESET",
+    "getaddrinfo"
   ],
   
   beforeSend : (evnt, hint) => {
@@ -107,6 +108,9 @@ sentryInit({
     if(new RegExp("/UwU/youtube/callback/").test(transaction.transaction ?? ""))
       return null;
     if(new RegExp("/test/").test(transaction.transaction ?? ""))
+      return null;
+    // Drop spans without parent
+    if(transaction.spans?.[0]?.op === "default")
       return null;
     
     return transaction;

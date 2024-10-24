@@ -1,4 +1,4 @@
-import { ChannelType, CommandInteraction, DiscordAPIError, SlashCommandBuilder } from "discord.js";
+import { ChannelType, CommandInteraction, DiscordAPIError, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
@@ -20,7 +20,7 @@ export class purgeCommand extends baseCommand {
     this.metadata
       .setName("purge")
       .setDescription("Purge messages from a channel")
-      .setDMPermission(false)
+      .setContexts([InteractionContextType.Guild])
       .addNumberOption(option =>
         option.setName("amount")
           .setDescription("The amount of messages to purge. Maximum 100.")

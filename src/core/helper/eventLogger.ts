@@ -1,6 +1,6 @@
 import { ColorResolvable, EmbedBuilder, TextChannel } from "discord.js";
 import { DiscordClient } from "../DiscordClient";
-import { suppressTracing } from "@sentry/core";
+import { suppressTracing } from "@sentry/node";
 
 
 export interface LogData {

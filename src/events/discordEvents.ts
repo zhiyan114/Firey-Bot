@@ -104,8 +104,6 @@ export class DiscordEvents extends baseEvent {
       return await startNewTrace(async () => {
         if(member.user.bot) return;
         const user = new DiscordUser(this.client, member.user);
-        const channel = await this.client.channels.fetch(this.client.config.welcomeChannelID);
-        if(!channel || channel.type !== ChannelType.GuildText) return;
 
         // Create new user entry
         try {
@@ -116,10 +114,13 @@ export class DiscordEvents extends baseEvent {
         }
 
         // Send welcome message to user
+        const channel = await this.client.channels.fetch(this.client.config.welcomeChannelID);
+        if(!channel || channel.type !== ChannelType.GuildText) return;
         const embed = new EmbedBuilder()
           .setColor("#00FFFF")
           .setTitle("Welcome to the server!")
           .setDescription(`Welcome to the Derg server, ${member.user.username}! Please read the rules and press the confirmation button to get full access.`);
+          
         try {
           await member.send({embeds: [embed]});
         } catch(ex) {
@@ -148,8 +149,7 @@ export class DiscordEvents extends baseEvent {
 
       return await startNewTrace(async() => {
         if(oldUser.bot) return;
-        if(oldUser.tag === newUser.tag)
-          return;
+
         const user = new DiscordUser(this.client, newUser);
 
         // See if we need to update user's rule confirmation date
@@ -159,9 +159,18 @@ export class DiscordEvents extends baseEvent {
         ?.members.fetch(newUser))
         ?.roles.cache.find(role=>role.id === this.client.config.newUserRoleID))
           updateVerifyStatus = true;
-    
+
+        const rulesconfirmedon = updateVerifyStatus ? new Date() : undefined;
+        const username = oldUser.username !== newUser.username ? newUser.username : undefined;
+        const displayName = oldUser.username !== newUser.username ? newUser.username : undefined;
+
+        // Update user if any of the listed field changes
+        if(!rulesconfirmedon && !username && !displayName)
+          return;
         await user.updateUserData({
-          rulesconfirmedon: updateVerifyStatus ? new Date() : undefined
+          rulesconfirmedon,
+          username,
+          displayName,
         });
       });
     });
