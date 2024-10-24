@@ -96,20 +96,20 @@ export class EvalCommand extends baseCommand {
   /* Util commands for eval command runner */
   
   // Automatically add missing users to the database
-  private createMissingUser = async (client: DiscordClient) => {
+  private createMissingUser = async () => {
     const dataToPush: userDataType[] = [];
-    const guild = client.guilds.cache.find(g=>g.id === client.config.guildID);
+    const guild = this.client.guilds.cache.find(g=>g.id === this.client.config.guildID);
     if(!guild) return;
     for(const [,member] of await guild.members.fetch()) {
       if(member.user.bot) continue;
-      const hasVerifyRole = member.roles.cache.find(role=>role.id === client.config.newUserRoleID);
+      const hasVerifyRole = member.roles.cache.find(role=>role.id === this.client.config.newUserRoleID);
       dataToPush.push({
         id: member.user.id,
         username: member.user.tag,
         rulesconfirmedon: hasVerifyRole ? (new Date()) : undefined
       });
     }
-    await client.prisma.members.createMany({
+    await this.client.prisma.members.createMany({
       data: dataToPush,
       skipDuplicates: true,
     });
