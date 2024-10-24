@@ -148,8 +148,7 @@ export class DiscordEvents extends baseEvent {
 
       return await startNewTrace(async() => {
         if(oldUser.bot) return;
-        if(oldUser.tag === newUser.tag)
-          return;
+
         const user = new DiscordUser(this.client, newUser);
 
         // See if we need to update user's rule confirmation date
@@ -159,9 +158,18 @@ export class DiscordEvents extends baseEvent {
         ?.members.fetch(newUser))
         ?.roles.cache.find(role=>role.id === this.client.config.newUserRoleID))
           updateVerifyStatus = true;
-    
+
+        const rulesconfirmedon = updateVerifyStatus ? new Date() : undefined;
+        const username = oldUser.username !== newUser.username ? newUser.username : undefined;
+        const displayName = oldUser.username !== newUser.username ? newUser.username : undefined;
+
+        // Update user if any of the listed field changes
+        if(!rulesconfirmedon && !username && !displayName)
+          return;
         await user.updateUserData({
-          rulesconfirmedon: updateVerifyStatus ? new Date() : undefined
+          rulesconfirmedon,
+          username,
+          displayName,
         });
       });
     });
