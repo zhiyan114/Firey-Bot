@@ -7,6 +7,7 @@ import {
   ColorResolvable,
   CommandInteraction,
   EmbedBuilder,
+  InteractionContextType,
   SlashCommandBuilder
 } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
@@ -17,7 +18,7 @@ export class EvalCommand extends baseCommand {
   public metadata = new SlashCommandBuilder()
     .setName("eval")
     .setDescription("Evaluates a code snippet for debugging purposes; Requires the highest privilege to run.")
-    .setDMPermission(false)
+    .setContexts([InteractionContextType.Guild])
     .addStringOption(option=>
       option.setName("code")
         .setDescription("The code to evaluate.")

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, CommandInteraction, DiscordjsError, DiscordjsErrorCodes, GuildMember, ModalBuilder, ModalSubmitInteraction, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, CommandInteraction, DiscordjsError, DiscordjsErrorCodes, GuildMember, InteractionContextType, ModalBuilder, ModalSubmitInteraction, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
@@ -19,7 +19,7 @@ export class TwitchChatRelay extends baseCommand {
     this.metadata
       .setName("tbypass")
       .setDescription("Send an unfiltered message on twitch chat (via bot account).")
-      .setDMPermission(false);
+      .setContexts([InteractionContextType.Guild]);
   }
   public async execute(interaction: CommandInteraction) {
     if(!(interaction.member instanceof GuildMember)) return; // Not possible since the command usage is set disabled in DM
