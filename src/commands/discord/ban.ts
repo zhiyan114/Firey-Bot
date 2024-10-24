@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, SlashCommandBuilder } from "discord.js";
+import { CommandInteraction, GuildMember, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordClient } from "../../core/DiscordClient";
 import { DiscordUser } from "../../utils/DiscordUser";
@@ -8,7 +8,7 @@ export class banCommand extends baseCommand {
   public metadata = new SlashCommandBuilder()
     .setName("ban")
     .setDescription("Bans the target user.")
-    .setDMPermission(false)
+    .setContexts([InteractionContextType.Guild])
     .addUserOption(option =>
       option.setName("user")
         .setDescription("The user to ban.")

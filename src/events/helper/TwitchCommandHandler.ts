@@ -2,7 +2,7 @@ import { ChatUserstate } from "tmi.js";
 import { TwitchClient } from "../../core/TwitchClient";
 import { baseTCommand } from "../../core/baseCommand";
 import { captureException, startSpan } from "@sentry/node";
-import { suppressTracing } from "@sentry/core";
+import { suppressTracing } from "@sentry/node";
 import { DiscordCommand, LinkCommand, LurkCommand } from "../../commands/twitch";
 import { TwitchUser } from "../../utils/TwitchUser";
 

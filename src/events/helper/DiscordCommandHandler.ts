@@ -8,7 +8,7 @@ import {
 } from "../../commands/discord";
 import { baseCommand } from "../../core/baseCommand";
 import { captureException, startSpan } from "@sentry/node";
-import { suppressTracing } from "@sentry/core";
+import { suppressTracing } from "@sentry/node";
 import { DiscordClient } from "../../core/DiscordClient";
 import { createHash, timingSafeEqual } from "crypto";
 

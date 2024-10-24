@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { CommandInteraction, EmbedBuilder, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordClient } from "../../core/DiscordClient";
 import { TwitchUser } from "../../utils/TwitchUser";
@@ -17,7 +17,7 @@ export class TwitchVerify extends baseCommand {
     this.metadata
       .setName("tverify")
       .setDescription("Verify your Twitch account")
-      .setDMPermission(false)
+      .setContexts([InteractionContextType.Guild])
       .addStringOption(option =>
         option.setName("username")
           .setDescription("Your Twitch Username")

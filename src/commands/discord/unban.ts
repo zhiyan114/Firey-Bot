@@ -1,4 +1,4 @@
-import { CommandInteraction, DiscordAPIError, SlashCommandBuilder } from "discord.js";
+import { CommandInteraction, DiscordAPIError, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
@@ -20,7 +20,7 @@ export class unbanCommand extends baseCommand {
     this.metadata 
       .setName("unban")
       .setDescription("Remove a user from the ban list")
-      .setDMPermission(false)
+      .setContexts([InteractionContextType.Guild])
       .addUserOption(option =>
         option.setName("user")
           .setDescription("The user to unban (user ID will work).")

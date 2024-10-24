@@ -277,7 +277,7 @@ export class DiscordUser {
       await this.client.logger.sendLog({
         type: "Interaction",
         message: opt.message,
-        ...opt.metadata
+        metadata: {reason: opt.reason, ...opt.metadata},
       });
     });
   }
