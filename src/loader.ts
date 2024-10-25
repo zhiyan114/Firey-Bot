@@ -109,8 +109,8 @@ sentryInit({
       return null;
     if(new RegExp("/test/").test(transaction.transaction ?? ""))
       return null;
-    // Drop spans without parent
-    if(transaction.spans?.[0]?.op === "default")
+    // Drop Prisma only transactions
+    if(transaction.transaction?.startsWith("prisma:"))
       return null;
     
     return transaction;
