@@ -269,7 +269,7 @@ export class DiscordUser {
           await this.client.logger.sendLog({
             type: "Warning",
             message: "actionLog failed due to missing target in the database",
-            ...opt.metadata
+            metadata: opt.metadata,
           });
         else captureException(ex);
       }
