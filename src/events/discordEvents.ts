@@ -119,7 +119,7 @@ export class DiscordEvents extends baseEvent {
         const embed = new EmbedBuilder()
           .setColor("#00FFFF")
           .setTitle("Welcome to the server!")
-          .setDescription(`Welcome to the Derg server, ${member.user.username}! Please read the rules and press the confirmation button to get full access.`);
+          .setDescription(`Welcome to the Derg server, ${member.user.username}! Please read the rules and press the confirmation button to get full access. Remember to do so within 24 hours, or autokick will happen!`);
           
         try {
           await member.send({embeds: [embed]});
