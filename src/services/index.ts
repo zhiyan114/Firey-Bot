@@ -1,5 +1,2 @@
-import { ReactRoleLoader } from "./ReactRoleHandler";
-
-export default {
-  ReactRoleLoader
-};
+export { ReactRoleLoader } from "./ReactRoleHandler";
+export { unverifyKickLoader } from "./unverifyKick";
