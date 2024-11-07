@@ -67,7 +67,7 @@ export class unverifyKickLoader {
 
         await this.client.logger.sendLog({
           type: "Warning",
-          message: `**${member.user.username}** have been kicked form the server for not confirming the rules within 24 hours`
+          message: `**${member.user.username}** have been kicked from the server for not confirming the rules within 24 hours`
         });
         
       }
