@@ -11,6 +11,7 @@ import { baseClient } from "./baseClient";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
 import { TwitchClient } from "./TwitchClient";
 import { YoutubeClient } from "./YoutubeClient";
+import { unverifyKickLoader } from "../services";
 
 
 
@@ -98,22 +99,19 @@ export class DiscordClient extends Client implements baseClient {
   }
 
   public async start(token: string) {
-    return await suppressTracing(async()=>{
-      // Connect all services
-      await this.prisma.$connect();
-      if(this.redis.status === "close")
-        await this.redis.connect();
-      await this.login(token);
-
-      // Start all services
-      await new DiscordCommandHandler(this).commandRegister();
-      await this.loadServices();
-      this.updateStatus();
-      
-      // Start helper clients
-      await this.twitch.start();
-      await this.youtube.start();
-    });
+    // Connect all services
+    await this.prisma.$connect();
+    if(this.redis.status === "close")
+      await this.redis.connect();
+    await this.login(token);
+    // Start all services
+    await new DiscordCommandHandler(this).commandRegister();
+    await this.loadServices();
+    this.updateStatus();
+    
+    // Start helper clients
+    await this.twitch.start();
+    await this.youtube.start();
   }
 
   public async dispose() {
@@ -137,6 +135,7 @@ export class DiscordClient extends Client implements baseClient {
 
   private async loadServices() {
     await ReactRoleLoader(this);
+    await (new unverifyKickLoader(this)).load();
   }
   
 }
