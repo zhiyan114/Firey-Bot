@@ -27,8 +27,8 @@ export class unverifyKickLoader {
     // Set grace period callback func
     this.client.on('guildMemberAdd', this.setGracePeriod.bind(this));
 
-    // Set cronjob to check every hour
-    schedule("0 * * * *", this.checkAndKick.bind(this));
+    // Set cronjob to check every 5 minutes
+    schedule("*/5 * * * *", this.checkAndKick.bind(this));
 
   }
 
