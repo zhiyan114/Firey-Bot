@@ -25,7 +25,7 @@ import {
   rewriteFramesIntegration, 
   init as sentryInit, 
 } from "@sentry/node";
-import { DiscordAPIError } from "discord.js";
+import { DiscordAPIError, DiscordjsError } from "discord.js";
 import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
@@ -58,8 +58,8 @@ sentryInit({
     // List of urls to ignore
     const ignoreUrl = [
       "https://api.twitch.tv",
-      "https://discord.com",
-      "https://cdn.discordapp.com",
+      //"https://discord.com",
+      //"https://cdn.discordapp.com",
       "https://o125145.ingest.sentry.io", // Why is sentry being added to BC?????
     ];
       
@@ -86,6 +86,7 @@ sentryInit({
     
     // Ignore the unhandlable errors
     if(ex instanceof DiscordAPIError && ex.code === APIErrors.UNKNOWN_INTERACTION) return null; // Nothing we can do, really...
+    if(ex instanceof DiscordjsError && ex.code === "GuildMembersTimeout") return null; // Known issue with discord's backend API
     if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null; // Somehow...
     if(ex instanceof Error && ex.message.includes('Could not load the "sharp"')) return null; // Holy Hell, sharp...
     if(ex instanceof errors.SocketError && ex.message === "other side closed") return null; // Probably just discord's WS downtime
