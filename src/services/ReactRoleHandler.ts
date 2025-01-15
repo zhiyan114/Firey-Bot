@@ -34,7 +34,7 @@ export async function ReactRoleLoader(client: DiscordClient) {
     for(const {Name, EmoteID} of config.reactionLists) {
       const emoteName = client.emojis.resolve(EmoteID);
       if(!emoteName) continue;
-      finalDesc = finalDesc.replaceAll(`{{${Name}}}`, `<:${emoteName.name}:${EmoteID}>`);
+      finalDesc = finalDesc.replaceAll(`{{${Name}}}`, `<${emoteName.animated ? "a" : ""}:${emoteName.name}:${emoteName.id}>`);
     }
 
     // Create the message
