@@ -2,8 +2,8 @@
   "dependencies": {
     "@discordjs/rest": "^2.0.0",
     "@opentelemetry/instrumentation": "^0.56.0",
-    "@prisma/client": "^6.2.1",
-    "@prisma/instrumentation": "^6.2.1",
+    "@prisma/client": "^5.19.1",
+    "@prisma/instrumentation": "^5.19.1",
     "@sentry/node": "^8.32.0",
     "axios": "^1.1.2",
     "bufferutil": "^4.0.6",
