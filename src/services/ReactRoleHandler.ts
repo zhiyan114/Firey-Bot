@@ -29,10 +29,18 @@ export async function ReactRoleLoader(client: DiscordClient) {
   }
 
   if(!msg) {
+    // Fill in the placeholders
+    let finalDesc = config.Description;
+    for(const {Name, EmoteID} of config.reactionLists) {
+      const emoteName = client.emojis.resolve(EmoteID);
+      if(!emoteName) continue;
+      finalDesc = finalDesc.replaceAll(`{{${Name}}}`, `<a:${emoteName.name}:${emoteName.id}>`);
+    }
+
     // Create the message
     const embed = new EmbedBuilder()
       .setColor("#00FFFF")
-      .setDescription(config.Description);
+      .setDescription(finalDesc);
     msg = await channel.send({embeds:[embed]});
     await client.prisma.config.upsert({
       where: {
@@ -52,7 +60,7 @@ export async function ReactRoleLoader(client: DiscordClient) {
   const emoteLists: string[] = [];
   const emoteToRole: {[key: string]: string} = {};
 
-  // Put all the organization here to maintain O(n)
+  // Pull in all roles stuff
   for(const {EmoteID, RoleID} of config.reactionLists) {
     if(msg.reactions.cache.size !== config.reactionLists.length)
       await msg.react(EmoteID);

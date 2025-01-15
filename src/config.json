@@ -25,22 +25,29 @@
         "channel": "fireythealiendragon",
         "notification": {
             "channelID": "908120379766231070",
-            "roleToPing" : "everyone",
+            "roleToPing" : "&908723067067437076",
             "inviteRemindExpire": 1800000
         }
     },
     "reactRoles": {
         "reactionLists": [
             {
+                "Name": "YTPing",
                 "EmoteID": "941368077856161885",
                 "RoleID": "946613137031974963"
             },
             {
+                "Name": "VCPing",
                 "EmoteID": "985594682883047495",
                 "RoleID": "1230549605637160981"
+            },
+            {
+                "Name": "TwitchPing",
+                "EmoteID": "1084122546863091743",
+                "RoleID": "908723067067437076"
             }
         ],
         "channelID": "908719210040008755",
-        "Description": "If you would like to know when the derg is streaming. To be pinged for any videos recently uploaded to his youtube press on <:FireyPeek:941368077856161885>\nUse <a:Fireyababab:985594682883047495> if you want to be pinged when he started a VC party!"
+        "Description": "If you would like to know when the derg is streaming. To be pinged for any videos recently uploaded to his youtube press on {{YTPing}}\nUse {{VCPing}} if you want to be pinged when he started a VC party!\nFor twitch streams, {{TwitchPing}} should get you notified instead of the pesky everyone ding (kinda already know everyone ping for this is a bad idea :3)!"
     }
 }
