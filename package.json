@@ -43,7 +43,7 @@
     "@typescript-eslint/parser": "^8.2.0",
     "esbuild": "^0.24.0",
     "eslint": "^8.42.0",
-    "prisma": "^6.2.1",
+    "prisma": "^5.19.1",
     "rimraf": "^6.0.1",
     "ts-jest": "^29.1.2",
     "typescript": "^5.4.5"
