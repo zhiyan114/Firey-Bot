@@ -1,11 +1,11 @@
 {
   "dependencies": {
     "@discordjs/rest": "^2.0.0",
-    "@prisma/client": "^5.0.0",
+    "@prisma/client": "^6.2.1",
     "@sentry/node": "^8.32.0",
     "axios": "^1.1.2",
     "bufferutil": "^4.0.6",
-    "canvas": "^2.11.2",
+    "canvas": "^3.0.1",
     "discord.js": "^14.11.0",
     "dotenv": "^16.4.5",
     "erlpack": "github:discord/erlpack",
@@ -41,7 +41,7 @@
     "@typescript-eslint/parser": "^8.2.0",
     "esbuild": "^0.24.0",
     "eslint": "^8.42.0",
-    "prisma": "^5.0.0",
+    "prisma": "^6.2.1",
     "rimraf": "^6.0.1",
     "ts-jest": "^29.1.2",
     "typescript": "^5.4.5"
