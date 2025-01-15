@@ -48,6 +48,6 @@
             }
         ],
         "channelID": "908719210040008755",
-        "Description": "If you would like to know when the derg is streaming. To be pinged for any videos recently uploaded to his youtube press on [[YTPing]]\nUse [[VCPing]] if you want to be pinged when he started a VC party!\nFor twitch streams, [[TwitchPing] should get you notified instead of the pesky everyone ding (kinda already know everyone ping for this is a bad idea :3)!"
+        "Description": "If you would like to know when the derg is streaming. To be pinged for any videos recently uploaded to his youtube press on {{YTPing}}\nUse {{VCPing}} if you want to be pinged when he started a VC party!\nFor twitch streams, {{TwitchPing}} should get you notified instead of the pesky everyone ding (kinda already know everyone ping for this is a bad idea :3)!"
     }
 }
