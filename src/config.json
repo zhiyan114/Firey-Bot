@@ -25,7 +25,7 @@
         "channel": "fireythealiendragon",
         "notification": {
             "channelID": "908120379766231070",
-            "roleToPing" : "&908723067067437076",
+            "roleToPing" : "908723067067437076",
             "inviteRemindExpire": 1800000
         }
     },
