@@ -17,7 +17,7 @@
     "youtube": {
         "youtubeChannelID": "UCKsRmVfwU-IkVWhfiSVp1ig",
         "guildChannelID": "912150616908890142",
-        "pingRoleID": "FakeRoleLOL",
+        "pingRoleID": "0",
         "overridePort": 80
     },
     "twitch": {
