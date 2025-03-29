@@ -1,10 +1,10 @@
 {
   "dependencies": {
     "@discordjs/rest": "^2.0.0",
-    "@opentelemetry/instrumentation": "^0.56.0",
-    "@prisma/client": "^5.19.1",
-    "@prisma/instrumentation": "^5.19.1",
-    "@sentry/node": "^8.32.0",
+    "@opentelemetry/instrumentation": "^0.200.0",
+    "@prisma/client": "^6.5.0",
+    "@prisma/instrumentation": "^6.5.0",
+    "@sentry/node": "^9.10.1",
     "axios": "^1.1.2",
     "bufferutil": "^4.0.6",
     "canvas": "^3.0.1",
@@ -41,9 +41,9 @@
     "@types/xml2js": "^0.4.11",
     "@typescript-eslint/eslint-plugin": "^8.2.0",
     "@typescript-eslint/parser": "^8.2.0",
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.25.1",
     "eslint": "^8.42.0",
-    "prisma": "^5.19.1",
+    "prisma": "^6.5.0",
     "rimraf": "^6.0.1",
     "ts-jest": "^29.1.2",
     "typescript": "^5.4.5"
