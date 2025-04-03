@@ -1,6 +1,7 @@
 import { ColorResolvable, EmbedBuilder, TextChannel } from "discord.js";
 import { DiscordClient } from "../DiscordClient";
 import { suppressTracing } from "@sentry/node";
+import { logger } from "@sentry/node"; // ! Sentry Experimental !
 
 
 export interface LogData {
@@ -60,6 +61,13 @@ export class eventLogger {
         content: log.type === "Error" ? "<@233955058604179457>" : undefined,
         embeds: [this.prepareEmbed(log)]
       });
+
+      // ! Sentry Experimental !
+      if(log.type === "Interaction")
+        logger.info(logger.fmt`[Event Logger] User Interaction Executed: ${log.message}`, log.metadata);
+      if(log.type === "Info")
+        logger.info(logger.fmt`[Event Logger] General Info: ${log.message}`, log.metadata);
+
     });
   }
 
