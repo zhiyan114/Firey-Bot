@@ -18,6 +18,7 @@ if(process.env["COMMITHASH"] === undefined) {
 
 // Run Sentry first as required by the docs
 import { 
+  consoleLoggingIntegration,
   expressIntegration, 
   extraErrorDataIntegration, 
   prismaIntegration, 
@@ -35,8 +36,21 @@ import {errors} from 'undici';
 sentryInit({
   dsn: process.env["SENTRY_DSN"],
   maxValueLength: 1000,
+
+  // Sentry New Feature Testing
+  _experiments: {
+    enableLogs: true,
+    beforeSendLog(log) {
+        // No log from non-prod
+        if(!process.env["COMMITHASH"]) return null;
+        return log;
+    },
+  },
   
   integrations: [
+    consoleLoggingIntegration({
+      levels: ["error", "warn", "log"], // ! Beta integration !
+    }),
     extraErrorDataIntegration({
       depth: 5
     }),
