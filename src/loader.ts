@@ -41,8 +41,6 @@ sentryInit({
   _experiments: {
     enableLogs: true,
     beforeSendLog(log) {
-      // No log from non-prod
-      if(!process.env["COMMITHASH"]) return null;
       return log;
     },
   },
