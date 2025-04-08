@@ -100,20 +100,16 @@ export class eventLogger {
 
   private EmbedColor(type: "Interaction" | "Info" | "Warning" | "Error"): ColorResolvable {
     switch(type) {
-    case "Interaction":
-      return "#00FF00";
-
-    case "Info":
-      return "#0000FF";
-
-    case "Warning":
-      return "#FFFF00";
-
-    case "Error":
-      return "#FF0000";
-
-    default:
-      return "#000000";
+      case "Interaction":
+        return "#00FF00";
+      case "Info":
+        return "#0000FF";
+      case "Warning":
+        return "#FFFF00";
+      case "Error":
+        return "#FF0000";
+      default:
+        return "#000000";
     }
   }
 }
