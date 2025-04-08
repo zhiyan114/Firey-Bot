@@ -1,11 +1,11 @@
-import { ButtonInteraction, GuildMember } from "discord.js";
+import { ButtonInteraction, GuildMember, MessageFlags } from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { startSpan } from "@sentry/node";
 
 export async function VertificationHandler(client: DiscordClient, interaction: ButtonInteraction) {
   if(interaction.user.bot)
-    return interaction.reply({ content: "PRIVILEGE INSUFFICIENT!", ephemeral: true });
+    return interaction.reply({ content: "PRIVILEGE INSUFFICIENT!", flags: MessageFlags.Ephemeral });
 
   await startSpan({
     name: "Discord Verification Handler",
@@ -18,7 +18,7 @@ export async function VertificationHandler(client: DiscordClient, interaction: B
     // Check is already verified
     const newUserRole = client.config.newUserRoleID;
     if(member.roles.cache.has(newUserRole) && await user.isVerified())
-      return await interaction.reply({ content: "You are already verified!", ephemeral: true });
+      return await interaction.reply({ content: "You are already verified!", flags: MessageFlags.Ephemeral });
 
     await startSpan({
       name: "Update Verification Status",
@@ -29,7 +29,7 @@ export async function VertificationHandler(client: DiscordClient, interaction: B
       await user.updateUserData({ rulesconfirmedon: new Date() });
 
       // Send the message
-      await interaction.reply({ content: "Thank you for confirming the rules.", ephemeral: true });
+      await interaction.reply({ content: "Thank you for confirming the rules.", flags: MessageFlags.Ephemeral });
       await client.logger.sendLog({
         type: "Interaction",
         message: `**${interaction.user.tag}** has confirmed the rules.`

@@ -1,4 +1,15 @@
-import { ActionRowBuilder, CommandInteraction, DiscordjsError, DiscordjsErrorCodes, ModalBuilder, ModalSubmitInteraction, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { 
+  ActionRowBuilder,
+  CommandInteraction,
+  DiscordjsError,
+  DiscordjsErrorCodes,
+  MessageFlags,
+  ModalBuilder,
+  ModalSubmitInteraction,
+  SlashCommandBuilder,
+  TextInputBuilder,
+  TextInputStyle
+} from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
@@ -79,14 +90,14 @@ export class FeedbackCommand extends baseCommand {
       }), allowDevDM, userSentryErrorID);
     } catch(ex) {
       if(ex instanceof DiscordjsError && ex.code === DiscordjsErrorCodes.InteractionCollectorError)
-        return await interaction.followUp({content: "You took too long to submit the request!", ephemeral: true});
+        return await interaction.followUp({content: "You took too long to submit the request!", flags: MessageFlags.Ephemeral});
       captureException(ex);
     }
   }
 
   private async processResult(result: ModalSubmitInteraction, allowDevDM: boolean, sentryEventID?: string) {
     const components = result.components.map(c=>c.components[0]);
-    await result.reply({content: "Thank you for submitting the feedback!", ephemeral: true});
+    await result.reply({content: "Thank you for submitting the feedback!", flags: MessageFlags.Ephemeral});
     captureFeedback({
       associatedEventId: sentryEventID,
       name: result.user.username,
