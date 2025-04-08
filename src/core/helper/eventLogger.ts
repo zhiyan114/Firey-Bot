@@ -63,10 +63,20 @@ export class eventLogger {
       });
 
       // ! Sentry Experimental !
-      if(log.type === "Interaction")
-        logger.info(logger.fmt`[Event Logger] User Interaction Executed: ${log.message}`, log.metadata);
-      if(log.type === "Info")
-        logger.info(logger.fmt`[Event Logger] General Info: ${log.message}`, log.metadata);
+      switch(log.type) {
+        case "Interaction":
+          logger.debug(logger.fmt`[User Interaction] ${log.message}`, log.metadata);
+          break;
+        case "Info":
+          logger.info(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
+          break;
+        case "Warning":
+          logger.warn(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
+          break;
+        case "Error":
+          logger.error(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
+          break;
+      }
 
     });
   }
