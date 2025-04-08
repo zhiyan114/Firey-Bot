@@ -1,6 +1,6 @@
 // This should handle all command callbacks and registerations
 
-import { ChannelType, CommandInteraction, ContextMenuCommandInteraction, REST, Routes } from "discord.js";
+import { ChannelType, CommandInteraction, ContextMenuCommandInteraction, MessageFlags, REST, Routes } from "discord.js";
 import { 
   EvalCommand, TwitchChatRelay, TwitchVerify, banCommand,
   getPointsCommand, kickCommand, leaderboardCommand, purgeCommand,
@@ -89,7 +89,7 @@ export class DiscordCommandHandler {
     if(command.access) {
       // User ID Check
       if(command.access.users && command.access.users.length > 0 && !command.access.users.includes(interaction.user.id)) {
-        await interaction.reply({content: "You do not have permission to use this command.", ephemeral: true});
+        await interaction.reply({content: "You do not have permission to use this command.", flags: MessageFlags.Ephemeral});
         return;
       }
 
@@ -98,7 +98,7 @@ export class DiscordCommandHandler {
         const member = interaction.guild?.members.cache.get(interaction.user.id);
         if(!member) return;
         if(!member.roles.cache.some(r=>command.access?.roles?.includes(r.id))) {
-          await interaction.reply({content: "You do not have permission to use this command.", ephemeral: true});
+          await interaction.reply({content: "You do not have permission to use this command.", flags: MessageFlags.Ephemeral});
           return;
         }
       }
@@ -122,11 +122,11 @@ export class DiscordCommandHandler {
     
           // Let the user know that something went wrong
           if(interaction.replied)
-            await interaction.followUp({content: "An error occur during command execution, please use the feedback command to submit a report.", ephemeral: true});
+            await interaction.followUp({content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral});
           else if (interaction.deferred)
             await interaction.editReply({content: "An error occur during command execution, please use the feedback command to submit a report."});
           else
-            await interaction.reply({content: "An error occur during command execution, please use the feedback command to submit a report.", ephemeral: true});
+            await interaction.reply({content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral});
         });
         
       }

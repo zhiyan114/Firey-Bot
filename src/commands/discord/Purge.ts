@@ -1,4 +1,11 @@
-import { ChannelType, CommandInteraction, DiscordAPIError, InteractionContextType, SlashCommandBuilder } from "discord.js";
+import { 
+  ChannelType,
+  CommandInteraction,
+  DiscordAPIError,
+  InteractionContextType,
+  MessageFlags,
+  SlashCommandBuilder 
+} from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
@@ -40,15 +47,15 @@ export class purgeCommand extends baseCommand {
 
     // Some checks
     if(amount < 1 || amount > 100)
-      return await interaction.reply({content: "The amount of messages to purge must be between 1 and 100.", ephemeral: true});
+      return await interaction.reply({content: "The amount of messages to purge must be between 1 and 100.", flags: MessageFlags.Ephemeral});
     if(!interaction.channel || interaction.channel.type !== ChannelType.GuildText)
-      return await interaction.reply({content: "This command can only be used in a text channel.", ephemeral: true});
+      return await interaction.reply({content: "This command can only be used in a text channel.", flags: MessageFlags.Ephemeral});
 
     // Attempt to purge
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     try {
       await interaction.channel.bulkDelete(amount);
-      await interaction.followUp({content: `Successfully purged ${amount} messages!`, ephemeral: true});
+      await interaction.followUp({content: `Successfully purged ${amount} messages!`, flags: MessageFlags.Ephemeral});
 
       // zhiyan114's purge will not be logged for log channel for maintenance purposes
       if(interaction.channel.id === this.client.config.logChannelID && interaction.user.id === "233955058604179457")
@@ -69,20 +76,20 @@ export class purgeCommand extends baseCommand {
         if(ex.code === APIErrors.BULK_DELETE_MESSAGE_TOO_OLD)
           return await interaction.followUp({
             content: "Cannot purge messages that are older than 14 days old!",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
           });
         
         if(ex.code === APIErrors.UNKNOWN_MESSAGE)
           return await interaction.followUp({
             content: "Attempted to delete invalid message, please run the command again.",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
           });
       }
 
       captureException(ex);
       return await interaction.followUp({
         content: "Exception occur while purging message. The error has been logged.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
   }
