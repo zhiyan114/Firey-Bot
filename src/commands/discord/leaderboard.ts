@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { CommandInteraction, EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 
@@ -25,7 +25,7 @@ export class leaderboardCommand extends baseCommand {
       .setDescription("Show the top ten points holder (cached for 30 minutes)");
   }
   public async execute(interaction: CommandInteraction) {
-    await interaction.deferReply({ephemeral: true});
+    await interaction.deferReply({flags: MessageFlags.Ephemeral});
     const cacheData = await this.client.redis.get(this.cacheKey);
     let boardData: boardData[] = cacheData ? JSON.parse(cacheData) : [];
 

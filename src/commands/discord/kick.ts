@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, InteractionContextType, SlashCommandBuilder } from "discord.js";
+import { CommandInteraction, GuildMember, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
@@ -47,7 +47,7 @@ export class kickCommand extends baseCommand {
     const invite = interaction.options.get("invite",true).value as boolean;
     const target = new DiscordUser(this.client, targetMember.user);
     const issuer = new DiscordUser(this.client, interaction.user);
-    await interaction.deferReply({ephemeral: true});
+    await interaction.deferReply({flags: MessageFlags.Ephemeral});
 
     // Prepare message field for target
     const kickField = [

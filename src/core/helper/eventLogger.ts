@@ -63,10 +63,20 @@ export class eventLogger {
       });
 
       // ! Sentry Experimental !
-      if(log.type === "Interaction")
-        logger.info(logger.fmt`[Event Logger] User Interaction Executed: ${log.message}`, log.metadata);
-      if(log.type === "Info")
-        logger.info(logger.fmt`[Event Logger] General Info: ${log.message}`, log.metadata);
+      switch(log.type) {
+        case "Interaction":
+          logger.debug(logger.fmt`[User Interaction] ${log.message}`, log.metadata);
+          break;
+        case "Info":
+          logger.info(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
+          break;
+        case "Warning":
+          logger.warn(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
+          break;
+        case "Error":
+          logger.error(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
+          break;
+      }
 
     });
   }
@@ -90,20 +100,16 @@ export class eventLogger {
 
   private EmbedColor(type: "Interaction" | "Info" | "Warning" | "Error"): ColorResolvable {
     switch(type) {
-    case "Interaction":
-      return "#00FF00";
-
-    case "Info":
-      return "#0000FF";
-
-    case "Warning":
-      return "#FFFF00";
-
-    case "Error":
-      return "#FF0000";
-
-    default:
-      return "#000000";
+      case "Interaction":
+        return "#00FF00";
+      case "Info":
+        return "#0000FF";
+      case "Warning":
+        return "#FFFF00";
+      case "Error":
+        return "#FF0000";
+      default:
+        return "#000000";
     }
   }
 }

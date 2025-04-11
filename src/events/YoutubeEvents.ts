@@ -35,7 +35,9 @@ export class YoutubeEvents extends baseYEvent {
 
     await this.client.discord.redis.set(`youtube:${data.video.id}`, "true", "EX", 43200);
     console.log(`Video (${data.video.id}) was notified with Publish: ${data.published} and Updated: ${data.updated}`);
-    this.NotificationChannel?.send({ content: `<@&${this.config.pingRoleID}> New Video is out!! Check it out here: ${data.video.link}` });
+
+    const rolePing = this.config.pingRoleID !== "0" ? `<@&${this.config.pingRoleID}>` : "";
+    this.NotificationChannel?.send({ content: `${rolePing} New Video is out!! Check it out here: ${data.video.link}` });
   }
 
   private async subscribe(data: SubEvent) {

@@ -8,6 +8,7 @@ import {
   CommandInteraction,
   EmbedBuilder,
   InteractionContextType,
+  MessageFlags,
   SlashCommandBuilder
 } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
@@ -51,7 +52,7 @@ export class EvalCommand extends baseCommand {
         await channel?.send(msg as string);
     };
 
-    await interaction.deferReply({ephemeral: true});
+    await interaction.deferReply({flags: MessageFlags.Ephemeral});
     try {
       const secureFunc = new Function(
         "client",
@@ -86,10 +87,10 @@ export class EvalCommand extends baseCommand {
       if(typeof context === "object")
         context = JSON.stringify(context);
 
-      return await interaction.followUp({content: `Execution complete! Context Returned: ${context}`, ephemeral: true});
+      return await interaction.followUp({content: `Execution complete! Context Returned: ${context}`, flags: MessageFlags.Ephemeral});
     } catch(ex) {
       const err = ex as Error;
-      await interaction.followUp({content: `Bad Execution [${err.name}]: \`${err.message}\``, ephemeral: true});
+      await interaction.followUp({content: `Bad Execution [${err.name}]: \`${err.message}\``, flags: MessageFlags.Ephemeral});
     }
   }
 

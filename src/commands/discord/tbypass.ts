@@ -1,4 +1,17 @@
-import { ActionRowBuilder, CommandInteraction, DiscordjsError, DiscordjsErrorCodes, GuildMember, InteractionContextType, ModalBuilder, ModalSubmitInteraction, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import {
+  ActionRowBuilder,
+  CommandInteraction,
+  DiscordjsError,
+  DiscordjsErrorCodes,
+  GuildMember,
+  InteractionContextType,
+  MessageFlags,
+  ModalBuilder,
+  ModalSubmitInteraction,
+  SlashCommandBuilder,
+  TextInputBuilder,
+  TextInputStyle
+} from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
@@ -65,7 +78,7 @@ export class TwitchChatRelay extends baseCommand {
       }), tUser.username);
     } catch(ex) {
       if(ex instanceof DiscordjsError && ex.code === DiscordjsErrorCodes.InteractionCollectorError)
-        return await interaction.followUp({content: "You took too long to submit the request!", ephemeral: true});
+        return await interaction.followUp({content: "You took too long to submit the request!", flags: MessageFlags.Ephemeral});
       captureException(ex);
     }
   }
@@ -75,6 +88,6 @@ export class TwitchChatRelay extends baseCommand {
     const message = components.value;
 
     await this.client.twitch.say(this.client.config.twitch.channel, `[@${username}]: ${message}`);
-    await result.reply({content: "Message Sent!", ephemeral: true});
+    await result.reply({content: "Message Sent!", flags: MessageFlags.Ephemeral});
   }
 }

@@ -1,4 +1,4 @@
-import { CommandInteraction, DiscordAPIError, InteractionContextType, SlashCommandBuilder } from "discord.js";
+import { CommandInteraction, DiscordAPIError, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
@@ -40,12 +40,12 @@ export class unbanCommand extends baseCommand {
     const targetUser = interaction.options.get("user", true).user;
     const reason = interaction.options.get("reason", false);
     if(!guild)
-      return interaction.reply({content: "This command can only be used in a server.", ephemeral: true});
+      return interaction.reply({content: "This command can only be used in a server.", flags: MessageFlags.Ephemeral});
     if(!targetUser || targetUser.bot)
-      return interaction.reply({content: "Invalid User/User's ID", ephemeral: true});
+      return interaction.reply({content: "Invalid User/User's ID", flags: MessageFlags.Ephemeral});
     const target = new DiscordUser(this.client, targetUser);
     const issuer = new DiscordUser(this.client, interaction.user);
-    await interaction.deferReply({ephemeral: true});
+    await interaction.deferReply({flags: MessageFlags.Ephemeral});
 
     try {
       // Attempt to unban the user
@@ -62,9 +62,9 @@ export class unbanCommand extends baseCommand {
     } catch(ex) {
       if(ex instanceof DiscordAPIError) {
         if(ex.code === APIErrors.UNKNOWN_USER)
-          return await interaction.followUp({content: "Invalid User/User's ID", ephemeral: true});
+          return await interaction.followUp({content: "Invalid User/User's ID", flags: MessageFlags.Ephemeral});
         if(ex.code === APIErrors.UNKNOWN_BAN)
-          return await interaction.followUp({content: "The user does not exist in the ban list", ephemeral: true});
+          return await interaction.followUp({content: "The user does not exist in the ban list", flags: MessageFlags.Ephemeral});
       }
       captureException(ex);
     }
