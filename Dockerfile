@@ -1,5 +1,5 @@
 # Setup build image
-FROM node:20-bookworm-slim as buildenv
+FROM node:22-bookworm-slim as buildenv
 WORKDIR /source/
 RUN npm install -g npm@latest
 
@@ -42,7 +42,7 @@ RUN npm prune --omit=dev
 
 
 # Setup production image
-FROM node:20-bookworm-slim
+FROM node:22-bookworm-slim
 
 # Setup the environment?
 WORKDIR /app/
