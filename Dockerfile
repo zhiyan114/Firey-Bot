@@ -20,7 +20,7 @@ RUN npx prisma generate
 
 # Passthrough git to keep commit hash up to date
 COPY .git/ ./.git/
-RUN git -C /source/ rev-parse HEAD > "commitHash"
+RUN echo "COMMITHASH=$(git -C /source/ rev-parse HEAD)" >> .env_build
 
 # Build the source
 COPY src/ ./src/
@@ -56,7 +56,11 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Copy files from the build env
 COPY --from=buildenv /source/node_modules /app/node_modules/
 COPY --from=buildenv /source/dist /app/
-COPY --from=buildenv /source/commitHash /app/commitHash
+
+# Import build env
+COPY --from=buildenv /source/.env_build /app/.env_build
+RUN cat .env_build >> .env
+RUN rm .env_build
 
 # Exposed web server port
 EXPOSE ${WEBSERVER_PORT}
