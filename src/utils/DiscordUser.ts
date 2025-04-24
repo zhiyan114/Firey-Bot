@@ -36,6 +36,7 @@ export class DiscordUser {
   private user: User;
   public client: DiscordClient;
   private cachekey: string;
+  private userHash: string;
   public economy: UserEconomy;
   /**
     * This class is used to manage discord users
@@ -47,8 +48,8 @@ export class DiscordUser {
     this.client = client;
 
     // Use the first 6 digit of sha512 as user key
-    const userHash = createHash("sha512").update(user.id).digest("hex");
-    this.cachekey = `discuser:${userHash.slice(0,6)}`;
+    this.userHash = createHash("sha512").update(user.id).digest("hex");
+    this.cachekey = `discuser:${this.userHash.slice(0,6)}`;
     this.economy = new UserEconomy(this, user.id, this.cachekey);
   }
   /**
@@ -145,6 +146,22 @@ export class DiscordUser {
   public getUsername() {
     if(this.user.discriminator === "0") return this.user.username;
     return this.user.tag;
+  }
+
+  /**
+   * General discord user ID getter w/o exposing user object
+   */
+  public getUserID() {
+    return this.user.id;
+  }
+
+  /** Get redis user hash 
+   * @param prefix Redis key prefix to use (optional)
+   * @returns The redis key to use
+  */
+  public getRedisKey(prefix?: string) {
+    if(!prefix) return this.cachekey;
+    return `${prefix}:${this.cachekey}`;
   }
 
   /**
@@ -312,8 +329,6 @@ class UserEconomy {
   }
   /**
      * Grant the user certain amount of points
-     * @param options Customize the way points are granted
-     * @param updateTimestampOnly Whether to only update the timestamp of the granted points or not (useful for auto-granting point system to deter spammers)
      */
   public async grantPoints(points: number) {
     return await startSpan({
