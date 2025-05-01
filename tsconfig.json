@@ -16,7 +16,8 @@
         "build.js",
         "./dist",
         "__tests__",
+        "**/*.spec.ts",
         "jest.config.js",
-        "**/*.spec.ts"
+        "./eslint.config.mjs"
     ],
 }
