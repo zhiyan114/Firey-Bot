@@ -6,12 +6,11 @@ import Redis from "ioredis";
 import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents } from "../events";
 
-import { ReactRoleLoader } from "../services/ReactRoleHandler";
+import { unverifyKickLoader, ReactRoleLoader } from "../services";
 import { baseClient } from "./baseClient";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
 import { TwitchClient } from "./TwitchClient";
 import { YoutubeClient } from "./YoutubeClient";
-import { unverifyKickLoader } from "../services";
 
 
 

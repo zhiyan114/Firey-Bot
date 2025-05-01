@@ -30,7 +30,7 @@ export class YoutubeEvents extends baseYEvent {
     if(data.video.title.toLowerCase().includes("[live]"))
       return;
     // Prevent duplicated video links from being posted, which somehow is an issue???
-    if(await this.client.discord.redis.get(`youtube:${data.video.id}`) != null)
+    if(await this.client.discord.redis.get(`youtube:${data.video.id}`) !== null)
       return;
 
     await this.client.discord.redis.set(`youtube:${data.video.id}`, "true", "EX", 43200);
