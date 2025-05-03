@@ -1,10 +1,14 @@
-import { AttachmentBuilder, CommandInteraction, MessageFlags, SlashCommandBuilder } from "discord.js";
+import { AttachmentBuilder,
+  CommandInteraction,
+  InteractionReplyOptions,
+  MessageFlags,
+  SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordClient } from "../../core/DiscordClient";
 import { writeSnapshot } from "heapdump";
-import { captureException } from "@sentry/node";
+import { captureException, captureMessage, withScope } from "@sentry/node";
 import { createGzip } from "zlib";
-import { createReadStream, createWriteStream, unlinkSync, existsSync } from 'fs';
+import { createReadStream, createWriteStream, unlinkSync, existsSync, statSync, readFileSync } from 'fs';
 import { pipeline } from 'stream/promises';
 
 export class heapDump extends baseCommand {
@@ -24,49 +28,84 @@ export class heapDump extends baseCommand {
   }
 
   async execute(interaction: CommandInteraction) {
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
-    // Write Dump
-    const fileName = `heapdump-${Date.now()}.heapsnapshot`;
-    writeSnapshot(fileName, async (err) => {
-      if(err) {
-        if(existsSync(fileName))
-          unlinkSync(fileName);
-
-        const id = captureException(err);
-        return await interaction.followUp({
-          content: `Failed to create heap dump. Check Sentry for more details. ID: ${id}`,
-          flags: MessageFlags.Ephemeral,
-        });
-      }
-
-      // Compress the dump
-      const outputName = `${fileName}.gz`;
-      const gzip = createGzip({level: 9}); // Discord's disguesting 25 MB (10 now??) limit
-      try {
-        await pipeline(createReadStream(fileName), gzip, createWriteStream(outputName));
-      } catch(ex) {
-        if(existsSync(outputName))
-          unlinkSync(outputName);
-
-        const id = captureException(ex);
-        return await interaction.followUp({
-          content: `Failed to compress heap dump. Check Sentry for more details. ID: ${id}`,
-          flags: MessageFlags.Ephemeral,
-        });
-      } finally {
-        unlinkSync(fileName);
-      }
-
-
-      // Send dump and clean up
-      await interaction.followUp({
-        content: `Heap dump created successfully.`,
-        flags: MessageFlags.Ephemeral,
-        files: [new AttachmentBuilder(`./${outputName}`, { name: outputName })],
+    await withScope(async (scope) => {
+      scope.setUser({
+        id: interaction.user.id,
+        username: interaction.user.username,
       });
-      unlinkSync(outputName);
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
+      // Write Dump
+      const fileName = `heapdump-${Date.now()}.heapsnapshot`;
+      writeSnapshot(fileName, async (err) => {
+        if(err) {
+          if(existsSync(fileName))
+            unlinkSync(fileName);
+
+          const id = captureException(err);
+          return await interaction.followUp({
+            content: `Failed to create heap dump. Check Sentry for more details. ID: ${id}`,
+            flags: MessageFlags.Ephemeral,
+          });
+        }
+
+        // Compress the dump
+        const outputName = `${fileName}.gz`;
+        const gzip = createGzip({level: 9}); // Discord's disguesting 25 MB (10 now??) limit
+        try {
+          await pipeline(createReadStream(fileName), gzip, createWriteStream(outputName));
+        } catch(ex) {
+          // Upload uncompressed dump to sentry as backup (< 100 MB sentry limit)
+          if(statSync(fileName).size < 100 * 1024 * 1024)
+            scope.addAttachment({
+              data: readFileSync(fileName),
+              filename: fileName,
+            });
+          const id = captureException(ex);
+          scope.clearAttachments();
+
+          await interaction.followUp({
+            content: `Failed to compress heap dump. Check Sentry for more details. ID: ${id}`,
+            flags: MessageFlags.Ephemeral,
+          });
+
+          if(existsSync(outputName))
+            unlinkSync(outputName);
+          return;
+        } finally {
+          unlinkSync(fileName);
+        }
+
+
+        // Send dump to appropriate place and clean up
+        const followUpData = {
+          content: `Heap dump created successfully.`,
+          flags: MessageFlags.Ephemeral,
+          files: [] as AttachmentBuilder[],
+        } satisfies InteractionReplyOptions;
+
+        const fileSize = statSync(fileName).size;
+        if(fileSize < 25 * 1024 * 1024) {
+          // Discord Attachment
+          followUpData.files.push(new AttachmentBuilder(`./${outputName}`, { name: outputName }));
+        } else if(fileSize < 100 * 1024 * 1024) {
+          // Sentry Attachment
+          scope.addAttachment({
+            data: readFileSync(outputName),
+            filename: outputName,
+          });
+          const id = captureMessage("Heap dump requested by a developer", {level: "debug"});
+          scope.clearAttachments();
+
+          followUpData.content += ` Heap dump exceeded discord attachment limit, uploading to Sentry instead. ID: ${id}`;
+        } else {
+          // Neither works... Might implement CloudFlare R2 for this case...
+          followUpData.content += ` Heap dump exceeded both discord and sentry attachment limits. ! Consider CF R2 Solution !`;
+        }
+        
+        await interaction.followUp(followUpData);
+        unlinkSync(outputName);
+      });
 
     });
   }
