@@ -98,7 +98,7 @@ sentryInit({
     // This will be messy anyway
     if(ctx.name === "Chat Reward Points")
       return 0.2;
-    if(ctx.name == "Discord Command: eval") // Doesn't make sense to have this sampled lol
+    if(ctx.name === "Discord Command: eval") // Doesn't make sense to have this sampled lol
       return 0;
     return 1;
 

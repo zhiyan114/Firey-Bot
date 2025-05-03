@@ -18,7 +18,7 @@ export class EvalCommand extends baseCommand {
   public client: DiscordClient;
   public metadata = new SlashCommandBuilder()
     .setName("eval")
-    .setDescription("Evaluates a code snippet for debugging purposes; Requires the highest privilege to run.")
+    .setDescription("Evaluates a code snippet for debugging purposes (DevTool)")
     .setContexts([InteractionContextType.Guild])
     .addStringOption(option=>
       option.setName("code")

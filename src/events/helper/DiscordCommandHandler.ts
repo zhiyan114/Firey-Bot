@@ -4,7 +4,7 @@ import { ChannelType, CommandInteraction, ContextMenuCommandInteraction, Message
 import { 
   EvalCommand, TwitchChatRelay, TwitchVerify, banCommand,
   getPointsCommand, kickCommand, leaderboardCommand, purgeCommand,
-  softBanCommand, unbanCommand, FeedbackCommand
+  softBanCommand, unbanCommand, FeedbackCommand, heapDump
 } from "../../commands/discord";
 import { baseCommand } from "../../core/baseCommand";
 import { captureException, startSpan } from "@sentry/node";
@@ -33,6 +33,7 @@ export class DiscordCommandHandler {
       new TwitchVerify(client),
       new TwitchChatRelay(client),
       new FeedbackCommand(client),
+      new heapDump(client),
     ] satisfies baseCommand[];
   }
 
