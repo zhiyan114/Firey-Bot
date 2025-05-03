@@ -1,5 +1,6 @@
 /*
 * Points reward system for voice chat activities
+* !!! UNFINISHED - Probably never will !!!
 */
 
 import { GuildMember, VoiceChannel, VoiceState } from "discord.js";
