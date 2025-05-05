@@ -28,7 +28,7 @@ export class RedisEvents extends baseEvent {
     if(this.errCount++ <= 5)
       this.client.logger.sendLog({
         type: "Error",
-        message: "Redis: Client Thrown Exception"
+        message: "[Redis] Client Thrown Exception: " + err.message,
       });
   }
 
