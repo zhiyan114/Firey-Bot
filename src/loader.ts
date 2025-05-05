@@ -19,7 +19,10 @@ import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
 import { redisPrefix } from "./config.json";
-import {errors} from 'undici';
+import { errors } from 'undici';
+
+// Init Stuff
+const errCntDB = new Map<string, number>();
 
 sentryInit({
   dsn: process.env["SENTRY_DSN"],
@@ -90,6 +93,23 @@ sentryInit({
     if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null; // Somehow...
     if(ex instanceof Error && ex.message.includes('Could not load the "sharp"')) return null; // Holy Hell, sharp...
     if(ex instanceof errors.SocketError && ex.message === "other side closed") return null; // Probably just discord's WS downtime
+
+    // Ignore same errors if seen more than 5 times
+    if(typeof(ex) === "string") {
+      const cnt = errCntDB.get(ex) ?? 0;
+      if(cnt > 5) return null;
+      errCntDB.set(ex, cnt + 1);
+    }
+    if(typeof(ex) === "number" || typeof(ex) === "bigint") {
+      const cnt = errCntDB.get(ex.toString()) ?? 0;
+      if(cnt > 5) return null;
+      errCntDB.set(ex.toString(), cnt + 1);
+    }
+    if(ex instanceof Error) {
+      const cnt = errCntDB.get(ex.name+ex.message) ?? 0;
+      if(cnt > 5) return null;
+      errCntDB.set(ex.name+ex.message, cnt + 1);
+    }
     
     return evnt;
   },

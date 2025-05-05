@@ -7,7 +7,8 @@ import { baseEvent } from "../core/baseEvent";
 
 export class RedisEvents extends baseEvent {
   client: DiscordClient;
-  alreadyReconWarned = false;
+  private alreadyReconWarned = false;
+  private errCount = 0;
 
   constructor(client: DiscordClient) {
     super();
@@ -18,20 +19,28 @@ export class RedisEvents extends baseEvent {
     this.client.redis.on("error", this.error.bind(this));
     this.client.redis.on("ready", this.ready.bind(this));
     this.client.redis.on("reconnecting", this.reconnecting.bind(this));
+
+    // Reset errCount per 30 minutes...
+    setInterval(() => {
+      this.errCount = 0;
+    }, 30*60*1000);
   }
 
   private error(err: Error) {
     if(err.message === "Connection timeout") return;
     if(err.message === "getaddrinfo ENOTFOUND redis") return;
     captureException(err);
-    this.client.logger.sendLog({
-      type: "Error",
-      message: "Redis: Client Thrown Exception"
-    });
+    if(this.errCount++ <= 10)
+      this.client.logger.sendLog({
+        type: "Error",
+        message: "[Redis] Client Thrown Exception: " + err.message,
+      });
+      
   }
 
   private ready() {
     this.alreadyReconWarned = false;
+    this.errCount = 0;
 
     console.log("Redis Connected");
     this.client.logger.sendLog({

@@ -10,7 +10,7 @@ import { captureException, captureMessage, withScope } from "@sentry/node";
 import { createGzip } from "zlib";
 import { createReadStream, createWriteStream, unlinkSync, existsSync, statSync, readFileSync } from 'fs';
 import { pipeline } from 'stream/promises';
-import { freemem } from "os";
+import { totalmem } from "os";
 
 export class heapDump extends baseCommand {
   client: DiscordClient;
@@ -37,11 +37,11 @@ export class heapDump extends baseCommand {
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       // HeapDump requires x2 the memory of the current heap size
-      const heapSize = process.memoryUsage().heapUsed;
-      const sysMemFree = freemem();
-      if(sysMemFree < heapSize * 1.25) // x1.25 multiplier for safety
+      const rssSize = process.memoryUsage().rss;
+      const sysMemCount = process.constrainedMemory() || totalmem();
+      if(sysMemCount < rssSize * 2.25) // x1.25 multiplier for safety
         return await interaction.followUp({
-          content: `Not enough memory to create heap dump. Free memory: ${Math.round(sysMemFree / 1024 / 1024)} MB, Heap size: ${Math.round(heapSize / 1024 / 1024)} MB`,
+          content: `Not enough memory to create heap dump. Total memory: ${Math.round(sysMemCount / 1024 / 1024)} MB,  Mem Usage: ${Math.round(rssSize / 1024 / 1024)} MB`,
           flags: MessageFlags.Ephemeral,
         });
 
