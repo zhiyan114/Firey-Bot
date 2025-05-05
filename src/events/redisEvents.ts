@@ -7,7 +7,8 @@ import { baseEvent } from "../core/baseEvent";
 
 export class RedisEvents extends baseEvent {
   client: DiscordClient;
-  alreadyReconWarned = false;
+  private alreadyReconWarned = false;
+  private errCount = 0;
 
   constructor(client: DiscordClient) {
     super();
@@ -24,14 +25,16 @@ export class RedisEvents extends baseEvent {
     if(err.message === "Connection timeout") return;
     if(err.message === "getaddrinfo ENOTFOUND redis") return;
     captureException(err);
-    this.client.logger.sendLog({
-      type: "Error",
-      message: "Redis: Client Thrown Exception"
-    });
+    if(this.errCount++ <= 5)
+      this.client.logger.sendLog({
+        type: "Error",
+        message: "Redis: Client Thrown Exception"
+      });
   }
 
   private ready() {
     this.alreadyReconWarned = false;
+    this.errCount = 0;
 
     console.log("Redis Connected");
     this.client.logger.sendLog({
