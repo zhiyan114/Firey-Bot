@@ -19,17 +19,23 @@ export class RedisEvents extends baseEvent {
     this.client.redis.on("error", this.error.bind(this));
     this.client.redis.on("ready", this.ready.bind(this));
     this.client.redis.on("reconnecting", this.reconnecting.bind(this));
+
+    // Reset errCount per 30 minutes...
+    setInterval(() => {
+      this.errCount = 0;
+    }, 30*60*1000);
   }
 
   private error(err: Error) {
     if(err.message === "Connection timeout") return;
     if(err.message === "getaddrinfo ENOTFOUND redis") return;
     captureException(err);
-    if(this.errCount++ <= 5)
+    if(this.errCount++ <= 10)
       this.client.logger.sendLog({
         type: "Error",
         message: "[Redis] Client Thrown Exception: " + err.message,
       });
+      
   }
 
   private ready() {
