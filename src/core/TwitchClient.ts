@@ -6,8 +6,8 @@ import { baseClient } from "./baseClient";
 
 
 export class TwitchClient extends Client implements baseClient {
-  public discord: DiscordClient;
-  public streamClient: streamClient;
+  readonly discord: DiscordClient;
+  readonly streamClient: streamClient;
   
   constructor(client: DiscordClient, username: string, token: string) {
     super({

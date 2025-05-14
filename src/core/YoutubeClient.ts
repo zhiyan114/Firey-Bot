@@ -71,10 +71,10 @@ export declare interface YoutubeClient extends YouTubeNotifier {
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class YoutubeClient extends YouTubeNotifier implements baseClient {
-  express: Express.Express;
-  httpServer: https.Server | http.Server;
-  discord: DiscordClient;
-  port: number;
+  readonly express: Express.Express;
+  readonly httpServer: https.Server | http.Server;
+  readonly discord: DiscordClient;
+  readonly port: number;
 
   constructor(config: config) {
     const PubSubPort = config.PubSubPort ?? config.Port;
