@@ -19,5 +19,5 @@ fi
 SRCENV=${ENVIRONMENT:=????}
 
 npx sentry-cli sourcemaps inject ./dist
-npx sentry-cli sourcemaps upload --release="${SRCENV:0:4}@$(git rev-parse --short=7 HEAD)" --dist="$(git rev-parse HEAD)" ./dist
+npx sentry-cli sourcemaps upload --release="${SRCENV:0:4}-$(git rev-parse --short=7 HEAD)" --dist="$(git rev-parse HEAD)" ./dist
 echo Successfully Deployed Source Map
