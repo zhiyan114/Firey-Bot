@@ -1,7 +1,7 @@
 import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketManagerOptions } from "discord.js";
 import config from '../config.json';
 import { PrismaClient } from "@prisma/client";
-import { suppressTracing } from "@sentry/node";
+import { getClient, suppressTracing } from "@sentry/node";
 import Redis from "ioredis";
 import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents } from "../events";
@@ -33,7 +33,7 @@ export class DiscordClient extends Client implements baseClient {
   logger: eventLogger;
   twitch: TwitchClient;
   youtube: YoutubeClient;
-  trimCommitHash: string;
+  sysVer: string; // Software Release Version
 
   constructor() {
     super({
@@ -54,10 +54,8 @@ export class DiscordClient extends Client implements baseClient {
       ]
     });
 
-    // Initalize fields
-    this.trimCommitHash = process.env['COMMITHASH'] ?? "???";
-    if(this.trimCommitHash && this.trimCommitHash.length > 7)
-      this.trimCommitHash = this.trimCommitHash.substring(0, 7);
+    // Set Versioning
+    this.sysVer = getClient()?.getOptions().release ?? "??????";
 
     // Initalize components
     this.logger = new eventLogger(this);
@@ -126,7 +124,7 @@ export class DiscordClient extends Client implements baseClient {
     this.user?.setPresence({
       status: "online",
       activities: [{
-        name: `${this.guilds.cache.find(g=>g.id===this.config.guildID)?.memberCount} cuties :Þ | ver ${this.trimCommitHash}`,
+        name: `${this.guilds.cache.find(g=>g.id===this.config.guildID)?.memberCount} cuties :Þ | ver ${this.sysVer}`,
         type: ActivityType.Watching,
       }],
     });
