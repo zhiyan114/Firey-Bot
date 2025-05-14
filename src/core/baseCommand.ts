@@ -15,9 +15,9 @@ export type accessPerms = {
  * @abstract execute: (interaction: CommandInteraction) => Promise<void> - The function that will be executed when the command is called
  */
 export abstract class baseCommand {
-  abstract client: DiscordClient;
-  public abstract metadata: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup"> | ContextMenuCommandBuilder | SlashCommandOptionsOnlyBuilder;
-  public abstract access: accessPerms;
+  abstract readonly client: DiscordClient;
+  public readonly abstract metadata: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup"> | ContextMenuCommandBuilder | SlashCommandOptionsOnlyBuilder;
+  public readonly abstract access: accessPerms;
   public abstract execute(interaction: CommandInteraction | ContextMenuCommandInteraction): void | Promise<void | unknown>;
 }
 

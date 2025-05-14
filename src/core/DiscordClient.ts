@@ -27,13 +27,13 @@ import { YoutubeClient } from "./YoutubeClient";
  * @method updateStatus - Update the status of the bot
  */
 export class DiscordClient extends Client implements baseClient {
-  config = config;
-  prisma: PrismaClient;
-  redis: Redis;
-  logger: eventLogger;
-  twitch: TwitchClient;
-  youtube: YoutubeClient;
-  sysVer: string; // Software Release Version
+  readonly config = config;
+  readonly prisma: PrismaClient;
+  readonly redis: Redis;
+  readonly logger: eventLogger;
+  readonly twitch: TwitchClient;
+  readonly youtube: YoutubeClient;
+  readonly sysVer: string; // Software Release Version
 
   constructor() {
     super({

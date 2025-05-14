@@ -8,7 +8,7 @@ import { YoutubeClient } from "./YoutubeClient";
  * @method registerEvents - Register the events
  */
 export abstract class baseEvent {
-    abstract client: DiscordClient;
+    readonly abstract client: DiscordClient;
     abstract registerEvents(): void;
 }
 
@@ -18,7 +18,7 @@ export abstract class baseEvent {
  * @method registerEvents - Register the events
  */
 export abstract class baseTEvent {
-    abstract client: TwitchClient;
+    readonly abstract client: TwitchClient;
     abstract registerEvents(): void;
 }
 
@@ -28,6 +28,6 @@ export abstract class baseTEvent {
  * @method registerEvents - Register the events
  */
 export abstract class baseYEvent {
-    abstract client: YoutubeClient;
+    readonly abstract client: YoutubeClient;
     abstract registerEvents(): void;
 }
