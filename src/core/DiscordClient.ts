@@ -33,6 +33,7 @@ export class DiscordClient extends Client implements baseClient {
   logger: eventLogger;
   twitch: TwitchClient;
   youtube: YoutubeClient;
+  sysVer: string; // Software Release Version
 
   constructor() {
     super({
@@ -52,6 +53,9 @@ export class DiscordClient extends Client implements baseClient {
         Partials.User,
       ]
     });
+
+    // Set Versioning
+    this.sysVer = getClient()?.getOptions().release ?? "??????";
 
     // Initalize components
     this.logger = new eventLogger(this);
@@ -117,11 +121,10 @@ export class DiscordClient extends Client implements baseClient {
   }
 
   public updateStatus() {
-    const relVer = getClient()?.getOptions().release;
     this.user?.setPresence({
       status: "online",
       activities: [{
-        name: `${this.guilds.cache.find(g=>g.id===this.config.guildID)?.memberCount} cuties :Þ | ver ${relVer}`,
+        name: `${this.guilds.cache.find(g=>g.id===this.config.guildID)?.memberCount} cuties :Þ | ver ${this.sysVer}`,
         type: ActivityType.Watching,
       }],
     });

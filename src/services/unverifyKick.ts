@@ -38,11 +38,11 @@ export class unverifyKickLoader {
   }
 
   // Check if users is no longer in grace period and kick
-  async checkAndKick(now?: Date | "manual" | "init") {
-    const checkInId = now ? captureCheckIn({
+  async checkAndKick() {
+    const checkInId = captureCheckIn({
       monitorSlug: "unverifykick-service",
       status: "in_progress",
-    }) : undefined;
+    });
     let exeError = false;
 
     try {
