@@ -136,7 +136,7 @@ sentryInit({
     
     return transaction;
   },
-  release: `${process.env["ENVIRONMENT"]?.substring(0,4) ?? "????"}@${process.env['COMMITHASH']?.substring(0, 7) ?? "?????"}`,
+  release: `${process.env["ENVIRONMENT"]?.substring(0,4) ?? "????"}-${process.env['COMMITHASH']?.substring(0, 7) ?? "?????"}`,
   dist: process.env['COMMITHASH'],
   environment: process.env["ENVIRONMENT"]
 });

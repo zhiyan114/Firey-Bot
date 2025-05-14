@@ -48,8 +48,10 @@ if(out.errors.length > 0)
   console.error(`Build Failed: ${JSON.stringify(out.errors)}`);
 const end = Date.now();
 
-// Copy over config.json
-fs.copyFileSync(path.join(basePath, "config.json"), path.join("dist", "config.json"));
+// Copy over minified config.json
+const origin_config = fs.readFileSync(path.join(basePath, "config.json"));
+const minify_config = JSON.stringify(JSON.parse(origin_config));
+fs.writeFileSync(path.join("dist", "config.json"), minify_config);
 
 // Compute build size
 let buildSize = 0;
@@ -58,6 +60,7 @@ let sizeUnitIndex = 0;
 if(out.metafile?.outputs)
   for (const file of Object.keys(out.metafile.outputs))
     buildSize += out.metafile.outputs[file].bytes;
+buildSize += minify_config.length;
 while (buildSize > 1024) {
   buildSize /= 1024;
   sizeUnitIndex++;
