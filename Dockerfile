@@ -21,6 +21,7 @@ RUN npx prisma generate
 # Passthrough git to keep commit hash up to date
 COPY .git/ ./.git/
 RUN echo "COMMITHASH=$(git -C /source/ rev-parse HEAD)" >> .env_build
+RUN echo "ENVIRONMENT=${ENVIRONMENT:=????}" >> .env_build
 
 # Build the source
 COPY src/ ./src/
