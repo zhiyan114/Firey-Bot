@@ -28,8 +28,8 @@
     "test": "jest",
     "lint:check": "eslint . --ext .ts",
     "build:check": "tsc -p tsconfig.json",
-    "build": "rimraf dist && node build.js",
-    "start": "node ./dist/loader.js"
+    "build": "rimraf dist && node build.mjs",
+    "start": "node ./dist/loader.mjs"
   },
   "devDependencies": {
     "@sentry/cli": "^2.31.2",
@@ -54,6 +54,7 @@
   "description": "This bot is developed to serve a single server; thus, codes are not reusable without modification.",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zhiyan114/Firey-Bot.git"

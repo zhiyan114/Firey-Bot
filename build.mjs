@@ -1,7 +1,10 @@
-const esbuild = require('esbuild');
-const fs = require('fs');
-const path = require('path');
-const cProcess = require('child_process');
+// const path = require('path');
+// const cProcess = require('child_process');
+import { build } from "esbuild";
+import { readdirSync, statSync, readFileSync, writeFileSync } from "fs";
+import { join } from "path";
+import { execSync } from "child_process";
+
 
 const basePath = "src";
 
@@ -10,50 +13,59 @@ function getAllFilesInFolder(folderPath) {
   const finalPaths = [];
   while(memDirs.length > 0) {
     const curPath = memDirs.pop();
-    const files = fs.readdirSync(curPath);
+    const files = readdirSync(curPath);
     for(const file of files) {
-      const filePath = path.join(curPath, file).replace(/\\/g, '/');
-      const fileStat = fs.statSync(filePath);
+      const filePath = join(curPath, file).replace(/\\/g, '/');
+      const fileStat = statSync(filePath);
       if(fileStat.isDirectory())
-        memDirs.push(filePath)
+        memDirs.push(filePath);
       if(fileStat.isFile())
         if(filePath.endsWith('.ts') || filePath.endsWith('.js'))
-          finalPaths.push(filePath)
+          finalPaths.push(filePath);
     }
   }
   return finalPaths;
 }
 
 // Get Commit Hash (using git)
-const commitHash = cProcess
-  .execSync('git rev-parse HEAD')
+const commitHash = execSync('git rev-parse HEAD')
   .toString()
   .trim();
 
 // Run Build
 const start = new Date();
-const out = esbuild.buildSync({
+const out = await build({
   entryPoints: getAllFilesInFolder(basePath),
   minify: true,
   minifyIdentifiers: true,
   minifySyntax: true,
   minifyWhitespace: true,
   platform: "node",
-  format: "cjs",
+  format: "esm",
   packages: "external",
   sourcemap: true,
   metafile: true,
   banner: { js: `/* 2022-${start.getFullYear()} © zhiyan114 GPLv3 OwO | Build: ${process.env["ENVIRONMENT"] ?? "????"}-${commitHash.substring(0,7)} */` },
   outdir: "dist",
+  outExtension: { ".js": ".mjs" },
+  plugins: [{
+    name: "mjs import ext",
+    setup(build) {
+      build.onResolve({ filter: /.*/ }, args => {
+        if (args.importer)
+          return { path: args.path + '.mjs', external: true };
+      });
+    }
+  }]
 });
 
 if(out.errors.length > 0)
   console.error(`Build Failed: ${JSON.stringify(out.errors)}`);
 
 // Copy over minified config.json
-const origin_config = fs.readFileSync(path.join(basePath, "config.json"));
+const origin_config = readFileSync(join(basePath, "config.json"));
 const minify_config = JSON.stringify(JSON.parse(origin_config));
-fs.writeFileSync(path.join("dist", "config.json"), minify_config);
+writeFileSync(join("dist", "config.json"), minify_config);
 
 const end = Date.now();
 
