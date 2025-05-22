@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@discordjs/rest": "^2.0.0",
-    "@opentelemetry/instrumentation": "^0.200.0",
+    "@opentelemetry/instrumentation": "^0.201.1",
     "@prisma/client": "^6.5.0",
     "@prisma/instrumentation": "^6.5.0",
     "@sentry/node": "^9.10.1",
