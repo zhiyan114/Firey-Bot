@@ -47,16 +47,7 @@ const out = await build({
   metafile: true,
   banner: { js: `/* 2022-${start.getFullYear()} © zhiyan114 GPLv3 OwO | Build: ${process.env["ENVIRONMENT"] ?? "????"}-${commitHash.substring(0,7)} */` },
   outdir: "dist",
-  outExtension: { ".js": ".mjs" },
-  plugins: [{
-    name: "mjs import ext",
-    setup(build) {
-      build.onResolve({ filter: /.*/ }, args => {
-        if (args.importer)
-          return { path: args.path + '.mjs', external: true };
-      });
-    }
-  }]
+  outExtension: { ".js": ".mjs" }
 });
 
 if(out.errors.length > 0)
