@@ -142,7 +142,7 @@ sentryInit({
 });
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-require("./index"); // Workaround for esbuild's non-order transpilation
+//require("./index"); // Workaround for esbuild's non-order transpilation
 
 // Start the main software
-//import './index';
+import './index';

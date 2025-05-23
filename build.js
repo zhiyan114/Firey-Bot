@@ -33,18 +33,20 @@ const commitHash = cProcess
 // Run Build
 const start = new Date();
 const out = esbuild.buildSync({
-  entryPoints: getAllFilesInFolder(basePath),
+  entryPoints: [basePath+"/loader.ts"],
   minify: true,
   minifyIdentifiers: true,
   minifySyntax: true,
   minifyWhitespace: true,
   platform: "node",
   format: "cjs",
-  packages: "external",
+  packages: "bundle",
   sourcemap: true,
   metafile: true,
+  bundle: true,
   banner: { js: `/* 2022-${start.getFullYear()} © zhiyan114 GPLv3 OwO | Build: ${process.env["ENVIRONMENT"] ?? "????"}-${commitHash.substring(0,7)} */` },
   outdir: "dist",
+  external: ["sharp", "canvas", "heapdump", "zlib-sync", "@prisma", "discord.js"],
 });
 
 if(out.errors.length > 0)
