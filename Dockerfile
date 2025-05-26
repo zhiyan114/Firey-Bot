@@ -41,9 +41,6 @@ COPY src/ ./src/
 COPY build.js ./build.js
 RUN npm run build
 
-# Setup sentry source mapping
-RUN scripts/sentryDeploy.sh
-
 # Perform build cleanup (or post-build stuff)
 RUN scripts/postHook.sh
 RUN npm prune --omit=dev
