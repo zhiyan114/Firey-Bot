@@ -11,23 +11,7 @@ RUN apt-get install python3 make g++ git -y
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Env Setup
-COPY tsconfig.json ./
-COPY scripts/ ./scripts
-RUN chmod +x ./scripts/*
-COPY prisma/ ./
-RUN npx prisma generate
-
-# Passthrough git to keep commit hash up to date
-COPY .git/ ./.git/
-RUN echo "COMMITHASH=$(git -C /source/ rev-parse HEAD)" >> .env_build
-
-# Build the source
-COPY src/ ./src/
-COPY build.js ./build.js
-RUN npm run build
-
-# Setup sentry source mapping
+# Setup Env Variables
 ARG SENTRY_AUTH_TOKEN
 ARG SENTRY_ORG
 ARG SENTRY_PROJECT
@@ -36,9 +20,32 @@ ENV SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
 ENV SENTRY_ORG=${SENTRY_ORG}
 ENV SENTRY_PROJECT=${SENTRY_PROJECT}
 ENV ENVIRONMENT=${ENVIRONMENT}
+
+# Env Setup
+COPY tsconfig.json ./
+COPY scripts/ ./scripts
+RUN chmod +x ./scripts/*
+COPY prisma/ ./
+
+# Passthrough git to keep commit hash up to date
+COPY .git/ ./.git/
+RUN echo "COMMITHASH=$(git -C /source/ rev-parse HEAD)" >> .env_build
+RUN echo "ENVIRONMENT=${ENVIRONMENT:=????}" >> .env_build
+
+# Pre-Build Hook
+RUN scripts/preHook.sh
+
+# Build the source
+RUN npx prisma generate
+COPY src/ ./src/
+COPY build.js ./build.js
+RUN npm run build
+
+# Setup sentry source mapping
 RUN scripts/sentryDeploy.sh
 
 # Perform build cleanup (or post-build stuff)
+RUN scripts/postHook.sh
 RUN npm prune --omit=dev
 
 
