@@ -3,6 +3,9 @@ import { DiscordClient } from "./DiscordClient";
 import { ChatUserstate } from "tmi.js";
 import { TwitchClient } from "./TwitchClient";
 
+/**
+ * users supplies discord User ID while roles supplies discord Role ID
+ */
 export type accessPerms = {
     users?: string[];
     roles?: string[];
@@ -33,6 +36,9 @@ export type tmiTypes = {
 
 /**
  * Base Class for twitch bot commands
+ * @member name: string - The name of the command
+ * @member perm: string[] - The permissions required to execute the command (twitch users)
+ * @abstract execute: (data: tmiTypes) => Promise<void> - The function that will be executed when the command is called
  */
 
 export abstract class baseTCommand {

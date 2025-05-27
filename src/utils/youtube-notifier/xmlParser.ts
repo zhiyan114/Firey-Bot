@@ -5,11 +5,18 @@
 import xml2js from 'xml2js';
 import { Response } from 'express';
 import YouTubeNotifier from './index';
+import { request } from './index';
 
 /**
  * Constants
  */
 const regexp = /^(text\/xml|application\/([\w!#$%&*`\-.^~]+\+)?xml)$/i;
+
+// Internal type definition for error
+interface error extends Error {
+  status?: number;
+}
+
 
 /**
  * Test whether request has body
@@ -20,7 +27,7 @@ const regexp = /^(text\/xml|application\/([\w!#$%&*`\-.^~]+\+)?xml)$/i;
  * @param {YouTubeNotifier} notifier
  * @return {*}
  */
-function xmlbodyparser(req: any, res: Response, notifier: YouTubeNotifier) {
+function xmlbodyparser(req: request, res: Response, notifier: YouTubeNotifier) {
   let data = '';
 
   const parser = new xml2js.Parser({
@@ -35,7 +42,7 @@ function xmlbodyparser(req: any, res: Response, notifier: YouTubeNotifier) {
    * @param {Error} err
    * @param {Object} xml
    */
-  function responseHandler(err: any, xml: unknown) {
+  function responseHandler(err: error | null, xml: unknown) {
     if (err) {
       err.status = 400;
       return notifier._onRequest(req, res);
@@ -84,7 +91,7 @@ function xmlbodyparser(req: any, res: Response, notifier: YouTubeNotifier) {
  * @param {IncomingMessage} req
  * @return boolean
  */
-function hasBody(req: any) {
+function hasBody(req: request) {
   const encoding = 'transfer-encoding' in req.headers;
   const length = 'content-length' in req.headers && req.headers['content-length'] !== '0';
   return encoding || length;
@@ -97,7 +104,7 @@ function hasBody(req: any) {
  * @param {IncomingMessage} req
  * @return string
  */
-function mime(req: any) {
+function mime(req: request) {
   const str = req.headers['content-type'] || '';
   return str.split(';')[0];
 }

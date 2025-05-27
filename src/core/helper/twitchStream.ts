@@ -4,10 +4,9 @@
  * Author: zhiyan114
  */
 import { captureException } from "@sentry/node";
-import axios, { Axios } from "axios";
 import events from "events";
-import https from "https"; 
 import { TwitchClient } from "../TwitchClient";
+import { fetch, Agent, errors } from "undici";
 
 // Type Reference: https://dev.twitch.tv/docs/api/reference#get-streams
 interface stringObjectType {
@@ -51,19 +50,23 @@ export class streamClient extends events.EventEmitter {
   private cooldown: number;
   public isStreaming = false;
   private errLogged = false;
-  private axios: Axios;
+  private webAgent: Agent;
 
   constructor(client: TwitchClient, channelName: string, cooldown?: number, token?: string) {
     super();
     this.client = client;
     this.token = token ?? process.env["TWITCH_TOKEN"] ?? "";
-    if(this.token === "") throw new tClientError("TwitchClient's oauth token is not properly supplied", "twitchStream - BadToken");
+    if(this.token === "") 
+      throw new tClientError("TwitchClient's oauth token is not properly supplied");
     this.channel = channelName;
     this.cooldown = cooldown ?? 30000; // Check every 30 seconds by default
-    // Create a dedicated axios instance for this request to fix ETIMEDOUT (probably due to SNAT issue)
-    this.axios = axios.create({
-      timeout: Math.ceil(this.cooldown/2),
-      httpsAgent: new https.Agent({keepAlive: true})
+    
+    // Create a dedicated fetch Agent instance for this request to fix ETIMEDOUT (probably due to SNAT issue)
+    this.webAgent = new Agent({
+      connect: {
+        keepAlive: true,
+        timeout: Math.ceil(this.cooldown / 2),
+      }
     });
 
     this.mainCheck();
@@ -71,27 +74,38 @@ export class streamClient extends events.EventEmitter {
 
   private mainCheck = async () => {
     try {
-      const serverResponse = await this.axios.get<twitchGetStreamType>(`https://api.twitch.tv/helix/streams?user_login=${this.channel}`,{
+      const serverRes = await fetch(`https://api.twitch.tv/helix/streams?user_login=${this.channel}`, {
+        method: "GET",
         headers: {
-          "client-id": "q6batx0epp608isickayubi39itsckt", // Just using someone else's client ID
+          "Client-ID": "q6batx0epp608isickayubi39itsckt", // Just using someone else's client ID
           "Authorization": `Bearer ${this.token}`,
-        }
+        },
+        dispatcher: this.webAgent,
       });
 
-      if(serverResponse.status !== 200) {
-        this.errLogged = true;
+      const contentType = serverRes.headers.get("content-type");
+      if(!contentType || contentType.includes("application/json") === false) {
         return await this.client.discord.logger.sendLog({
           type: "Warning",
-          message: `Twitch API is responding with ${serverResponse.status} with message \`${JSON.stringify(serverResponse.data)}\``
+          message: `Twitch API has responded with invalid content type header: \`${contentType}\``
         });
       }
 
-      if(serverResponse.data.data.length > 0 && !this.isStreaming) {
-        this.isStreaming = true;
-        this.emit("start",  serverResponse.data.data[0]);
-      }
 
-      else if(serverResponse.data.data.length === 0 && this.isStreaming) {
+      const bodyData = await serverRes.json() as twitchGetStreamType;
+      if(!serverRes.ok)
+        return await this.client.discord.logger.sendLog({
+          type: "Warning",
+          message: `twitchStream: Status code did not respond with OK body: \`\`\`${bodyData}\`\`\``,
+          metadata: {
+            status: serverRes.status.toString(),
+          }
+        });
+
+      if(bodyData.data.length > 0 && !this.isStreaming) {
+        this.isStreaming = true;
+        this.emit("start",  bodyData.data[0]);
+      } else if(bodyData.data.length === 0 && this.isStreaming) {
         this.isStreaming = false;
         this.emit("end");
       }
@@ -106,24 +120,17 @@ export class streamClient extends events.EventEmitter {
     } catch(ex: unknown) {
       if(!this.errLogged) {
         this.errLogged = true;
-        if(ex instanceof axios.AxiosError && (ex.code === axios.AxiosError.ECONNABORTED || ex.code === axios.AxiosError.ETIMEDOUT))
+        if(ex instanceof errors.ConnectTimeoutError && ex.code === "UND_ERR_CONNECT_TIMEOUT")
           return await this.client.discord.logger.sendLog({
             type: "Warning",
             message: `twitchStream: Connection Timeout - ${ex.message}`
           });
-          
-        if(ex instanceof axios.AxiosError)
-          if(ex.response && Math.floor(ex.response.status/100) === 5)
-            return await this.client.discord.logger.sendLog({
-              type: "Warning",
-              message: `twitchStream: Twitch's Backend Server Error (status: ${ex.response.status})`
-            });
         
+        const sentryID = captureException(ex);
         await this.client.discord.logger.sendLog({
           type: "Warning",
-          message: "twitchStream: Service is down due to unhandled exception"
+          message: `twitchStream: Unhandled Exception, check sentry for more details: ${sentryID}`
         });
-        captureException(ex);
       }
     } finally {
       // Check it again every 30 seconds regardless if the api fails or not
@@ -133,9 +140,9 @@ export class streamClient extends events.EventEmitter {
 }
 
 export class tClientError extends Error {
-  constructor(message: string, name?: string) {
+  constructor(message: string) {
     super();
-    this.name = name ?? "twitchClientError";
+    this.name = "twitchClientError";
     this.message = message;
   }
 }

@@ -13,7 +13,7 @@ import {
 import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
-import { captureException, captureFeedback } from "@sentry/node";
+import { captureException, captureFeedback, suppressTracing } from "@sentry/node";
 
 export class FeedbackCommand extends baseCommand {
   client: DiscordClient;
@@ -83,16 +83,18 @@ export class FeedbackCommand extends baseCommand {
     ]);
     await interaction.showModal(modal);
 
-    try {
-      await this.processResult(await interaction.awaitModalSubmit({
-        filter: (i) => i.customId === modalID && i.user.id === interaction.user.id,
-        time: 600000
-      }), allowDevDM, userSentryErrorID);
-    } catch(ex) {
-      if(ex instanceof DiscordjsError && ex.code === DiscordjsErrorCodes.InteractionCollectorError)
-        return await interaction.followUp({content: "You took too long to submit the request!", flags: MessageFlags.Ephemeral});
-      captureException(ex);
-    }
+    await suppressTracing(async() =>{
+      try {
+        await this.processResult(await interaction.awaitModalSubmit({
+          filter: (i) => i.customId === modalID && i.user.id === interaction.user.id,
+          time: 600000
+        }), allowDevDM, userSentryErrorID);
+      } catch(ex) {
+        if(ex instanceof DiscordjsError && ex.code === DiscordjsErrorCodes.InteractionCollectorError)
+          return await interaction.followUp({content: "You took too long to submit the request!", flags: MessageFlags.Ephemeral});
+        captureException(ex);
+      }
+    });
   }
 
   private async processResult(result: ModalSubmitInteraction, allowDevDM: boolean, sentryEventID?: string) {
