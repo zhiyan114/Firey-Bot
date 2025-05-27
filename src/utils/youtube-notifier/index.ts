@@ -4,7 +4,6 @@
  */
 import EventEmitter from 'events';
 import server from './server';
-import axois from 'axios';
 import urllib from 'url';
 import qs from 'querystring';
 import crypto from 'crypto';
@@ -217,11 +216,13 @@ export default class YouTubeNotifier extends EventEmitter {
 
     if (this.options.secret) data['hub.secret'] = this.options.secret;
 
-    axois.post(this.options.hubUrl!, qs.stringify(data), {
+    fetch(this.options.hubUrl!, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-    });
+      body: qs.stringify(data),
+      method: 'POST',
+    })
   }
 
   /**
