@@ -132,7 +132,7 @@ export class DiscordEvents extends baseEvent {
         this.client.updateStatus();
 
         // Send a welcome banner
-        const BannerBuff = await (new BannerPic()).generate(user.getUsername(), member.user.displayAvatarURL({size: 512}));
+        const BannerBuff = await (new BannerPic()).generate(user.getUsername(), member.user.displayAvatarURL({size: 512, extension: "png"}));
         await channel.send({files: [BannerBuff]});
       });
     });
