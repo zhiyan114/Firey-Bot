@@ -83,7 +83,7 @@ export class FeedbackCommand extends baseCommand {
     ]);
     await interaction.showModal(modal);
 
-    suppressTracing(async() =>{
+    await suppressTracing(async() =>{
       try {
         await this.processResult(await interaction.awaitModalSubmit({
           filter: (i) => i.customId === modalID && i.user.id === interaction.user.id,
