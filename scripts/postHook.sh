@@ -14,8 +14,9 @@ if [ -n "$SENTRY_AUTH_TOKEN" ] && [ -n "$SENTRY_ORG" ] && [ -n "$SENTRY_PROJECT"
   # Sentry Release info setup
   RELEXIST="$(npx sentry-cli releases info "$RELSTR")"
   if [ -n "$RELEXIST" ]; then
-    npx sentry-cli releases finalize "$RELSTR"
     npx sentry-cli releases set-commits "$RELSTR" --auto
+    npx sentry-cli releases finalize "$RELSTR"
+    npx sentry-cli deploys new -e "${SRCENV:0:4}" -r "$RELSTR"
     echo "Sentry Release Finalized for $RELSTR..."
   else
     echo "Sentry Release Cannot be Finalized due to missing pre-published release"
