@@ -5,8 +5,7 @@
  */
 
 import { Canvas, createCanvas, loadImage, CanvasRenderingContext2D } from "canvas";
-import https from "https";
-import sharp from "sharp";
+
 /**
  * Generate a welcome banner for new users joined to the server
  */
@@ -94,7 +93,7 @@ export class BannerPic {
     ctx.stroke();
     ctx.clip();
     // Calculate position data
-    const pfp = await loadImage(await this.urltobuff(url));
+    const pfp = await loadImage(url);
     const aspect = pfp.height / pfp.width;
     const hsx = radius*Math.max(1.0/aspect, 1);
     const hsy = radius*Math.min(aspect, 1.0);
@@ -103,22 +102,5 @@ export class BannerPic {
     ctx.fillRect(this.canvas.width/2 - hsx,this.canvas.height/3 - hsy, hsx*2, hsy*2);
     // Draw in the profile picture
     ctx.drawImage(pfp, this.canvas.width/2 - hsx,this.canvas.height/3 - hsy, hsx*2, hsy*2);
-  }
-  
-  /**
-    * Download an image from a URL and convert it to a Buffer in PNG format
-    * @param url The URL of the image
-    * @returns The Buffer of the image in PNG format
-    */
-  private urltobuff(url: string) {
-    return new Promise<Buffer>((res,rej)=>{
-      https.get(url, (resp)=>{
-        const data: Buffer[] = [];
-        resp.on("data",(chunk)=> data.push(chunk));
-        // Conversion is necessary since discord uses webp as their default format which Node-Canvas doesn't support
-        resp.on("end",async()=> res(await sharp(Buffer.concat(data)).toFormat("png").toBuffer()));
-        resp.on("error",(err)=> rej(err));
-      });
-    });
   }
 }
