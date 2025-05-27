@@ -21,6 +21,12 @@ export type NotifierOptions = {
   path?: string;
   hubUrl?: string;
 }
+
+export interface request extends Request {
+  rawBody?: string;
+  _body?: boolean;
+}
+
 /**
  * Constants
  */
@@ -283,7 +289,7 @@ export default class YouTubeNotifier extends EventEmitter {
    * @param {IncomingMessage} req
    * @param {ServerResponse} res
    */
-  _onPostRequest(req: any, res: Response) {
+  _onPostRequest(req: request, res: Response) {
     let signatureParts, algo, signature, hmac;
 
     // Invalid POST
@@ -307,9 +313,11 @@ export default class YouTubeNotifier extends EventEmitter {
 
     // Match Secret
     if (this.options.secret) {
-      signatureParts = req.headers['x-hub-signature'].split('=');
-      algo = (signatureParts.shift() || '').toLowerCase();
-      signature = (signatureParts.pop() || '').toLowerCase();
+      const hubSig = req.headers?.['x-hub-signature'];
+      if(hubSig && !Array.isArray(hubSig))
+        signatureParts = hubSig.split('=');
+      algo = (signatureParts?.shift() || '').toLowerCase();
+      signature = (signatureParts?.pop() || '').toLowerCase();
 
       try {
         hmac = crypto.createHmac(algo, this.options.secret);
@@ -317,7 +325,8 @@ export default class YouTubeNotifier extends EventEmitter {
         return res.sendStatus(403);
       }
 
-      hmac.update(rawBody);
+      if(rawBody)
+        hmac.update(rawBody);
 
       // Return a 200 response even if secret did not match
       if (hmac.digest('hex').toLowerCase() !== signature) {
