@@ -1,24 +1,19 @@
 {
   "dependencies": {
     "@discordjs/rest": "^2.0.0",
-    "@opentelemetry/instrumentation": "^0.201.1",
     "@prisma/client": "^6.5.0",
-    "@prisma/instrumentation": "^6.5.0",
     "@sentry/node": "^9.10.1",
     "bufferutil": "^4.0.6",
     "canvas": "^3.0.1",
     "discord.js": "^14.11.0",
     "dotenv": "^16.4.5",
-    "erlpack": "github:discord/erlpack",
     "express": "^5.1.0",
-    "fluent-ffmpeg": "^2.1.2",
     "heapdump": "^0.3.15",
     "ioredis": "^5.4.1",
     "node-cron": "^4.0.5",
     "sharp": "^0.34.1",
     "tmi.js": "^1.8.5",
     "undici": "^7.10.0",
-    "utf-8-validate": "^6.0.3",
     "xml2js": "^0.6.0",
     "zlib-sync": "^0.1.7"
   },
@@ -33,7 +28,6 @@
   "devDependencies": {
     "@sentry/cli": "^2.31.2",
     "@types/express": "^5.0.0",
-    "@types/fluent-ffmpeg": "^2.1.21",
     "@types/heapdump": "^0.3.4",
     "@types/jest": "^29.5.12",
     "@types/node": "^22.10.7",
