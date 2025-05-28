@@ -7,18 +7,14 @@ dotenv();
 // Run Sentry first as required by the docs
 import { 
   consoleLoggingIntegration,
-  expressIntegration, 
   extraErrorDataIntegration, 
-  prismaIntegration, 
-  redisIntegration, 
   rewriteFramesIntegration, 
   init as sentryInit, 
-} from "@sentry/node";
+} from "@sentry/node"; /* track https://github.com/getsentry/sentry-javascript/issues/15213 */
 import { DiscordAPIError, DiscordjsError } from "discord.js";
 import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
-import { redisPrefix } from "./config.json";
 import { errors } from 'undici';
 
 // Init Stuff
@@ -26,7 +22,10 @@ const errCntDB = new Map<string, number>();
 
 sentryInit({
   dsn: process.env["SENTRY_DSN"],
+  dist: process.env['COMMITHASH'],
   maxValueLength: 1000,
+  tracesSampleRate: 0,
+  sendDefaultPii: true,
 
   // Sentry New Feature Testing
   _experiments: {
@@ -38,7 +37,7 @@ sentryInit({
   
   integrations: [
     consoleLoggingIntegration({
-      levels: ["error", "warn", "log"], // ! Beta integration !
+      levels: ["error", "warn", "log"],
     }),
     extraErrorDataIntegration({
       depth: 5
@@ -51,18 +50,13 @@ sentryInit({
         frame.filename = `/${relative(__dirname, absPath).replace(/\\/g, "/")}`;
         return frame;
       }
-    }),
-    prismaIntegration(),
-    redisIntegration({cachePrefixes: [`${redisPrefix}:`]}),
-    expressIntegration(),
+    })
   ],
       
   beforeBreadcrumb: (breadcrumb) => {
     // List of urls to ignore
     const ignoreUrl = [
       "https://api.twitch.tv",
-      //"https://discord.com",
-      //"https://cdn.discordapp.com",
       "https://o125145.ingest.sentry.io", // Why is sentry being added to BC?????
     ];
       
@@ -114,31 +108,15 @@ sentryInit({
     return evnt;
   },
 
-  tracesSampler: (ctx) => {
-    // This will be messy anyway
-    if(ctx.name === "Chat Reward Points")
-      return 0.2;
-    if(ctx.name === "Discord Command: eval") // Doesn't make sense to have this sampled lol
-      return 0;
-    return 1;
-
-  },
-  
   beforeSendTransaction: (transaction) => {
     // Ignore callback stuff from PubSubHubbub
     if(new RegExp("/UwU/youtube/callback/").test(transaction.transaction ?? ""))
       return null;
     if(new RegExp("/test/").test(transaction.transaction ?? ""))
       return null;
-    // Drop Prisma only transactions
-    if(transaction.transaction?.startsWith("prisma:"))
-      return null;
     
     return transaction;
   },
-  release: `${process.env["ENVIRONMENT"]?.substring(0,4) ?? "????"}-${process.env['COMMITHASH']?.substring(0, 7) ?? "?????"}`,
-  dist: process.env['COMMITHASH'],
-  environment: process.env["ENVIRONMENT"]
 });
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
