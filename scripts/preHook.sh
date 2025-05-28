@@ -8,9 +8,6 @@
 SRCENV=${ENVIRONMENT:=????}
 RELSTR="${SRCENV:0:4}-$(git rev-parse --short=7 HEAD)"
 
-# Passthrough guaranteed environment variable
-echo "COMMITHASH=$(git -C /source/ rev-parse HEAD)" >> .env_build
-
 # Sentry Deploy Begin
 if [ -n "$SENTRY_AUTH_TOKEN" ] && [ -n "$SENTRY_ORG" ] && [ -n "$SENTRY_PROJECT" ]; then
   if [ -n "$ENVIRONMENT" ] && [ "$ENVIRONMENT" != "????" ]; then
