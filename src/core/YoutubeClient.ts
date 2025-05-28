@@ -111,7 +111,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
   }
 
   private HealthRoute(req: Express.Request, res: Express.Response) {
-    res.status(200).send("Hello World!");
+    res.status(200).send("You have been OwO");
   }
 
   public async dispose() {

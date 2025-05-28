@@ -1,7 +1,7 @@
 import { ColorResolvable, EmbedBuilder, TextChannel } from "discord.js";
 import { DiscordClient } from "../DiscordClient";
 import { suppressTracing } from "@sentry/node";
-import { logger } from "@sentry/node"; // ! Sentry Experimental !
+import { logger } from "@sentry/node";
 
 
 export interface LogData {
@@ -62,7 +62,6 @@ export class eventLogger {
         embeds: [this.prepareEmbed(log)]
       });
 
-      // ! Sentry Experimental !
       switch(log.type) {
         case "Interaction":
           logger.debug(logger.fmt`[User Interaction] ${log.message}`, log.metadata);

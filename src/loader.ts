@@ -10,7 +10,7 @@ import {
   extraErrorDataIntegration, 
   rewriteFramesIntegration, 
   init as sentryInit, 
-} from "@sentry/node";
+} from "@sentry/node"; /* track https://github.com/getsentry/sentry-javascript/issues/15213 */
 import { DiscordAPIError, DiscordjsError } from "discord.js";
 import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
@@ -35,7 +35,7 @@ sentryInit({
   
   integrations: [
     consoleLoggingIntegration({
-      levels: ["error", "warn", "log"], // ! Beta integration !
+      levels: ["error", "warn", "log"],
     }),
     extraErrorDataIntegration({
       depth: 5
