@@ -25,6 +25,7 @@ sentryInit({
   maxValueLength: 1000,
   tracesSampleRate: 0,
   sendDefaultPii: true,
+  dist: process.env['COMMITHASH'],
 
   // Sentry New Feature Testing
   _experiments: {
@@ -116,9 +117,6 @@ sentryInit({
     
     return transaction;
   },
-  release: `${process.env["ENVIRONMENT"]?.substring(0,4) ?? "????"}-${process.env['COMMITHASH']?.substring(0, 7) ?? "?????"}`,
-  dist: process.env['COMMITHASH'],
-  environment: process.env["ENVIRONMENT"]
 });
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

@@ -26,11 +26,7 @@ COPY tsconfig.json ./
 COPY scripts/ ./scripts
 RUN chmod +x ./scripts/*
 COPY prisma/ ./
-
-# Passthrough git to keep commit hash up to date
 COPY .git/ ./.git/
-RUN echo "COMMITHASH=$(git -C /source/ rev-parse HEAD)" >> .env_build
-RUN echo "ENVIRONMENT=${ENVIRONMENT:=????}" >> .env_build
 
 # Pre-Build Hook
 RUN scripts/preHook.sh
