@@ -24,6 +24,7 @@ sentryInit({
   dsn: process.env["SENTRY_DSN"],
   maxValueLength: 1000,
   tracesSampleRate: 0,
+  sendDefaultPii: true,
 
   // Sentry New Feature Testing
   _experiments: {
