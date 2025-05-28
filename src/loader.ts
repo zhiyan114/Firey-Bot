@@ -22,10 +22,10 @@ const errCntDB = new Map<string, number>();
 
 sentryInit({
   dsn: process.env["SENTRY_DSN"],
+  dist: process.env['COMMITHASH'],
   maxValueLength: 1000,
   tracesSampleRate: 0,
   sendDefaultPii: true,
-  dist: process.env['COMMITHASH'],
 
   // Sentry New Feature Testing
   _experiments: {
