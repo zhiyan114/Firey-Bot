@@ -1,25 +1,5 @@
 import { DiscordClient } from "./core/DiscordClient";
-import { writeFileSync } from "fs";
 import { flush } from "@sentry/node";
-
-
-/**
- * .env persistance setup for docker
- */
-
-function saveEnv() {
-  const envToWrite = process.env["WRITE_ENV"];
-  if(envToWrite) {
-    const envs = envToWrite.replaceAll(' ', '').split(",");
-    let envData = "";
-    for(const env of envs)
-      envData += `${env}=${process.env[env]}\n`;
-    writeFileSync(".env", envData);
-  }
-}
-
-if(process.env['ISDOCKER'])
-  saveEnv();
 
 /**
  * Start up checks
