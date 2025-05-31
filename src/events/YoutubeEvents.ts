@@ -48,7 +48,7 @@ export class YoutubeEvents extends baseYEvent {
     });
 
     if(this.timeoutEvent) clearTimeout(this.timeoutEvent);
-    this.timeoutEvent = setTimeout(()=> { 
+    this.timeoutEvent = setTimeout(()=> {
       this.client.subscribe(this.config.youtubeChannelID);
       this.client.discord.logger.sendLog({
         type: "Info",

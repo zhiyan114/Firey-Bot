@@ -92,15 +92,15 @@ export class DiscordInvite {
         const cache = await this.client.redis.get(this.redisKey);
         if(cache) return inviteOpt.rawCode ? cache : this.baseUrl + cache;
       }
-    
+
       // Default value for the invite
       inviteOpt.maxAge = inviteOpt.maxAge ?? 86400;
       inviteOpt.reason = inviteOpt.reason ?? "Temporary Invite";
 
       // Find a valid guild channel to create invite in
       inviteOpt.channel = inviteOpt.channel ??
-        this.guild.rulesChannel ?? 
-        this.guild.publicUpdatesChannel ?? 
+        this.guild.rulesChannel ??
+        this.guild.publicUpdatesChannel ??
         this.guild.channels.cache.find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined ??
         (await this.guild.channels.fetch()).find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined;
       if(!inviteOpt.channel) throw new DiscordInviteError("No channel is associated with this server");

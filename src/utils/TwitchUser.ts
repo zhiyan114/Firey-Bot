@@ -103,7 +103,7 @@ export class TwitchUser {
       if(newData.memberid !== undefined) filteredData["memberid"] = newData.memberid;
       if(newData.username !== undefined) filteredData["username"] = newData.username;
       if(newData.verified !== undefined) filteredData["verified"] = newData.verified.toString();
-      // Update the cache   
+      // Update the cache
       await this.client.redis.hset(this.cachekey, filteredData);
       // set redis expire key in 3 hours
       await this.client.redis.expire(this.cachekey, 10800);

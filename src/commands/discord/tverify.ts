@@ -27,10 +27,10 @@ export class TwitchVerify extends baseCommand {
 
   public async execute(interaction: CommandInteraction) {
     const twitchUsername = interaction.options.get("username", true).value as string;
-    await interaction.deferReply({flags: MessageFlags.Ephemeral});
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const embed = new EmbedBuilder()
       .setTitle("Link Twitch Account")
-      .setFooter({text: "Twitch Linking System"})
+      .setFooter({ text: "Twitch Linking System" })
       .setTimestamp();
 
     // Check for the request and status

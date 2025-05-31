@@ -78,7 +78,7 @@ class _internalUser {
   private startTS: Date | null;
   public msCounted: number;
 
-  /** msCounted param is used when external cache is used */ 
+  /** msCounted param is used when external cache is used */
   constructor(user: DiscordUser) {
     this.user = user;
     this.startTS = null;
@@ -87,14 +87,14 @@ class _internalUser {
 
   /** Call when voice activity is detected */
   public start() {
-    if(this.startTS) 
+    if(this.startTS)
       return console.warn(`[VoiceChatReward]: User (${this.user.getUserID}) already started activity`);
     this.startTS = new Date();
   }
 
   /** Call when voice activity ends */
   public async end() {
-    if(!this.startTS) 
+    if(!this.startTS)
       return;
     this.msCounted += new Date().getTime() - this.startTS.getTime();
     this.startTS = null;

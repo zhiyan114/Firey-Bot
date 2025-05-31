@@ -1,7 +1,7 @@
 // This should handle all command callbacks and registerations
 
 import { ChannelType, CommandInteraction, ContextMenuCommandInteraction, MessageFlags, REST, Routes } from "discord.js";
-import { 
+import {
   EvalCommand, TwitchChatRelay, TwitchVerify, banCommand,
   getPointsCommand, kickCommand, leaderboardCommand, purgeCommand,
   softBanCommand, unbanCommand, FeedbackCommand, heapDump
@@ -79,8 +79,8 @@ export class DiscordCommandHandler {
         count: this.commands.length.toString()
       }
     });
-  }   
-    
+  }
+
   public async commandEvent(interaction: CommandInteraction | ContextMenuCommandInteraction): Promise<void> {
     // Get the command
     const command = this.commands.find(c=>c.metadata.name===interaction.commandName) as baseCommand | undefined;
@@ -90,7 +90,7 @@ export class DiscordCommandHandler {
     if(command.access) {
       // User ID Check
       if(command.access.users && command.access.users.length > 0 && !command.access.users.includes(interaction.user.id)) {
-        await interaction.reply({content: "You do not have permission to use this command.", flags: MessageFlags.Ephemeral});
+        await interaction.reply({ content: "You do not have permission to use this command.", flags: MessageFlags.Ephemeral });
         return;
       }
 
@@ -99,7 +99,7 @@ export class DiscordCommandHandler {
         const member = interaction.guild?.members.cache.get(interaction.user.id);
         if(!member) return;
         if(!member.roles.cache.some(r=>command.access?.roles?.includes(r.id))) {
-          await interaction.reply({content: "You do not have permission to use this command.", flags: MessageFlags.Ephemeral});
+          await interaction.reply({ content: "You do not have permission to use this command.", flags: MessageFlags.Ephemeral });
           return;
         }
       }
@@ -118,18 +118,18 @@ export class DiscordCommandHandler {
             code: 2,
             message: "Command Execution Error"
           });
-          const id = captureException(ex, {tags: {handled: "no"}});
+          const id = captureException(ex, { tags: { handled: "no" } });
           await this.client.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
-    
+
           // Let the user know that something went wrong
           if(interaction.replied)
-            await interaction.followUp({content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral});
+            await interaction.followUp({ content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral });
           else if (interaction.deferred)
-            await interaction.editReply({content: "An error occur during command execution, please use the feedback command to submit a report."});
+            await interaction.editReply({ content: "An error occur during command execution, please use the feedback command to submit a report." });
           else
-            await interaction.reply({content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral});
+            await interaction.reply({ content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral });
         });
-        
+
       }
     });
   }

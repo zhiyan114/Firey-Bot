@@ -91,7 +91,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
     this.port = config.Port ?? 80;
     this.express.use(config.Path, this.listener());
     this.httpServer = config.https ? https.createServer(this.express) : http.createServer(this.express);
-    
+
     // Add express integration to Sentry
     setupExpressErrorHandler(this.express);
 

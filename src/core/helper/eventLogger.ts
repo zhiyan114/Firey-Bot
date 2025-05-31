@@ -23,7 +23,7 @@ export class eventLogger {
   constructor(client: DiscordClient) {
     this.client = client;
   }
-  
+
   async initalize() {
     // Prevent double initialization
     if(this.channel) {
@@ -87,12 +87,12 @@ export class eventLogger {
       .setDescription(log.message)
       .setColor(this.EmbedColor(log.type))
       .setTimestamp()
-      .setFooter({text: `Internal Report System | ver ${this.client.sysVer}`});
+      .setFooter({ text: `Internal Report System | ver ${this.client.sysVer}` });
 
     // Add the metadata if it exists
     if(log.metadata)
       for(const [name, value] of Object.entries(log.metadata))
-        if(value) embed.addFields({name, value});
+        if(value) embed.addFields({ name, value });
 
     return embed;
   }

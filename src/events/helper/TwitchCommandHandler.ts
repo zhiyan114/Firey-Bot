@@ -36,7 +36,7 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
     await eventData.client.say(eventData.channel, `@${eventData.user.username}, you do not have permission to use this command.`);
     return false;
   }
-  
+
   await startSpan({
     name: `Twitch Command: ${command.name}`,
     op: `twitch.cmd.${command.name}`,
@@ -58,11 +58,11 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
           message: "Command Execution Error"
         });
         // Feedback events are based on discord ID so there's that...
-        const eventID = captureException(ex, {tags: {handled: "no"}});
+        const eventID = captureException(ex, { tags: { handled: "no" } });
         const dClient = eventData.client.discord;
         if(!eventData.user["user-id"]) return true;
         const tUser = await new TwitchUser(dClient, eventData.user["user-id"]).getCacheData();
-  
+
         if(!tUser || !tUser.verified)
           return await eventData.client.say(eventData.channel, `@${eventData.user.username}, an error occured with the command! The developer has been notified.`) && true;
         await dClient.redis.set(`userSentryErrorID:${tUser.memberid}`, eventID, "EX", 1800);
@@ -70,6 +70,6 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
       });
     }
   });
-  
+
   return true;
 }

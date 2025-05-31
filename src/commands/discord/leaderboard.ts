@@ -25,7 +25,7 @@ export class leaderboardCommand extends baseCommand {
       .setDescription("Show the top ten points holder (cached for 30 minutes)");
   }
   public async execute(interaction: CommandInteraction) {
-    await interaction.deferReply({flags: MessageFlags.Ephemeral});
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const cacheData = await this.client.redis.get(this.cacheKey);
     let boardData: boardData[] = cacheData ? JSON.parse(cacheData) : [];
 
@@ -64,6 +64,6 @@ export class leaderboardCommand extends baseCommand {
       .setDescription(finalData)
       .setColor("#00FFFF")
       .setTimestamp();
-    await interaction.followUp({embeds: [embed]});
+    await interaction.followUp({ embeds: [embed] });
   }
 }

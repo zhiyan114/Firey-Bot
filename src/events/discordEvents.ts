@@ -53,8 +53,7 @@ export class DiscordEvents extends baseEvent {
 
         if(interaction.isCommand() || interaction.isContextMenuCommand())
           return await this.commandHandler.commandEvent(interaction);
-        
-  
+
         if(interaction.isButton())
           if(interaction.customId === "RuleConfirm")
             return await VertificationHandler(this.client, interaction);
@@ -120,20 +119,20 @@ export class DiscordEvents extends baseEvent {
           .setColor("#00FFFF")
           .setTitle("Welcome to the server!")
           .setDescription(`Welcome to the Derg server, ${member.user.username}! Please read the rules and press the confirmation button to get full access. Remember to do so within 24 hours or autokick will happen!`);
-          
+
         try {
-          await member.send({embeds: [embed]});
+          await member.send({ embeds: [embed] });
         } catch(ex) {
           if(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)
-            await channel.send({content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`, embeds: [embed]});
+            await channel.send({ content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`, embeds: [embed] });
           else captureException(ex);
         }
-    
+
         this.client.updateStatus();
 
         // Send a welcome banner
-        const BannerBuff = await (new BannerPic()).generate(user.getUsername(), member.user.displayAvatarURL({size: 512, extension: "png"}));
-        await channel.send({files: [BannerBuff]});
+        const BannerBuff = await (new BannerPic()).generate(user.getUsername(), member.user.displayAvatarURL({ size: 512, extension: "png" }));
+        await channel.send({ files: [BannerBuff] });
       });
     });
   }
@@ -182,7 +181,7 @@ export class DiscordEvents extends baseEvent {
 
   private async voiceStateUpdate(old: VoiceState, now: VoiceState) {
     await withIsolationScope(async (scope) => {
-      
+
       scope.setUser({
         id: now.member?.user.id,
         username: now.member?.user.username,
@@ -206,7 +205,7 @@ export class DiscordEvents extends baseEvent {
         const embed = new EmbedBuilder()
           .setColor("#00FFFF")
           .setTitle("Voice Channel Join")
-          .setThumbnail(now.member.user.displayAvatarURL({size: 512}))
+          .setThumbnail(now.member.user.displayAvatarURL({ size: 512 }))
           .setDescription(`<@${now.member.user.id}> has joined the voice channel <#${now.channel.id}>`)
           .setTimestamp()
           .setFields([
@@ -227,7 +226,7 @@ export class DiscordEvents extends baseEvent {
             value: now.member.user.username
           });
 
-        await channel.send({embeds: [embed]});
+        await channel.send({ embeds: [embed] });
       });
     });
   }

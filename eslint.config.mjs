@@ -56,5 +56,14 @@ export default defineConfig([globalIgnores([
     "@typescript-eslint/no-unused-vars": "error",
     "@typescript-eslint/no-unnecessary-template-expression": "error",
     eqeqeq: ["error", "always"],
+    "no-trailing-spaces": ["error"],
+    "spaced-comment": [
+      "error",
+      "always",
+      {
+        "markers": ["!"]
+      }
+    ],
+    "object-curly-spacing": ["error", "always"]
   },
 }]);

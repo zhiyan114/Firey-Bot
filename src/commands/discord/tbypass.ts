@@ -37,7 +37,7 @@ export class TwitchChatRelay extends baseCommand {
   public async execute(interaction: CommandInteraction) {
     if(!(interaction.member instanceof GuildMember)) return; // Not possible since the command usage is set disabled in DM
     const uniqueID = randomUUID();
-    
+
     const tUser = await this.client.prisma.twitch.findUnique({
       select: {
         verified: true,
@@ -50,7 +50,7 @@ export class TwitchChatRelay extends baseCommand {
     if(!tUser || !tUser.verified)
       return interaction.reply("You haven't linked your twitch account with your discord account yet! Use `!link [DiscordID]` on twitch chat to get started.");
     // create a modal box asking user for the input
-    
+
     const modalBox = new ModalBuilder()
       .setCustomId(uniqueID)
       .setTitle("Twitch Unfiltered Chat");
@@ -74,13 +74,13 @@ export class TwitchChatRelay extends baseCommand {
 
     await suppressTracing(async () => {
       try {
-        await this.processResult(await interaction.awaitModalSubmit({ 
+        await this.processResult(await interaction.awaitModalSubmit({
           filter: (i) => i.customId === uniqueID && i.user.id === interaction.user.id,
           time: 300000
         }), tUser.username);
       } catch(ex) {
         if(ex instanceof DiscordjsError && ex.code === DiscordjsErrorCodes.InteractionCollectorError)
-          return await interaction.followUp({content: "You took too long to submit the request!", flags: MessageFlags.Ephemeral});
+          return await interaction.followUp({ content: "You took too long to submit the request!", flags: MessageFlags.Ephemeral });
         captureException(ex);
       }
     });
@@ -91,6 +91,6 @@ export class TwitchChatRelay extends baseCommand {
     const message = components.value;
 
     await this.client.twitch.say(this.client.config.twitch.channel, `[@${username}]: ${message}`);
-    await result.reply({content: "Message Sent!", flags: MessageFlags.Ephemeral});
+    await result.reply({ content: "Message Sent!", flags: MessageFlags.Ephemeral });
   }
 }

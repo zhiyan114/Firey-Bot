@@ -52,7 +52,7 @@ export class EvalCommand extends baseCommand {
         await channel?.send(msg as string);
     };
 
-    await interaction.deferReply({flags: MessageFlags.Ephemeral});
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     try {
       const secureFunc = new Function(
         "client",
@@ -80,22 +80,22 @@ export class EvalCommand extends baseCommand {
           getChannel: this.getChannel,
         }
       );
-      
+
       // Appropriately serialize the context if needed
       if(context instanceof Promise)
         context = await context;
       if(typeof context === "object")
         context = JSON.stringify(context);
 
-      return await interaction.followUp({content: `Execution complete! Context Returned: ${context}`, flags: MessageFlags.Ephemeral});
+      return await interaction.followUp({ content: `Execution complete! Context Returned: ${context}`, flags: MessageFlags.Ephemeral });
     } catch(ex) {
       const err = ex as Error;
-      await interaction.followUp({content: `Bad Execution [${err.name}]: \`${err.message}\``, flags: MessageFlags.Ephemeral});
+      await interaction.followUp({ content: `Bad Execution [${err.name}]: \`${err.message}\``, flags: MessageFlags.Ephemeral });
     }
   }
 
   /* Util commands for eval command runner */
-  
+
   // Automatically add missing users to the database
   private createMissingUser = async () => {
     const dataToPush: userDataType[] = [];
@@ -149,7 +149,7 @@ export class EvalCommand extends baseCommand {
       .setLabel("Confirm")
       .setStyle(ButtonStyle.Success)
     );
-    await channel.send({embeds:[embed], components:[row]});
+    await channel.send({ embeds:[embed], components:[row] });
   };
 
   // Send Embed Message on behalf of the bot lmao

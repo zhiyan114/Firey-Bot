@@ -68,9 +68,9 @@ export class DiscordClient extends Client implements baseClient {
       errorFormat: "minimal"
     });
 
-    //@ts-expect-error Override readonly property
+    // @ts-expect-error Override readonly property
     DefaultWebSocketManagerOptions.identifyProperties.browser = "Discord iOS";
-    
+
     new DiscordEvents(this)
       .registerEvents();
     new RedisEvents(this)
@@ -105,7 +105,7 @@ export class DiscordClient extends Client implements baseClient {
     await new DiscordCommandHandler(this).commandRegister();
     await this.loadServices();
     this.updateStatus();
-    
+
     // Start helper clients
     await this.twitch.start();
     await this.youtube.start();
@@ -134,5 +134,5 @@ export class DiscordClient extends Client implements baseClient {
     await ReactRoleLoader(this);
     await (new unverifyKickLoader(this)).load();
   }
-  
+
 }

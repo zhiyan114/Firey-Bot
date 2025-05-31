@@ -1,8 +1,8 @@
 import { DiscordClient } from "./core/DiscordClient";
-import { 
+import {
   consoleLoggingIntegration,
-  extraErrorDataIntegration, 
-  rewriteFramesIntegration, 
+  extraErrorDataIntegration,
+  rewriteFramesIntegration,
   init as sentryInit,
   flush
 } from "@sentry/node"; /* track https://github.com/getsentry/sentry-javascript/issues/15213 */
@@ -11,7 +11,7 @@ import { relative } from "path";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
 import { errors } from 'undici';
-import {config as dotenv} from "dotenv";
+import { config as dotenv } from "dotenv";
 
 dotenv();
 
@@ -35,7 +35,7 @@ sentryInit({
       return log;
     },
   },
-  
+
   integrations: [
     consoleLoggingIntegration({
       levels: ["error", "warn", "log"],
@@ -53,20 +53,20 @@ sentryInit({
       }
     })
   ],
-      
+
   beforeBreadcrumb: (breadcrumb) => {
     // List of urls to ignore
     const ignoreUrl = [
       "https://api.twitch.tv",
       "https://o125145.ingest.sentry.io", // Why is sentry being added to BC?????
     ];
-      
+
     // Ignore Http Breadcrumbs from the blacklisted url
-    if(breadcrumb.category === "http" && 
+    if(breadcrumb.category === "http" &&
       ignoreUrl.find(url=>breadcrumb.data?.url.startsWith(url))) return null;
     return breadcrumb;
   },
-      
+
   ignoreErrors: [
     "ETIMEDOUT",
     "EADDRINUSE",
@@ -78,10 +78,10 @@ sentryInit({
     "ECONNRESET",
     "getaddrinfo"
   ],
-  
+
   beforeSend : (evnt, hint) => {
     const ex = hint.originalException;
-    
+
     // Ignore the unhandlable errors
     if(ex instanceof DiscordAPIError && ex.code === APIErrors.UNKNOWN_INTERACTION) return null; // Nothing we can do, really...
     if(ex instanceof DiscordjsError && ex.code === "GuildMembersTimeout") return null; // Known issue with discord's backend API
@@ -105,7 +105,7 @@ sentryInit({
       if(cnt >= 5) return null;
       errCntDB.set(ex.name+ex.message, cnt + 1);
     }
-    
+
     return evnt;
   },
 
@@ -115,7 +115,7 @@ sentryInit({
       return null;
     if(new RegExp("/test/").test(transaction.transaction ?? ""))
       return null;
-    
+
     return transaction;
   },
 });

@@ -47,7 +47,7 @@ export class kickCommand extends baseCommand {
     const invite = interaction.options.get("invite",true).value as boolean;
     const target = new DiscordUser(this.client, targetMember.user);
     const issuer = new DiscordUser(this.client, interaction.user);
-    await interaction.deferReply({flags: MessageFlags.Ephemeral});
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     // Prepare message field for target
     const kickField = [
@@ -89,7 +89,7 @@ export class kickCommand extends baseCommand {
       message: `<@${targetMember.id}> has been kicked by <@${interaction.user.id}>`,
       reason,
     });
-    await interaction.followUp({content: "User has been successfully kicked!", ephemeral: true});
+    await interaction.followUp({ content: "User has been successfully kicked!", ephemeral: true });
 
   }
 }

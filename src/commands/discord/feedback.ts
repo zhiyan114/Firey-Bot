@@ -1,4 +1,4 @@
-import { 
+import {
   ActionRowBuilder,
   CommandInteraction,
   DiscordjsError,
@@ -22,11 +22,11 @@ export class FeedbackCommand extends baseCommand {
     users: [],
     roles: [],
   };
-  
+
   constructor(client: DiscordClient) {
     super();
     this.client = client;
-    this.metadata 
+    this.metadata
       .setName("feedback")
       .setDescription("Submit a general bug report or feedback about the bot")
       .addBooleanOption(opt=>
@@ -36,7 +36,7 @@ export class FeedbackCommand extends baseCommand {
       );
 
   }
-  
+
   public async execute(interaction: CommandInteraction) {
     const modalID = randomUUID();
     const allowDevDM = interaction.options.get("dminquiry", true).value as boolean;
@@ -46,11 +46,9 @@ export class FeedbackCommand extends baseCommand {
       .setCustomId(modalID)
       .setTitle("Feedback");
 
-    
     // Let the user know if sentry caught the last error via description text
     const userSentryErrorID = await this.client.redis.get(`userSentryErrorID:${interaction.user.id}`) ?? undefined;
 
-    
     // Create a text notice
     const sentryNotice = userSentryErrorID ?
       "Sentry did caught an error under your ID, so please use complete the field below instead!" :
@@ -91,7 +89,7 @@ export class FeedbackCommand extends baseCommand {
         }), allowDevDM, userSentryErrorID);
       } catch(ex) {
         if(ex instanceof DiscordjsError && ex.code === DiscordjsErrorCodes.InteractionCollectorError)
-          return await interaction.followUp({content: "You took too long to submit the request!", flags: MessageFlags.Ephemeral});
+          return await interaction.followUp({ content: "You took too long to submit the request!", flags: MessageFlags.Ephemeral });
         captureException(ex);
       }
     });
@@ -99,7 +97,7 @@ export class FeedbackCommand extends baseCommand {
 
   private async processResult(result: ModalSubmitInteraction, allowDevDM: boolean, sentryEventID?: string) {
     const components = result.components.map(c=>c.components[0]);
-    await result.reply({content: "Thank you for submitting the feedback!", flags: MessageFlags.Ephemeral});
+    await result.reply({ content: "Thank you for submitting the feedback!", flags: MessageFlags.Ephemeral });
     captureFeedback({
       associatedEventId: sentryEventID,
       name: result.user.username,

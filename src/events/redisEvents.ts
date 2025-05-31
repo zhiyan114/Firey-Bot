@@ -35,7 +35,6 @@ export class RedisEvents extends baseEvent {
         type: "Error",
         message: "[Redis] Client Thrown Exception: " + err.message,
       });
-      
   }
 
   private ready() {

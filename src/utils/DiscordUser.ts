@@ -116,7 +116,7 @@ export class DiscordUser {
       if(newData.rulesconfirmedon !== undefined) filteredData["rulesconfirmedon"] = newData.rulesconfirmedon.toString();
       if(newData.points !== undefined) filteredData["points"] = newData.points.toString();
       if(newData.lastgrantedpoint !== undefined) filteredData["lastgrantedpoint"] = newData.lastgrantedpoint.toString();
-      // Update the cache   
+      // Update the cache
       await this.client.redis.hset(this.cachekey, filteredData);
       // set redis expire key in 5 hours
       await this.client.redis.expire(this.cachekey, 18000);
@@ -155,7 +155,7 @@ export class DiscordUser {
     return this.user.id;
   }
 
-  /** Get redis user hash 
+  /** Get redis user hash
    * @param prefix Redis key prefix to use (optional)
    * @returns The redis key to use
   */
@@ -244,14 +244,14 @@ export class DiscordUser {
           text: "Notification Service"
         });
       if(messageOption.fields) embed.setFields(messageOption.fields);
-      await this.user.send({embeds:[embed]});
+      await this.user.send({ embeds:[embed] });
       return true;
     } catch(ex) {
       if(!(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)) captureException(ex);
       return false;
     }
   }
-    
+
   /**
     * Internal Use: Log the actions the author executed on target
     * @param actionName The name of the action that was taken
@@ -290,11 +290,11 @@ export class DiscordUser {
           });
         else captureException(ex);
       }
-      
+
       await this.client.logger.sendLog({
         type: "Interaction",
         message: opt.message,
-        metadata: {reason: opt.reason, ...opt.metadata},
+        metadata: { reason: opt.reason, ...opt.metadata },
       });
     });
   }
@@ -303,7 +303,7 @@ export class DiscordUser {
 
 
 /**
- * This class is initialized internally by DiscordUser to manage member's economy data 
+ * This class is initialized internally by DiscordUser to manage member's economy data
  * @param userid the user ID that will be used to manage the data with
  * @param user the user object that will help the class function, specifically, access and manage cache data
  */
@@ -340,7 +340,7 @@ class UserEconomy {
       const newData = await this.user.client.prisma.members.update({
         data: {
           lastgrantedpoint: new Date(),
-          points: {increment: points}
+          points: { increment: points }
         },
         where: {
           id: this.userid
@@ -368,7 +368,7 @@ class UserEconomy {
     // User has enough, deduct it
     const newData = await this.user.client.prisma.members.update({
       data: {
-        points: {decrement: points}
+        points: { decrement: points }
       },
       where: {
         id: this.userid,
@@ -416,7 +416,7 @@ class UserEconomy {
         });
         return false;
       }
-        
+
       // Grant the point
       await this.grantPoints(this.rngRewardPoints(5,10));
       return true;

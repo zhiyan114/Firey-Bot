@@ -8,7 +8,7 @@ import { baseClient } from "./baseClient";
 export class TwitchClient extends Client implements baseClient {
   readonly discord: DiscordClient;
   readonly streamClient: streamClient;
-  
+
   constructor(client: DiscordClient, username: string, token: string) {
     super({
       connection: {
@@ -32,7 +32,7 @@ export class TwitchClient extends Client implements baseClient {
       .registerEvents();
 
   }
-    
+
   public async start() {
     await this.connect();
     await this.discord.logger.sendLog({
