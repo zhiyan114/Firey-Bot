@@ -1,4 +1,5 @@
-import { baseTCommand, tmiTypes } from "../../core/baseCommand";
+import type { tmiTypes } from "../../core/baseCommand";
+import { baseTCommand } from "../../core/baseCommand";
 
 export class LurkCommand extends baseTCommand {
   public name = "lurk";

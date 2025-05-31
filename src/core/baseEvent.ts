@@ -1,6 +1,6 @@
-import { DiscordClient } from "./DiscordClient";
-import { TwitchClient } from "./TwitchClient";
-import { YoutubeClient } from "./YoutubeClient";
+import type { DiscordClient } from "./DiscordClient";
+import type { TwitchClient } from "./TwitchClient";
+import type { YoutubeClient } from "./YoutubeClient";
 
 /**
  * base Class for events/callbacks functions

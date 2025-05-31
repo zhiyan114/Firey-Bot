@@ -1,6 +1,7 @@
-import { CommandInteraction, GuildMember, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import type { CommandInteraction, GuildMember } from "discord.js";
+import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
-import { DiscordClient } from "../../core/DiscordClient";
 import { DiscordUser } from "../../utils/DiscordUser";
 
 export class banCommand extends baseCommand {
@@ -48,7 +49,7 @@ export class banCommand extends baseCommand {
     const deleteMessages = interaction.options.get("delete",true).value as boolean;
     const targetUser = new DiscordUser(this.client, targetMember.user);
     const issuerUser = new DiscordUser(this.client, interaction.user);
-    await interaction.deferReply({flags: MessageFlags.Ephemeral});
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     // Notify and ban the user
     await targetUser.sendMessage({
@@ -78,7 +79,7 @@ export class banCommand extends baseCommand {
       message: `<@${targetMember.id}> has been banned by <@${interaction.user.id}>`,
       reason
     });
-    await interaction.followUp({content: "User has been successfully banned!", flags: MessageFlags.Ephemeral});
+    await interaction.followUp({ content: "User has been successfully banned!", flags: MessageFlags.Ephemeral });
   }
 
 }

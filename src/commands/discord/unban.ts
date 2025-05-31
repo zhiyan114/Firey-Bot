@@ -1,5 +1,6 @@
-import { CommandInteraction, DiscordAPIError, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { DiscordClient } from "../../core/DiscordClient";
+import type { CommandInteraction } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { DiscordAPIError, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { APIErrors } from "../../utils/discordErrorCode";
@@ -17,7 +18,7 @@ export class unbanCommand extends baseCommand {
     super();
     this.client = client;
     this.access.roles.push(client.config.adminRoleID);
-    this.metadata 
+    this.metadata
       .setName("unban")
       .setDescription("Remove a user from the ban list")
       .setContexts([InteractionContextType.Guild])
@@ -30,7 +31,7 @@ export class unbanCommand extends baseCommand {
         opt.setName("reason")
           .setDescription("Reason to unban the user (Logging purposes).")
           .setRequired(false)
-          
+
       );
   }
 
@@ -40,12 +41,12 @@ export class unbanCommand extends baseCommand {
     const targetUser = interaction.options.get("user", true).user;
     const reason = interaction.options.get("reason", false);
     if(!guild)
-      return interaction.reply({content: "This command can only be used in a server.", flags: MessageFlags.Ephemeral});
+      return interaction.reply({ content: "This command can only be used in a server.", flags: MessageFlags.Ephemeral });
     if(!targetUser || targetUser.bot)
-      return interaction.reply({content: "Invalid User/User's ID", flags: MessageFlags.Ephemeral});
+      return interaction.reply({ content: "Invalid User/User's ID", flags: MessageFlags.Ephemeral });
     const target = new DiscordUser(this.client, targetUser);
     const issuer = new DiscordUser(this.client, interaction.user);
-    await interaction.deferReply({flags: MessageFlags.Ephemeral});
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     try {
       // Attempt to unban the user
@@ -58,13 +59,13 @@ export class unbanCommand extends baseCommand {
         message: `<@${targetUser.id}> has been unbanned by <@${interaction.user.id}>`,
         reason: reason?.value?.toString()
       });
-      return interaction.followUp({content: `Successfully unbanned <@${targetUser.id}>.`});
+      return interaction.followUp({ content: `Successfully unbanned <@${targetUser.id}>.` });
     } catch(ex) {
       if(ex instanceof DiscordAPIError) {
         if(ex.code === APIErrors.UNKNOWN_USER)
-          return await interaction.followUp({content: "Invalid User/User's ID", flags: MessageFlags.Ephemeral});
+          return await interaction.followUp({ content: "Invalid User/User's ID", flags: MessageFlags.Ephemeral });
         if(ex.code === APIErrors.UNKNOWN_BAN)
-          return await interaction.followUp({content: "The user does not exist in the ban list", flags: MessageFlags.Ephemeral});
+          return await interaction.followUp({ content: "The user does not exist in the ban list", flags: MessageFlags.Ephemeral });
       }
       captureException(ex);
     }

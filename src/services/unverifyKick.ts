@@ -1,5 +1,6 @@
-import { EmbedBuilder, GuildMember } from "discord.js";
-import { DiscordClient } from "../core/DiscordClient";
+import type { GuildMember } from "discord.js";
+import type { DiscordClient } from "../core/DiscordClient";
+import { EmbedBuilder } from "discord.js";
 import { schedule } from "node-cron";
 import { captureCheckIn, captureException } from "@sentry/node";
 import { createHash } from "crypto";
@@ -60,21 +61,20 @@ export class unverifyKickLoader {
           .setTitle("Kicked")
           .setDescription(`You have been automatically kicked from ${guild.name} for not confirming the rules within 24 hours. This system is implemented to prevent bot users from staying in the server. If you wish to stay, please rejoin using the same invite link and confirm the rules.`)
           .setColor("#FFFF00")
-          .setFooter({"text": "System Moderation"})
+          .setFooter({ "text": "System Moderation" })
           .setTimestamp();
-        await member.send({embeds: [embed]});
+        await member.send({ embeds: [embed] });
         await member.kick("User remains unverified for at least 24 hours");
 
         await this.client.logger.sendLog({
           type: "Warning",
           message: `**${member.user.username}** have been kicked from the server for not confirming the rules within 24 hours`
         });
-        
       }
 
     } catch(ex) {
       captureException(ex, {
-        tags: { handled: "no"}
+        tags: { handled: "no" }
       });
       exeError = true;
     } finally {

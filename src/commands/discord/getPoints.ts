@@ -1,5 +1,6 @@
-import { ContextMenuCommandBuilder, EmbedBuilder, MessageFlags, UserContextMenuCommandInteraction } from "discord.js";
-import { DiscordClient } from "../../core/DiscordClient";
+import type { UserContextMenuCommandInteraction } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { ContextMenuCommandBuilder, EmbedBuilder, MessageFlags } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 
@@ -21,8 +22,8 @@ export class getPointsCommand extends baseCommand {
 
   public async execute(interaction: UserContextMenuCommandInteraction) {
     if(interaction.targetUser.bot)
-      return await interaction.reply({content: "Bots do not have points.", flags: MessageFlags.Ephemeral});
-    await interaction.deferReply({flags: MessageFlags.Ephemeral});
+      return await interaction.reply({ content: "Bots do not have points.", flags: MessageFlags.Ephemeral });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     // Setup Embed
     const target = new DiscordUser(this.client, interaction.targetUser);
@@ -30,8 +31,8 @@ export class getPointsCommand extends baseCommand {
       .setTitle("Total Points")
       .setColor("#00FFFF")
       .setDescription((await target.getCacheData())?.points?.toString() ?? "-1")
-      .setAuthor({name: target.getUsername(), iconURL: interaction.targetUser.avatarURL() ?? interaction.targetUser.defaultAvatarURL})
+      .setAuthor({ name: target.getUsername(), iconURL: interaction.targetUser.avatarURL() ?? interaction.targetUser.defaultAvatarURL })
       .setTimestamp();
-    await interaction.followUp({embeds:[embed], flags: MessageFlags.Ephemeral});
+    await interaction.followUp({ embeds:[embed], flags: MessageFlags.Ephemeral });
   }
 }

@@ -1,25 +1,62 @@
 import { DiscordClient } from "./core/DiscordClient";
-import { writeFileSync } from "fs";
-import { flush } from "@sentry/node";
+import {
+  consoleLoggingIntegration,
+  extraErrorDataIntegration,
+  rewriteFramesIntegration,
+  init as sentryInit,
+  flush
+} from "@sentry/node"; /* track https://github.com/getsentry/sentry-javascript/issues/15213 */
+import { config as dotenv } from "dotenv";
+import { beforeSend, beforeBreadcrumb, frameStackIteratee } from "./SentryFuncs";
 
+dotenv();
 
 /**
- * .env persistance setup for docker
+ * Sentry Initialization
  */
 
-function saveEnv() {
-  const envToWrite = process.env["WRITE_ENV"];
-  if(envToWrite) {
-    const envs = envToWrite.replaceAll(' ', '').split(",");
-    let envData = "";
-    for(const env of envs)
-      envData += `${env}=${process.env[env]}\n`;
-    writeFileSync(".env", envData);
-  }
-}
+sentryInit({
+  dsn: process.env["SENTRY_DSN"],
+  dist: process.env['COMMITHASH'],
+  maxValueLength: 1000,
+  tracesSampleRate: 0,
+  sendDefaultPii: true,
 
-if(process.env['ISDOCKER'])
-  saveEnv();
+  beforeBreadcrumb,
+  beforeSend,
+
+  ignoreErrors: [
+    "ETIMEDOUT",
+    "EADDRINUSE",
+    "ENOTFOUND",
+    "TimeoutError",
+    "AbortError",
+    "NetworkError",
+    "ECONNREFUSED",
+    "ECONNRESET",
+    "getaddrinfo"
+  ],
+
+  // Sentry New Feature Testing
+  _experiments: {
+    enableLogs: true,
+    beforeSendLog(log) {
+      return log;
+    },
+  },
+
+  integrations: [
+    consoleLoggingIntegration({
+      levels: ["error", "warn", "log"],
+    }),
+    extraErrorDataIntegration({
+      depth: 5
+    }),
+    rewriteFramesIntegration({
+      iteratee: frameStackIteratee
+    })
+  ],
+});
 
 /**
  * Start up checks

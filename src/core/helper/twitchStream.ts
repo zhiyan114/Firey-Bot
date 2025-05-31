@@ -3,9 +3,10 @@
  * Desc: Internal Library to detect twitch stream status
  * Author: zhiyan114
  */
+
+import type { TwitchClient } from "../TwitchClient";
 import { captureException } from "@sentry/node";
 import events from "events";
-import { TwitchClient } from "../TwitchClient";
 import { fetch, Agent, errors } from "undici";
 
 // Type Reference: https://dev.twitch.tv/docs/api/reference#get-streams
@@ -27,7 +28,6 @@ export type getStreamData = {
     thumbnail_url: string,
     tag_ids: string[],
     is_mature: boolean,
-    
 }
 export type twitchGetStreamType = {
     data: getStreamData[],
@@ -56,11 +56,11 @@ export class streamClient extends events.EventEmitter {
     super();
     this.client = client;
     this.token = token ?? process.env["TWITCH_TOKEN"] ?? "";
-    if(this.token === "") 
+    if(this.token === "")
       throw new tClientError("TwitchClient's oauth token is not properly supplied");
     this.channel = channelName;
     this.cooldown = cooldown ?? 30000; // Check every 30 seconds by default
-    
+
     // Create a dedicated fetch Agent instance for this request to fix ETIMEDOUT (probably due to SNAT issue)
     this.webAgent = new Agent({
       connect: {
@@ -125,7 +125,7 @@ export class streamClient extends events.EventEmitter {
             type: "Warning",
             message: `twitchStream: Connection Timeout - ${ex.message}`
           });
-        
+
         const sentryID = captureException(ex);
         await this.client.discord.logger.sendLog({
           type: "Warning",

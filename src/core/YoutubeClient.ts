@@ -1,7 +1,7 @@
+import type { baseClient } from "./baseClient";
+import type { DiscordClient } from "./DiscordClient";
 import YouTubeNotifier from "../utils/youtube-notifier";
-import { DiscordClient } from "./DiscordClient";
 import Express from 'express';
-import { baseClient } from "./baseClient";
 import http from 'http';
 import https from 'https';
 import { YoutubeEvents } from "../events";
@@ -91,7 +91,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
     this.port = config.Port ?? 80;
     this.express.use(config.Path, this.listener());
     this.httpServer = config.https ? https.createServer(this.express) : http.createServer(this.express);
-    
+
     // Add express integration to Sentry
     setupExpressErrorHandler(this.express);
 
@@ -111,7 +111,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
   }
 
   private HealthRoute(req: Express.Request, res: Express.Response) {
-    res.status(200).send("Hello World!");
+    res.status(200).send("You have been OwO");
   }
 
   public async dispose() {

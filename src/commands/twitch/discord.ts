@@ -1,5 +1,5 @@
-
-import { baseTCommand, tmiTypes } from "../../core/baseCommand";
+import type { tmiTypes } from "../../core/baseCommand";
+import { baseTCommand } from "../../core/baseCommand";
 import { DiscordInvite } from "../../utils/DiscordInvite";
 
 export class DiscordCommand extends baseTCommand {
