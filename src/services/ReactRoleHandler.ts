@@ -1,5 +1,6 @@
-import { ChannelType, DiscordAPIError, EmbedBuilder, Message, MessageReaction } from "discord.js";
-import { DiscordClient } from "../core/DiscordClient";
+import type { Message, MessageReaction } from "discord.js";
+import type { DiscordClient } from "../core/DiscordClient";
+import { ChannelType, DiscordAPIError, EmbedBuilder, } from "discord.js";
 import { APIErrors } from "../utils/discordErrorCode";
 import { captureException } from "@sentry/node";
 

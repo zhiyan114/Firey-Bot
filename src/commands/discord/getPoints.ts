@@ -1,5 +1,6 @@
-import { ContextMenuCommandBuilder, EmbedBuilder, MessageFlags, UserContextMenuCommandInteraction } from "discord.js";
-import { DiscordClient } from "../../core/DiscordClient";
+import type { UserContextMenuCommandInteraction } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { ContextMenuCommandBuilder, EmbedBuilder, MessageFlags } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 

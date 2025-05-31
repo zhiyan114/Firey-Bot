@@ -1,6 +1,7 @@
-import { CommandInteraction, GuildMember, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import type { CommandInteraction, GuildMember } from "discord.js";
+import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
-import { DiscordClient } from "../../core/DiscordClient";
 import { DiscordUser } from "../../utils/DiscordUser";
 
 export class banCommand extends baseCommand {

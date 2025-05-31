@@ -1,5 +1,5 @@
-import { ChatUserstate } from "tmi.js";
-import { TwitchClient } from "../core/TwitchClient";
+import type { ChatUserstate } from "tmi.js";
+import type { TwitchClient } from "../core/TwitchClient";
 import { baseTEvent } from "../core/baseEvent";
 import { TwitchUser } from "../utils/TwitchUser";
 import { processCommand } from "./helper/TwitchCommandHandler";

@@ -1,7 +1,7 @@
+import type { baseClient } from "./baseClient";
+import type { DiscordClient } from "./DiscordClient";
 import YouTubeNotifier from "../utils/youtube-notifier";
-import { DiscordClient } from "./DiscordClient";
 import Express from 'express';
-import { baseClient } from "./baseClient";
 import http from 'http';
 import https from 'https';
 import { YoutubeEvents } from "../events";

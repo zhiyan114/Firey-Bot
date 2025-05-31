@@ -1,8 +1,8 @@
+import type { DiscordClient } from "../core/DiscordClient";
 import { Prisma } from "@prisma/client";
 import { captureException, startSpan } from "@sentry/node";
 import { DiscordUser } from "./DiscordUser";
 import { createHash } from "crypto";
-import { DiscordClient } from "../core/DiscordClient";
 
 type updateUser = {
     memberid?: string,

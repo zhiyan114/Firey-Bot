@@ -1,18 +1,16 @@
+import type { Channel, ColorResolvable, CommandInteraction } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  Channel,
   ChannelType,
-  ColorResolvable,
-  CommandInteraction,
   EmbedBuilder,
   InteractionContextType,
   MessageFlags,
   SlashCommandBuilder
 } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
-import { DiscordClient } from "../../core/DiscordClient";
 
 export class EvalCommand extends baseCommand {
   public client: DiscordClient;

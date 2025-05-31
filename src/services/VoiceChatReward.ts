@@ -2,9 +2,9 @@
 * Points reward system for voice chat activities
 * !!! UNFINISHED - Probably never will !!!
 */
-
-import { GuildMember, VoiceChannel, VoiceState } from "discord.js";
-import { DiscordClient } from "../core/DiscordClient";
+import type { VoiceState, GuildMember } from "discord.js";
+import type { DiscordClient } from "../core/DiscordClient";
+import { VoiceChannel } from "discord.js";
 import { DiscordUser } from "../utils/DiscordUser";
 
 const cacheName = "VCReward";

@@ -1,18 +1,17 @@
+import type { CommandInteraction, ModalSubmitInteraction } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
 import {
   ActionRowBuilder,
-  CommandInteraction,
   DiscordjsError,
   DiscordjsErrorCodes,
   GuildMember,
   InteractionContextType,
   MessageFlags,
   ModalBuilder,
-  ModalSubmitInteraction,
   SlashCommandBuilder,
   TextInputBuilder,
   TextInputStyle
 } from "discord.js";
-import { DiscordClient } from "../../core/DiscordClient";
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
 import { captureException, suppressTracing } from "@sentry/node";

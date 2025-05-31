@@ -1,6 +1,15 @@
+import type {
+  Channel,
+  Guild,
+  GuildInvitableChannelResolvable,
+  InviteCreateOptions,
+  NewsChannel,
+  TextChannel,
+  VoiceChannel
+} from "discord.js";
+import type { DiscordClient } from "../core/DiscordClient";
 import { createHash } from "crypto";
-import { Channel, ChannelType, Guild, GuildInvitableChannelResolvable, InviteCreateOptions, NewsChannel, TextChannel, VoiceChannel } from "discord.js";
-import { DiscordClient } from "../core/DiscordClient";
+import { ChannelType } from "discord.js";
 import { startSpan } from "@sentry/node";
 
 interface tempInviteOption extends InviteCreateOptions {

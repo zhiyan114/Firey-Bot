@@ -48,7 +48,6 @@ export default defineConfig([globalIgnores([
     indent: ["error", 2, {
       SwitchCase: 1,
     }],
-
     semi: ["error", "always"],
     "no-async-promise-executor": "off",
     "@typescript-eslint/no-var-requires": "off",
@@ -65,5 +64,6 @@ export default defineConfig([globalIgnores([
       }
     ],
     "object-curly-spacing": ["error", "always"],
+    "@typescript-eslint/consistent-type-imports": "error"
   },
 }]);

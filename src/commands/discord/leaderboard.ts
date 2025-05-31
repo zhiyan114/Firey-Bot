@@ -1,5 +1,6 @@
-import { CommandInteraction, EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { DiscordClient } from "../../core/DiscordClient";
+import type { CommandInteraction } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 
 type boardData = {

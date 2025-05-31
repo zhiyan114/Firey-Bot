@@ -1,15 +1,16 @@
 // This should handle all command callbacks and registerations
 
-import { ChannelType, CommandInteraction, ContextMenuCommandInteraction, MessageFlags, REST, Routes } from "discord.js";
+import type { CommandInteraction, ContextMenuCommandInteraction } from "discord.js";
+import type { baseCommand } from "../../core/baseCommand";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { ChannelType, MessageFlags, REST, Routes } from "discord.js";
 import {
   EvalCommand, TwitchChatRelay, TwitchVerify, banCommand,
   getPointsCommand, kickCommand, leaderboardCommand, purgeCommand,
   softBanCommand, unbanCommand, FeedbackCommand, heapDump
 } from "../../commands/discord";
-import { baseCommand } from "../../core/baseCommand";
 import { captureException, startSpan } from "@sentry/node";
 import { suppressTracing } from "@sentry/node";
-import { DiscordClient } from "../../core/DiscordClient";
 import { createHash, timingSafeEqual } from "crypto";
 
 

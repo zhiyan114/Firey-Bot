@@ -1,10 +1,7 @@
-import { AttachmentBuilder,
-  CommandInteraction,
-  InteractionReplyOptions,
-  MessageFlags,
-  SlashCommandBuilder } from "discord.js";
+import type { CommandInteraction, InteractionReplyOptions } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { AttachmentBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
-import { DiscordClient } from "../../core/DiscordClient";
 import { writeSnapshot } from "heapdump";
 import { captureException, captureMessage, withScope } from "@sentry/node";
 import { createGzip } from "zlib";

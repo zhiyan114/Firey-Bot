@@ -1,5 +1,6 @@
-import { CommandInteraction, GuildMember, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { DiscordClient } from "../../core/DiscordClient";
+import type { CommandInteraction, GuildMember } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { DiscordInvite } from "../../utils/DiscordInvite";

@@ -1,8 +1,9 @@
+import type { baseClient } from "./baseClient";
+import type { DiscordClient } from "./DiscordClient";
 import { Client } from "tmi.js";
-import { DiscordClient } from "./DiscordClient";
 import { StreamEvents, TwitchEvents } from "../events";
 import { streamClient } from "./helper/twitchStream";
-import { baseClient } from "./baseClient";
+
 
 
 export class TwitchClient extends Client implements baseClient {

@@ -3,9 +3,10 @@
  * Desc: Internal Library to detect twitch stream status
  * Author: zhiyan114
  */
+
+import type { TwitchClient } from "../TwitchClient";
 import { captureException } from "@sentry/node";
 import events from "events";
-import { TwitchClient } from "../TwitchClient";
 import { fetch, Agent, errors } from "undici";
 
 // Type Reference: https://dev.twitch.tv/docs/api/reference#get-streams

@@ -1,6 +1,7 @@
-import { CommandInteraction, EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
+import type { CommandInteraction } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
-import { DiscordClient } from "../../core/DiscordClient";
 import { TwitchUser } from "../../utils/TwitchUser";
 
 export class TwitchVerify extends baseCommand {

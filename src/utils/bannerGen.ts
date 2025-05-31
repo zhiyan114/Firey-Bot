@@ -4,7 +4,8 @@
  * Author: zhiyan114
  */
 
-import { Canvas, createCanvas, loadImage, CanvasRenderingContext2D } from "canvas";
+import type { Canvas, CanvasRenderingContext2D } from "canvas";
+import { createCanvas, loadImage } from "canvas";
 
 /**
  * Generate a welcome banner for new users joined to the server

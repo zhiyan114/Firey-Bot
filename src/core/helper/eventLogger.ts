@@ -1,5 +1,6 @@
-import { ColorResolvable, EmbedBuilder, TextChannel } from "discord.js";
-import { DiscordClient } from "../DiscordClient";
+import type { ColorResolvable } from "discord.js";
+import type { DiscordClient } from "../DiscordClient";
+import { EmbedBuilder, TextChannel } from "discord.js";
 import { suppressTracing } from "@sentry/node";
 import { logger } from "@sentry/node";
 

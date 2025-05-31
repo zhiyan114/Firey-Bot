@@ -1,5 +1,6 @@
-import { CommandInteraction, DiscordAPIError, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { DiscordClient } from "../../core/DiscordClient";
+import type { CommandInteraction } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { DiscordAPIError, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { APIErrors } from "../../utils/discordErrorCode";

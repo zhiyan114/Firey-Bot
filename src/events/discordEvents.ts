@@ -1,5 +1,13 @@
-import { ChannelType, DiscordAPIError, EmbedBuilder, GuildMember, Interaction, Message, PartialUser, User, VoiceState } from "discord.js";
-import { DiscordClient } from "../core/DiscordClient";
+import type {
+  GuildMember,
+  Interaction,
+  Message,
+  User,
+  PartialUser,
+  VoiceState
+} from "discord.js";
+import type { DiscordClient } from "../core/DiscordClient";
+import { ChannelType, DiscordAPIError, EmbedBuilder } from "discord.js";
 import { baseEvent } from "../core/baseEvent";
 import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VertificationHandler } from "./helper/DiscordConfirmBtn";

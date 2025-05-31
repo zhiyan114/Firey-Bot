@@ -1,5 +1,6 @@
-import { EmbedBuilder, GuildMember } from "discord.js";
-import { DiscordClient } from "../core/DiscordClient";
+import type { GuildMember } from "discord.js";
+import type { DiscordClient } from "../core/DiscordClient";
+import { EmbedBuilder } from "discord.js";
 import { schedule } from "node-cron";
 import { captureCheckIn, captureException } from "@sentry/node";
 import { createHash } from "crypto";

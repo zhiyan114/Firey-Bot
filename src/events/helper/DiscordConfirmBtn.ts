@@ -1,5 +1,6 @@
-import { ButtonInteraction, GuildMember, MessageFlags } from "discord.js";
-import { DiscordClient } from "../../core/DiscordClient";
+import type { ButtonInteraction, GuildMember } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { MessageFlags } from "discord.js";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { startSpan } from "@sentry/node";
 

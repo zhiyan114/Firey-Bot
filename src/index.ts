@@ -58,8 +58,6 @@ sentryInit({
   ],
 });
 
-
-
 /**
  * Start up checks
  */

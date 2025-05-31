@@ -1,7 +1,7 @@
 // Worked on after logger is added...
 
+import type { DiscordClient } from "../core/DiscordClient";
 import { captureException } from "@sentry/node";
-import { DiscordClient } from "../core/DiscordClient";
 import { baseEvent } from "../core/baseEvent";
 
 
