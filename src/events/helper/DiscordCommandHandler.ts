@@ -9,8 +9,7 @@ import {
   getPointsCommand, kickCommand, leaderboardCommand, purgeCommand,
   softBanCommand, unbanCommand, FeedbackCommand, heapDump
 } from "../../commands/discord";
-import { captureException, startSpan } from "@sentry/node";
-import { suppressTracing } from "@sentry/node";
+import { captureException } from "@sentry/node";
 import { createHash, timingSafeEqual } from "crypto";
 
 
@@ -106,34 +105,21 @@ export class DiscordCommandHandler {
       }
     }
 
-    await startSpan({
-      name: `Discord Command: ${command.metadata.name}`,
-      op: `discord.cmd.${command.metadata.name}`,
-      parentSpan: null,
-    }, async (span) => {
-      try {
-        await command.execute(interaction);
-      }
-      catch(ex) {
-        await suppressTracing(async ()=>{
-          span.setStatus({
-            code: 2,
-            message: "Command Execution Error"
-          });
-          const id = captureException(ex, { tags: { handled: "no" } });
-          await this.client.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
+    try {
+      await command.execute(interaction);
+    }
+    catch(ex) {
+      const id = captureException(ex, { tags: { handled: "no" } });
+      await this.client.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
 
-          // Let the user know that something went wrong
-          if(interaction.replied)
-            await interaction.followUp({ content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral });
-          else if (interaction.deferred)
-            await interaction.editReply({ content: "An error occur during command execution, please use the feedback command to submit a report." });
-          else
-            await interaction.reply({ content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral });
-        });
-
-      }
-    });
+      // Let the user know that something went wrong
+      if(interaction.replied)
+        await interaction.followUp({ content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral });
+      else if (interaction.deferred)
+        await interaction.editReply({ content: "An error occur during command execution, please use the feedback command to submit a report." });
+      else
+        await interaction.reply({ content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral });
+    }
   }
 
   public getCommandHash(): Buffer {

@@ -13,7 +13,7 @@ import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VertificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
-import { captureException, startNewTrace, withIsolationScope } from "@sentry/node";
+import { captureException, withScope } from "@sentry/node";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
 
@@ -47,30 +47,28 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async createCommand(interaction: Interaction) {
-    return await withIsolationScope(async (scope) => {
-      await startNewTrace(async () => {
-        const gMember = interaction.member as GuildMember | null;
-        scope.setUser({
-          id: interaction.user.id,
-          username: interaction.user.username,
-          isStaff: gMember?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? "unknown",
-          isVerified: gMember?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? "unknown"
-        });
-        scope.setTag("platform", "discord");
-        scope.setTag("eventType", "interactionCreate");
-
-        if(interaction.isCommand() || interaction.isContextMenuCommand())
-          return await this.commandHandler.commandEvent(interaction);
-
-        if(interaction.isButton())
-          if(interaction.customId === "RuleConfirm")
-            return await VertificationHandler(this.client, interaction);
+    return await withScope(async (scope) => {
+      const gMember = interaction.member as GuildMember | null;
+      scope.setUser({
+        id: interaction.user.id,
+        username: interaction.user.username,
+        isStaff: gMember?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? "unknown",
+        isVerified: gMember?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? "unknown"
       });
+      scope.setTag("platform", "discord");
+      scope.setTag("eventType", "interactionCreate");
+
+      if(interaction.isCommand() || interaction.isContextMenuCommand())
+        return await this.commandHandler.commandEvent(interaction);
+
+      if(interaction.isButton())
+        if(interaction.customId === "RuleConfirm")
+          return await VertificationHandler(this.client, interaction);
     });
   }
 
   private async messageCreate(message: Message) {
-    await withIsolationScope(async (scope) => {
+    await withScope(async (scope) => {
       scope.setUser({
         id: message.author.id,
         username: message.author.username,
@@ -80,25 +78,23 @@ export class DiscordEvents extends baseEvent {
       scope.setTag("platform", "discord");
       scope.setTag("eventType", "messageCreate");
 
-      return await startNewTrace(async () => {
-        // Channel Checks
-        if(message.author.bot) return;
-        const channel = message.channel;
-        if(channel.type !== ChannelType.GuildText) return;
+      // Channel Checks
+      if(message.author.bot) return;
+      const channel = message.channel;
+      if(channel.type !== ChannelType.GuildText) return;
 
-        // Place where user wont be awarded with points
-        const noPointsConf = this.client.config.noPoints;
-        if(noPointsConf.channel.length > 0 && noPointsConf.channel.find(c=>c===channel.id)) return;
-        if(noPointsConf.category.length > 0 && noPointsConf.category.find(c=>channel.parentId === c)) return;
+      // Place where user wont be awarded with points
+      const noPointsConf = this.client.config.noPoints;
+      if(noPointsConf.channel.length > 0 && noPointsConf.channel.find(c=>c===channel.id)) return;
+      if(noPointsConf.category.length > 0 && noPointsConf.category.find(c=>channel.parentId === c)) return;
 
-        // Grant points
-        await (new DiscordUser(this.client, message.author)).economy.chatRewardPoints(message.content);
-      });
+      // Grant points
+      await (new DiscordUser(this.client, message.author)).economy.chatRewardPoints(message.content);
     });
   }
 
   private async guildMemberAdd(member: GuildMember) {
-    await withIsolationScope(async (scope) => {
+    await withScope(async (scope) => {
       scope.setUser({
         id: member.user.id,
         username: member.user.username,
@@ -108,45 +104,43 @@ export class DiscordEvents extends baseEvent {
       scope.setTag("platform", "discord");
       scope.setTag("eventType", "guildMemberAdd");
 
-      return await startNewTrace(async () => {
-        if(member.user.bot) return;
-        const user = new DiscordUser(this.client, member.user);
+      if(member.user.bot) return;
+      const user = new DiscordUser(this.client, member.user);
 
-        // Create new user entry
-        try {
-          await user.createNewUser();
-        } catch(ex) {
-          if(!(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002"))
-            captureException(ex);
-        }
+      // Create new user entry
+      try {
+        await user.createNewUser();
+      } catch(ex) {
+        if(!(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002"))
+          captureException(ex);
+      }
 
-        // Send welcome message to user
-        const channel = await this.client.channels.fetch(this.client.config.welcomeChannelID);
-        if(!channel || channel.type !== ChannelType.GuildText) return;
-        const embed = new EmbedBuilder()
-          .setColor("#00FFFF")
-          .setTitle("Welcome to the server!")
-          .setDescription(`Welcome to the Derg server, ${member.user.username}! Please read the rules and press the confirmation button to get full access. Remember to do so within 24 hours or autokick will happen!`);
+      // Send welcome message to user
+      const channel = await this.client.channels.fetch(this.client.config.welcomeChannelID);
+      if(!channel || channel.type !== ChannelType.GuildText) return;
+      const embed = new EmbedBuilder()
+        .setColor("#00FFFF")
+        .setTitle("Welcome to the server!")
+        .setDescription(`Welcome to the Derg server, ${member.user.username}! Please read the rules and press the confirmation button to get full access. Remember to do so within 24 hours or autokick will happen!`);
 
-        try {
-          await member.send({ embeds: [embed] });
-        } catch(ex) {
-          if(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)
-            await channel.send({ content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`, embeds: [embed] });
-          else captureException(ex);
-        }
+      try {
+        await member.send({ embeds: [embed] });
+      } catch(ex) {
+        if(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)
+          await channel.send({ content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`, embeds: [embed] });
+        else captureException(ex);
+      }
 
-        this.client.updateStatus();
+      this.client.updateStatus();
 
-        // Send a welcome banner
-        const BannerBuff = await (new BannerPic()).generate(user.getUsername(), member.user.displayAvatarURL({ size: 512, extension: "png" }));
-        await channel.send({ files: [BannerBuff] });
-      });
+      // Send a welcome banner
+      const BannerBuff = await (new BannerPic()).generate(user.getUsername(), member.user.displayAvatarURL({ size: 512, extension: "png" }));
+      await channel.send({ files: [BannerBuff] });
     });
   }
 
   private async userUpdate(oldUser: User | PartialUser, newUser: User) {
-    await withIsolationScope(async (scope) => {
+    await withScope(async (scope) => {
       scope.setUser({
         id: newUser.id,
         username: newUser.username,
@@ -154,31 +148,29 @@ export class DiscordEvents extends baseEvent {
       scope.setTag("platform", "discord");
       scope.setTag("eventType", "userUpdate");
 
-      return await startNewTrace(async() => {
-        if(oldUser.bot) return;
+      if(oldUser.bot) return;
 
-        const user = new DiscordUser(this.client, newUser);
+      const user = new DiscordUser(this.client, newUser);
 
-        // See if we need to update user's rule confirmation date
-        let updateVerifyStatus = false;
-        if(!(await user.getCacheData())?.rulesconfirmedon &&
+      // See if we need to update user's rule confirmation date
+      let updateVerifyStatus = false;
+      if(!(await user.getCacheData())?.rulesconfirmedon &&
       (await this.client.guilds.cache.find(g=>g.id === this.client.config.guildID)
         ?.members.fetch(newUser))
         ?.roles.cache.find(role=>role.id === this.client.config.newUserRoleID))
-          updateVerifyStatus = true;
+        updateVerifyStatus = true;
 
-        const rulesconfirmedon = updateVerifyStatus ? new Date() : undefined;
-        const username = oldUser.username !== newUser.username ? newUser.username : undefined;
-        const displayName = oldUser.username !== newUser.username ? newUser.username : undefined;
+      const rulesconfirmedon = updateVerifyStatus ? new Date() : undefined;
+      const username = oldUser.username !== newUser.username ? newUser.username : undefined;
+      const displayName = oldUser.username !== newUser.username ? newUser.username : undefined;
 
-        // Update user if any of the listed field changes
-        if(!rulesconfirmedon && !username && !displayName)
-          return;
-        await user.updateUserData({
-          rulesconfirmedon,
-          username,
-          displayName,
-        });
+      // Update user if any of the listed field changes
+      if(!rulesconfirmedon && !username && !displayName)
+        return;
+      await user.updateUserData({
+        rulesconfirmedon,
+        username,
+        displayName,
       });
     });
   }
@@ -188,7 +180,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async voiceStateUpdate(old: VoiceState, now: VoiceState) {
-    await withIsolationScope(async (scope) => {
+    await withScope(async (scope) => {
 
       scope.setUser({
         id: now.member?.user.id,
@@ -199,43 +191,41 @@ export class DiscordEvents extends baseEvent {
       scope.setTag("platform", "discord");
       scope.setTag("eventType", "voiceStateUpdate");
 
-      return await startNewTrace(async()=>{
-        // Checking to see if the user needs to be reported on the log
-        const config = this.client.config.VCJoinLog;
-        const channel = await this.client.channels.fetch(config.channelID);
-        if(!channel || channel.type !== ChannelType.GuildText) return;
-        if(!now.channel) return;
-        if(old.channel?.id === now.channel.id) return;
-        if(!now.member || now.member.user.bot) return;
-        if(config.excludeChannels.includes(now.channel.id)) return;
+      // Checking to see if the user needs to be reported on the log
+      const config = this.client.config.VCJoinLog;
+      const channel = await this.client.channels.fetch(config.channelID);
+      if(!channel || channel.type !== ChannelType.GuildText) return;
+      if(!now.channel) return;
+      if(old.channel?.id === now.channel.id) return;
+      if(!now.member || now.member.user.bot) return;
+      if(config.excludeChannels.includes(now.channel.id)) return;
 
-        // Prepare embed
-        const embed = new EmbedBuilder()
-          .setColor("#00FFFF")
-          .setTitle("Voice Channel Join")
-          .setThumbnail(now.member.user.displayAvatarURL({ size: 512 }))
-          .setDescription(`<@${now.member.user.id}> has joined the voice channel <#${now.channel.id}>`)
-          .setTimestamp()
-          .setFields([
-            {
-              name: "User ID",
-              value: now.member.user.id
-            },
-            {
-              name: "Channel ID",
-              value: now.channel.id
-            }
-          ]);
+      // Prepare embed
+      const embed = new EmbedBuilder()
+        .setColor("#00FFFF")
+        .setTitle("Voice Channel Join")
+        .setThumbnail(now.member.user.displayAvatarURL({ size: 512 }))
+        .setDescription(`<@${now.member.user.id}> has joined the voice channel <#${now.channel.id}>`)
+        .setTimestamp()
+        .setFields([
+          {
+            name: "User ID",
+            value: now.member.user.id
+          },
+          {
+            name: "Channel ID",
+            value: now.channel.id
+          }
+        ]);
 
-        // See if username needs to be added as well
-        if(now.member.user.username !== now.member.user.displayName)
-          embed.addFields({
-            name: "Username",
-            value: now.member.user.username
-          });
+      // See if username needs to be added as well
+      if(now.member.user.username !== now.member.user.displayName)
+        embed.addFields({
+          name: "Username",
+          value: now.member.user.username
+        });
 
-        await channel.send({ embeds: [embed] });
-      });
+      await channel.send({ embeds: [embed] });
     });
   }
 }

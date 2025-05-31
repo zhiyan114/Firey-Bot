@@ -10,7 +10,6 @@ import type {
 import type { DiscordClient } from "../core/DiscordClient";
 import { createHash } from "crypto";
 import { ChannelType } from "discord.js";
-import { startSpan } from "@sentry/node";
 
 interface tempInviteOption extends InviteCreateOptions {
   channel?: GuildInvitableChannelResolvable;
@@ -86,43 +85,37 @@ export class DiscordInvite {
      * @returns The invite link or the code
      */
   public async getTempInvite(inviteOpt?: tempInviteOption) {
-    return await startSpan({
-      name: "Discord Invite Request",
-      op: "DiscordInvite.getTempInvite",
-      onlyIfParent: true,
-    }, async() =>{
-      if(!inviteOpt) inviteOpt = {};
+    if(!inviteOpt) inviteOpt = {};
 
-      // Use the vanity code if possible
-      if(this.guild.vanityURLCode) return inviteOpt.rawCode ? this.guild.vanityURLCode : this.baseUrl + this.guild.vanityURLCode;
+    // Use the vanity code if possible
+    if(this.guild.vanityURLCode) return inviteOpt.rawCode ? this.guild.vanityURLCode : this.baseUrl + this.guild.vanityURLCode;
 
-      // Use the cached invite key if it exists
-      if(!inviteOpt.nocache) {
-        const cache = await this.client.redis.get(this.redisKey);
-        if(cache) return inviteOpt.rawCode ? cache : this.baseUrl + cache;
-      }
+    // Use the cached invite key if it exists
+    if(!inviteOpt.nocache) {
+      const cache = await this.client.redis.get(this.redisKey);
+      if(cache) return inviteOpt.rawCode ? cache : this.baseUrl + cache;
+    }
 
-      // Default value for the invite
-      inviteOpt.maxAge = inviteOpt.maxAge ?? 86400;
-      inviteOpt.reason = inviteOpt.reason ?? "Temporary Invite";
+    // Default value for the invite
+    inviteOpt.maxAge = inviteOpt.maxAge ?? 86400;
+    inviteOpt.reason = inviteOpt.reason ?? "Temporary Invite";
 
-      // Find a valid guild channel to create invite in
-      inviteOpt.channel = inviteOpt.channel ??
+    // Find a valid guild channel to create invite in
+    inviteOpt.channel = inviteOpt.channel ??
         this.guild.rulesChannel ??
         this.guild.publicUpdatesChannel ??
         this.guild.channels.cache.find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined ??
         (await this.guild.channels.fetch()).find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined;
-      if(!inviteOpt.channel) throw new DiscordInviteError("No channel is associated with this server");
+    if(!inviteOpt.channel) throw new DiscordInviteError("No channel is associated with this server");
 
-      // Create invite
-      const inviteLink = await this.guild.invites.create(inviteOpt.channel, inviteOpt);
-      if(!inviteOpt.nocache)
-        return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
-
-      // Save to cache if allowed
-      await this.client.redis.set(this.redisKey, inviteLink.code, "EX", inviteOpt.maxAge);
+    // Create invite
+    const inviteLink = await this.guild.invites.create(inviteOpt.channel, inviteOpt);
+    if(!inviteOpt.nocache)
       return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
-    });
+
+    // Save to cache if allowed
+    await this.client.redis.set(this.redisKey, inviteLink.code, "EX", inviteOpt.maxAge);
+    return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
   }
 }
 
