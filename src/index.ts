@@ -1,5 +1,62 @@
 import { DiscordClient } from "./core/DiscordClient";
-import { flush } from "@sentry/node";
+import {
+  consoleLoggingIntegration,
+  extraErrorDataIntegration,
+  rewriteFramesIntegration,
+  init as sentryInit,
+  flush
+} from "@sentry/node"; /* track https://github.com/getsentry/sentry-javascript/issues/15213 */
+import { config as dotenv } from "dotenv";
+import { beforeSend, beforeBreadcrumb, frameStackIteratee } from "./SentryFuncs";
+
+dotenv();
+
+/**
+ * Sentry Initialization
+ */
+
+sentryInit({
+  dsn: process.env["SENTRY_DSN"],
+  dist: process.env['COMMITHASH'],
+  maxValueLength: 1000,
+  tracesSampleRate: 0,
+  sendDefaultPii: true,
+
+  beforeBreadcrumb,
+  beforeSend,
+
+  ignoreErrors: [
+    "ETIMEDOUT",
+    "EADDRINUSE",
+    "ENOTFOUND",
+    "TimeoutError",
+    "AbortError",
+    "NetworkError",
+    "ECONNREFUSED",
+    "ECONNRESET",
+    "getaddrinfo"
+  ],
+
+  // Sentry New Feature Testing
+  _experiments: {
+    enableLogs: true,
+    beforeSendLog(log) {
+      return log;
+    },
+  },
+
+  integrations: [
+    consoleLoggingIntegration({
+      levels: ["error", "warn", "log"],
+    }),
+    extraErrorDataIntegration({
+      depth: 5
+    }),
+    rewriteFramesIntegration({
+      iteratee: frameStackIteratee
+    })
+  ],
+});
 
 /**
  * Start up checks

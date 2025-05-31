@@ -1,9 +1,10 @@
+import type { TwitchClient } from "../core/TwitchClient";
+import type { getStreamData } from "../core/helper/twitchStream";
 import { ChannelType, EmbedBuilder } from "discord.js";
-import { TwitchClient } from "../core/TwitchClient";
 import { baseTEvent } from "../core/baseEvent";
 import { DiscordInvite } from "../utils/DiscordInvite";
 import { clearTwitchCache } from "../utils/TwitchUser";
-import { getStreamData } from "../core/helper/twitchStream";
+
 
 
 export class StreamEvents extends baseTEvent {
@@ -17,7 +18,7 @@ export class StreamEvents extends baseTEvent {
     this.lastStream = new Date();
     this.config = client.discord.config.twitch;
   }
-  
+
   public registerEvents() {
     this.client.streamClient.on("start", this.onStream.bind(this));
     this.client.streamClient.on("end", this.onStreamEnd.bind(this));
@@ -36,19 +37,19 @@ export class StreamEvents extends baseTEvent {
         type: "Error",
         message: "StreamClient: Notification channel is not a text channel!"
       });
-      
+
     data.thumbnail_url = data.thumbnail_url.replace("{width}","1280").replace("{height}","720");
     const streamUrl = `https://twitch.tv/${data.user_name}`;
     const embed = new EmbedBuilder()
       .setColor("#00FFFF")
-      .setAuthor({name: `${data.user_name} do be streaming right now!`, url: streamUrl})
+      .setAuthor({ name: `${data.user_name} do be streaming right now!`, url: streamUrl })
       .setTitle(data.title)
       .setDescription(`Currently streaming **${data.game_name}** with ${data.viewer_count} viewers`)
       .setURL(streamUrl)
       .setImage(data.thumbnail_url);
 
     const roleID = this.config.notification.roleToPing;
-    await channel.send({content: `${roleID === "everyone" ? "@everyone" : `<@&${roleID}>`} Derg is streaming right now, come join!`, embeds: [embed]});
+    await channel.send({ content: `${roleID === "everyone" ? "@everyone" : `<@&${roleID}>`} Derg is streaming right now, come join!`, embeds: [embed] });
   }
 
   private async onStreamEnd() {

@@ -1,5 +1,6 @@
-import { CommandInteraction, GuildMember, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { DiscordClient } from "../../core/DiscordClient";
+import type { CommandInteraction, GuildMember } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { DiscordInvite } from "../../utils/DiscordInvite";
@@ -43,14 +44,14 @@ export class softBanCommand extends baseCommand {
     const reason = interaction.options.get("reason", true).value as string;
     const invite = interaction.options.get("invite", true).value as boolean;
     if(!interaction.guild)
-      return interaction.reply({content: "This command can only be used in a server.", flags: MessageFlags.Ephemeral});
+      return interaction.reply({ content: "This command can only be used in a server.", flags: MessageFlags.Ephemeral });
     if(!targetMember)
-      return interaction.reply({content: "Target you specified doesn't exist in the server.", flags: MessageFlags.Ephemeral});
+      return interaction.reply({ content: "Target you specified doesn't exist in the server.", flags: MessageFlags.Ephemeral });
     if(targetMember.user.bot)
-      return interaction.reply({content: "Target cannot be a bot", flags: MessageFlags.Ephemeral});
+      return interaction.reply({ content: "Target cannot be a bot", flags: MessageFlags.Ephemeral });
     const target = new DiscordUser(this.client, targetMember.user);
     const issuer = new DiscordUser(this.client, interaction.user);
-    await interaction.deferReply({flags: MessageFlags.Ephemeral});
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     // Prepare message for target
     const sbanfield = [
@@ -96,7 +97,7 @@ export class softBanCommand extends baseCommand {
       message: `<@${targetMember.id}> has been softban by <@${interaction.user.id}>`,
       reason,
     });
-    await interaction.followUp({content: "User has been successfully softban!", flags: MessageFlags.Ephemeral});
+    await interaction.followUp({ content: "User has been successfully softban!", flags: MessageFlags.Ephemeral });
 
   }
 }

@@ -1,5 +1,6 @@
-import { CommandInteraction, GuildMember, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { DiscordClient } from "../../core/DiscordClient";
+import type { CommandInteraction, GuildMember } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { DiscordInvite } from "../../utils/DiscordInvite";
@@ -47,7 +48,7 @@ export class kickCommand extends baseCommand {
     const invite = interaction.options.get("invite",true).value as boolean;
     const target = new DiscordUser(this.client, targetMember.user);
     const issuer = new DiscordUser(this.client, interaction.user);
-    await interaction.deferReply({flags: MessageFlags.Ephemeral});
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     // Prepare message field for target
     const kickField = [
@@ -89,7 +90,7 @@ export class kickCommand extends baseCommand {
       message: `<@${targetMember.id}> has been kicked by <@${interaction.user.id}>`,
       reason,
     });
-    await interaction.followUp({content: "User has been successfully kicked!", ephemeral: true});
+    await interaction.followUp({ content: "User has been successfully kicked!", ephemeral: true });
 
   }
 }

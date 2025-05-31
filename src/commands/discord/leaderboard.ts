@@ -1,5 +1,6 @@
-import { CommandInteraction, EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { DiscordClient } from "../../core/DiscordClient";
+import type { CommandInteraction } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 
 type boardData = {
@@ -25,7 +26,7 @@ export class leaderboardCommand extends baseCommand {
       .setDescription("Show the top ten points holder (cached for 30 minutes)");
   }
   public async execute(interaction: CommandInteraction) {
-    await interaction.deferReply({flags: MessageFlags.Ephemeral});
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const cacheData = await this.client.redis.get(this.cacheKey);
     let boardData: boardData[] = cacheData ? JSON.parse(cacheData) : [];
 
@@ -64,6 +65,6 @@ export class leaderboardCommand extends baseCommand {
       .setDescription(finalData)
       .setColor("#00FFFF")
       .setTimestamp();
-    await interaction.followUp({embeds: [embed]});
+    await interaction.followUp({ embeds: [embed] });
   }
 }

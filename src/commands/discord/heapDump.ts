@@ -1,10 +1,7 @@
-import { AttachmentBuilder,
-  CommandInteraction,
-  InteractionReplyOptions,
-  MessageFlags,
-  SlashCommandBuilder } from "discord.js";
+import type { CommandInteraction, InteractionReplyOptions } from "discord.js";
+import type { DiscordClient } from "../../core/DiscordClient";
+import { AttachmentBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
-import { DiscordClient } from "../../core/DiscordClient";
 import { writeSnapshot } from "heapdump";
 import { captureException, captureMessage, withScope } from "@sentry/node";
 import { createGzip } from "zlib";
@@ -19,11 +16,11 @@ export class heapDump extends baseCommand {
     users: ['233955058604179457'],
     roles: [],
   };
-  
+
   constructor(client: DiscordClient) {
     super();
     this.client = client;
-    this.metadata 
+    this.metadata
       .setName("heapdump")
       .setDescription("Request NodeJS Heap Dump (DevTool)");
   }
@@ -61,7 +58,7 @@ export class heapDump extends baseCommand {
 
         // Compress the dump
         const outputName = `${fileName}.gz`;
-        const gzip = createGzip({level: 9}); // Discord's disguesting 25 MB (10 now??) limit
+        const gzip = createGzip({ level: 9 }); // Discord's disguesting 25 MB (10 now??) limit
         try {
           await pipeline(createReadStream(fileName), gzip, createWriteStream(outputName));
         } catch(ex) {
@@ -104,7 +101,7 @@ export class heapDump extends baseCommand {
             data: readFileSync(outputName),
             filename: outputName,
           });
-          const id = captureMessage("Heap dump requested by a developer", {level: "debug"});
+          const id = captureMessage("Heap dump requested by a developer", { level: "debug" });
           scope.clearAttachments();
 
           followUpData.content += ` Heap dump exceeded discord attachment limit, uploading to Sentry instead. ID: ${id}`;
@@ -112,7 +109,7 @@ export class heapDump extends baseCommand {
           // Neither works... Might implement CloudFlare R2 for this case...
           followUpData.content += ` Heap dump exceeded both discord and sentry attachment limits. ! Consider CF R2 Solution !`;
         }
-        
+
         await interaction.followUp(followUpData);
         unlinkSync(outputName);
       });

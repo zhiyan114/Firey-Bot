@@ -1,5 +1,5 @@
-import { ChatUserstate } from "tmi.js";
-import { TwitchClient } from "../core/TwitchClient";
+import type { ChatUserstate } from "tmi.js";
+import type { TwitchClient } from "../core/TwitchClient";
 import { baseTEvent } from "../core/baseEvent";
 import { TwitchUser } from "../utils/TwitchUser";
 import { processCommand } from "./helper/TwitchCommandHandler";
@@ -32,7 +32,7 @@ export class TwitchEvents extends baseTEvent {
 
       await startNewTrace(async() => {
         if(!userstate["user-id"] || !userstate['username']) return;
-        
+
         // Keep username up to date
         const tUser = new TwitchUser(this.client.discord, userstate['user-id']);
         const uData = await tUser.getCacheData();
@@ -62,7 +62,7 @@ export class TwitchEvents extends baseTEvent {
         if(!(uData?.memberid) || uData.memberid === "-1" || !discordUser) return;
         await discordUser.economy.chatRewardPoints(message);
       });
-      
+
     });
   }
 }

@@ -1,6 +1,7 @@
-import { ChannelType, GuildTextBasedChannel } from "discord.js";
+import type { GuildTextBasedChannel } from "discord.js";
+import type { NotifiedEvent, SubEvent, YoutubeClient } from "../core/YoutubeClient";
+import { ChannelType } from "discord.js";
 import { baseYEvent } from "../core/baseEvent";
-import { NotifiedEvent, SubEvent, YoutubeClient } from "../core/YoutubeClient";
 
 
 export class YoutubeEvents extends baseYEvent {
@@ -48,7 +49,7 @@ export class YoutubeEvents extends baseYEvent {
     });
 
     if(this.timeoutEvent) clearTimeout(this.timeoutEvent);
-    this.timeoutEvent = setTimeout(()=> { 
+    this.timeoutEvent = setTimeout(()=> {
       this.client.subscribe(this.config.youtubeChannelID);
       this.client.discord.logger.sendLog({
         type: "Info",
