@@ -39,6 +39,7 @@ export class purgeCommand extends baseCommand {
           .setRequired(false)
       );
   }
+
   public async execute(interaction: CommandInteraction) {
     // Initial Setup
     const amount = interaction.options.get("amount", true).value as number;

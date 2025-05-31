@@ -24,6 +24,7 @@ export class TwitchChatRelay extends baseCommand {
     users: [],
     roles: ["907769458670575658"],
   };
+
   constructor(client: DiscordClient) {
     super();
     this.client = client;
@@ -33,6 +34,7 @@ export class TwitchChatRelay extends baseCommand {
       .setDescription("Send an unfiltered message on twitch chat (via bot account).")
       .setContexts([InteractionContextType.Guild]);
   }
+
   public async execute(interaction: CommandInteraction) {
     if(!(interaction.member instanceof GuildMember)) return; // Not possible since the command usage is set disabled in DM
     const uniqueID = randomUUID();

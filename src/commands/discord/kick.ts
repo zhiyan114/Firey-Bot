@@ -36,8 +36,8 @@ export class kickCommand extends baseCommand {
           .setDescription("Whether or not to include a one-time use invite link for the user to join back.")
           .setRequired(true)
       );
-
   }
+
   public async execute(interaction: CommandInteraction) {
     const targetMember = interaction.options.get("user", true).member as GuildMember | null;
     if(!targetMember || targetMember.user.bot)

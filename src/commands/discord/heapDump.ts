@@ -27,10 +27,6 @@ export class heapDump extends baseCommand {
 
   async execute(interaction: CommandInteraction) {
     await withScope(async (scope) => {
-      scope.setUser({
-        id: interaction.user.id,
-        username: interaction.user.username,
-      });
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       // HeapDump requires x2 the memory of the current heap size

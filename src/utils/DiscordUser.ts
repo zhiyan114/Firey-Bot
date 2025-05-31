@@ -2,7 +2,7 @@ import type { APIEmbedField, ColorResolvable, User } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordAPIError, EmbedBuilder } from "discord.js";
 import { APIErrors } from "./discordErrorCode";
-import { captureException, startSpan } from "@sentry/node";
+import { captureException } from "@sentry/node";
 import { Prisma } from "@prisma/client";
 import { createHash } from "crypto";
 
@@ -39,6 +39,7 @@ export class DiscordUser {
   private cachekey: string;
   private userHash: string;
   public economy: UserEconomy;
+
   /**
     * This class is used to manage discord users
     * @param user The discord user object or userid
@@ -53,6 +54,7 @@ export class DiscordUser {
     this.cachekey = `discuser:${this.userHash.slice(0,6)}`;
     this.economy = new UserEconomy(this, user.id, this.cachekey);
   }
+
   /**
     * Check if the user has confirm the rules or not
     * @returns a boolean on their confirmation status
@@ -62,6 +64,7 @@ export class DiscordUser {
     if((await this.getCacheData())?.rulesconfirmedon) return true;
     return false;
   }
+
   /**
      * Returns a boolean if the user has already been cached in redis
      * @returns {boolean} if the user exists
@@ -69,60 +72,51 @@ export class DiscordUser {
   public async cacheExists(): Promise<boolean> {
     return await this.client.redis.exists(this.cachekey) > 0;
   }
+
   /**
      * Returns all the user data stored in the cache (or freshly from database)
      * @returns {cacheData | undefined} returns undefined if the user does not exist in the database, otherwise returns cacheData
      */
   public async getCacheData(): Promise<cacheData | undefined> {
-    return await startSpan({
-      name: "Get Discord Cache Data",
-      op: "discordUser.getCacheData",
-      onlyIfParent: true,
-    }, async()=>{
-      // Check if the record already exist in redis
-      if(await this.cacheExists()) {
+    // Check if the record already exist in redis
+    if(await this.cacheExists()) {
       // Pull it up and use it
-        const data = await this.client.redis.hgetall(this.cachekey);
-        return {
-          rulesconfirmedon: data.rulesconfirmedon ? new Date(data.rulesconfirmedon) : undefined,
-          points: data.points ? Number(data.points) : undefined,
-          lastgrantedpoint: data.lastgrantedpoint ? new Date(data.lastgrantedpoint) : undefined,
-        };
-      }
-      // Data doesn't exist in redis, Update the cache
-      const dbData = await this.getUserFromDB();
-      if(!dbData) return;
-      const finalData: cacheData = {
-        rulesconfirmedon: dbData.rulesconfirmedon ?? undefined,
-        points: dbData.points,
-        lastgrantedpoint: dbData.lastgrantedpoint,
+      const data = await this.client.redis.hgetall(this.cachekey);
+      return {
+        rulesconfirmedon: data.rulesconfirmedon ? new Date(data.rulesconfirmedon) : undefined,
+        points: data.points ? Number(data.points) : undefined,
+        lastgrantedpoint: data.lastgrantedpoint ? new Date(data.lastgrantedpoint) : undefined,
       };
-      await this.updateCacheData(finalData);
-      return finalData;
-    });
+    }
+    // Data doesn't exist in redis, Update the cache
+    const dbData = await this.getUserFromDB();
+    if(!dbData) return;
+    const finalData: cacheData = {
+      rulesconfirmedon: dbData.rulesconfirmedon ?? undefined,
+      points: dbData.points,
+      lastgrantedpoint: dbData.lastgrantedpoint,
+    };
+    await this.updateCacheData(finalData);
+    return finalData;
   }
+
   /**
      * Update the current cache with new data (use updateUserData instead)
      * @param newData The cache data to supply
      *
      */
   public async updateCacheData(newData: cacheData) {
-    await startSpan({
-      name: "Update Discord Cache Data",
-      op: "discordUser.updateCacheData",
-      onlyIfParent: true,
-    }, async()=>{
-      // Clear out all the undefined and null objects
-      const filteredData: {[key: string]: string} = {};
-      if(newData.rulesconfirmedon !== undefined) filteredData["rulesconfirmedon"] = newData.rulesconfirmedon.toString();
-      if(newData.points !== undefined) filteredData["points"] = newData.points.toString();
-      if(newData.lastgrantedpoint !== undefined) filteredData["lastgrantedpoint"] = newData.lastgrantedpoint.toString();
-      // Update the cache
-      await this.client.redis.hset(this.cachekey, filteredData);
-      // set redis expire key in 5 hours
-      await this.client.redis.expire(this.cachekey, 18000);
-    });
+    // Clear out all the undefined and null objects
+    const filteredData: {[key: string]: string} = {};
+    if(newData.rulesconfirmedon !== undefined) filteredData["rulesconfirmedon"] = newData.rulesconfirmedon.toString();
+    if(newData.points !== undefined) filteredData["points"] = newData.points.toString();
+    if(newData.lastgrantedpoint !== undefined) filteredData["lastgrantedpoint"] = newData.lastgrantedpoint.toString();
+    // Update the cache
+    await this.client.redis.hset(this.cachekey, filteredData);
+    // set redis expire key in 5 hours
+    await this.client.redis.expire(this.cachekey, 18000);
   }
+
   /**
      * Get the user data from the database directly, should only be used when the cache didn't have the data.
      */
@@ -171,39 +165,34 @@ export class DiscordUser {
      * @returns whether the operation was successful or not
      */
   public async updateUserData(data?: updateUserData) {
-    await startSpan({
-      name: "Update Discord User Data",
-      op: "discordUser.updateUserData",
-      onlyIfParent: true,
-    }, async() => {
-      try {
-        const newData = await this.client.prisma.members.update({
-          data: {
-            username: data ? data.username : this.getUsername(),
-            displayname: data ? data.displayName : this.user.displayName,
-            rulesconfirmedon: data?.rulesconfirmedon,
-          },
-          where: {
-            id: this.user.id
-          }
-        });
-        await this.updateCacheData({
-          rulesconfirmedon: newData.rulesconfirmedon ?? undefined,
-          points: newData.points,
-          lastgrantedpoint: newData.lastgrantedpoint
-        });
-        return true;
-      } catch(ex) {
-        if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2025") {
-          // User not found, create one
-          await this.createNewUser(data?.rulesconfirmedon);
-          return true;
+    try {
+      const newData = await this.client.prisma.members.update({
+        data: {
+          username: data ? data.username : this.getUsername(),
+          displayname: data ? data.displayName : this.user.displayName,
+          rulesconfirmedon: data?.rulesconfirmedon,
+        },
+        where: {
+          id: this.user.id
         }
-        captureException(ex);
-        return false;
+      });
+      await this.updateCacheData({
+        rulesconfirmedon: newData.rulesconfirmedon ?? undefined,
+        points: newData.points,
+        lastgrantedpoint: newData.lastgrantedpoint
+      });
+      return true;
+    } catch(ex) {
+      if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2025") {
+        // User not found, create one
+        await this.createNewUser(data?.rulesconfirmedon);
+        return true;
       }
-    });
+      captureException(ex);
+      return false;
+    }
   }
+
   /**
      * create the user in the database directly
      * @param rulesconfirmed The date which the user has confirmed the rules on
@@ -225,6 +214,7 @@ export class DiscordUser {
       captureException(ex);
     }
   }
+
   /**
     * send a member a message in DM using embed
     * @param messageOption Embed Message or a String Message
@@ -262,41 +252,30 @@ export class DiscordUser {
     * @param metadata Additional data to be added for sendLog
     */
   public async actionLog(opt: ActionLogOpt) {
-    await startSpan({
-      name: "Action Logger",
-      op: "discordUser.actionLog",
-      onlyIfParent: true,
-    }, async(span)=>{
-      try {
-        await this.client.prisma.modlog.create({
-          data: {
-            targetid: opt.target?.user.id,
-            moderatorid: this.user.id,
-            action: opt.actionName,
-            reason: opt.reason,
-            metadata: opt.metadata
-          }
-        });
-      } catch(ex) {
-        span.setStatus({
-          code: 2,
-          message: "Prisma experience error when creating log"
-        });
-
-        if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2003")
-          await this.client.logger.sendLog({
-            type: "Warning",
-            message: "actionLog failed due to missing target in the database",
-            metadata: opt.metadata,
-          });
-        else captureException(ex);
-      }
-
-      await this.client.logger.sendLog({
-        type: "Interaction",
-        message: opt.message,
-        metadata: { reason: opt.reason, ...opt.metadata },
+    try {
+      await this.client.prisma.modlog.create({
+        data: {
+          targetid: opt.target?.user.id,
+          moderatorid: this.user.id,
+          action: opt.actionName,
+          reason: opt.reason,
+          metadata: opt.metadata
+        }
       });
+    } catch(ex) {
+      if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2003")
+        await this.client.logger.sendLog({
+          type: "Warning",
+          message: "actionLog failed due to missing target in the database",
+          metadata: opt.metadata,
+        });
+      else captureException(ex);
+    }
+
+    await this.client.logger.sendLog({
+      type: "Interaction",
+      message: opt.message,
+      metadata: { reason: opt.reason, ...opt.metadata },
     });
   }
 }
@@ -317,6 +296,7 @@ class UserEconomy {
     this.userid = userid;
     this.cacheKey = cacheKey;
   }
+
   /**
      * Generate a random amount of points between a range
      * @param min Minimum points to generate
@@ -328,31 +308,27 @@ class UserEconomy {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+
   /**
      * Grant the user certain amount of points
      */
   public async grantPoints(points: number) {
-    return await startSpan({
-      name: "Grant Points",
-      op: "discordUser.economy.grantPoints",
-      onlyIfParent: true,
-    }, async ()=>{
-      // User exist and condition passes, grant the user the points
-      const newData = await this.user.client.prisma.members.update({
-        data: {
-          lastgrantedpoint: new Date(),
-          points: { increment: points }
-        },
-        where: {
-          id: this.userid
-        }
-      });
-      await this.user.updateCacheData({
-        points: newData.points,
-        lastgrantedpoint: newData.lastgrantedpoint
-      });
+    // User exist and condition passes, grant the user the points
+    const newData = await this.user.client.prisma.members.update({
+      data: {
+        lastgrantedpoint: new Date(),
+        points: { increment: points }
+      },
+      where: {
+        id: this.userid
+      }
+    });
+    await this.user.updateCacheData({
+      points: newData.points,
+      lastgrantedpoint: newData.lastgrantedpoint
     });
   }
+
   /**
      * Deduct certain amount of points from the user
      * @param points The total amount of points to deduct
@@ -380,6 +356,7 @@ class UserEconomy {
     });
     return true;
   }
+
   /**
      * Internal Algorithm that automatically reward the user with points when they chat
      * @param text The text message that the user sent (this text will be used to determine the reward's eligibility)
@@ -387,16 +364,12 @@ class UserEconomy {
      * @returns whether the user has been successfully rewarded or not
      */
   public async chatRewardPoints(text: string, ignoreCooldown?: boolean) {
-    return await startSpan({
-      name: "Chat Reward Points",
-      op: "discordUser.economy.chatRewardPoints",
-    }, async() => {
-      // Get user data and check to see if they met the cooldown eligibility
-      const userData = await this.user.getCacheData();
-      if(!userData) return false;
-      if(!ignoreCooldown && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false;
+    // Get user data and check to see if they met the cooldown eligibility
+    const userData = await this.user.getCacheData();
+    if(!userData) return false;
+    if(!ignoreCooldown && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false;
 
-      /*
+    /*
       This algorithm checks to see if the user has a message that is
         - longer than 10 characters
         - does not only contain numbers, special character, emoji, or links
@@ -404,25 +377,25 @@ class UserEconomy {
       If the user is not eligible, their reward cooldown timer resets while not getting any points
       */
 
-      if(
-        text.length < 10 || // Length check
+    if(
+      text.length < 10 || // Length check
       (/^[0-9]+$/g).test(text) || // Number Check
       (/^[^a-zA-Z0-9]+$/g).test(text) || // Special Character check
       (/^(:[a-zA-Z0-9_]+: ?)+$/g).test(text) || // Emoji check
       (/(.)\1{3,}/g).test(text) || // Repeating character check
       (/https?:\/\/[^\s]+/g).test(text) // link check
-      ) {
-        await this.user.updateCacheData({
-          lastgrantedpoint: new Date()
-        });
-        return false;
-      }
+    ) {
+      await this.user.updateCacheData({
+        lastgrantedpoint: new Date()
+      });
+      return false;
+    }
 
-      // Grant the point
-      await this.grantPoints(this.rngRewardPoints(5,10));
-      return true;
-    });
+    // Grant the point
+    await this.grantPoints(this.rngRewardPoints(5,10));
+    return true;
   }
+
   public async getBalance() {
     return Number(await this.user.client.redis.hget(this.cacheKey,"points") ?? (await this.user.getCacheData())?.points ?? "0");
   }
