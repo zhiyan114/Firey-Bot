@@ -64,6 +64,11 @@ export default defineConfig([globalIgnores([
       }
     ],
     "object-curly-spacing": ["error", "always"],
-    "@typescript-eslint/consistent-type-imports": "error"
+    "@typescript-eslint/consistent-type-imports": "error",
+    "lines-between-class-members": [
+      'error',
+      'always',
+      { 'exceptAfterSingleLine': true }
+    ]
   },
 }]);

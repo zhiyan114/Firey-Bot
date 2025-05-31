@@ -24,6 +24,7 @@ sentryInit({
 
   beforeBreadcrumb,
   beforeSend,
+  beforeSendTransaction: () => null,
 
   ignoreErrors: [
     "ETIMEDOUT",

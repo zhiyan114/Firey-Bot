@@ -25,6 +25,7 @@ export class leaderboardCommand extends baseCommand {
       .setName("leaderboard")
       .setDescription("Show the top ten points holder (cached for 30 minutes)");
   }
+
   public async execute(interaction: CommandInteraction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const cacheData = await this.client.redis.get(this.cacheKey);
