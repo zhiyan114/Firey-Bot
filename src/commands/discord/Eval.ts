@@ -28,6 +28,7 @@ export class EvalCommand extends baseCommand {
         .setDescription("Whether to run the code in an asynchronous context.")
         .setRequired(true)
     );
+
   public access = {
     users: ['233955058604179457'],
     roles: [],

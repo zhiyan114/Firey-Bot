@@ -39,6 +39,7 @@ export class DiscordUser {
   private cachekey: string;
   private userHash: string;
   public economy: UserEconomy;
+
   /**
     * This class is used to manage discord users
     * @param user The discord user object or userid
@@ -53,6 +54,7 @@ export class DiscordUser {
     this.cachekey = `discuser:${this.userHash.slice(0,6)}`;
     this.economy = new UserEconomy(this, user.id, this.cachekey);
   }
+
   /**
     * Check if the user has confirm the rules or not
     * @returns a boolean on their confirmation status

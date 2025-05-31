@@ -48,6 +48,7 @@ export class eventLogger {
       await this.sendLog(log);
     this.logQueues = [];
   }
+
   async sendLog(log: LogData) {
     await suppressTracing(async ()=>{
       // Queue the log if the channel is not initialized
