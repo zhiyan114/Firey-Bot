@@ -58,7 +58,7 @@ export class kickCommand extends baseCommand {
       },
       {
         name: "Kicked By",
-        value: issuer.getUsername(),
+        value: issuer.username,
       },
     ];
     if(invite && !targetMember.user.bot) {

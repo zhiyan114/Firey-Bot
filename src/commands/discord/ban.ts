@@ -65,7 +65,7 @@ export class banCommand extends baseCommand {
         },
         {
           name: "Banned By",
-          value: issuerUser.getUsername()
+          value: issuerUser.username
         }
       ]
     });

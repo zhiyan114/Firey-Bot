@@ -31,7 +31,7 @@ export class getPointsCommand extends baseCommand {
       .setTitle("Total Points")
       .setColor("#00FFFF")
       .setDescription((await target.getCacheData())?.points?.toString() ?? "-1")
-      .setAuthor({ name: target.getUsername(), iconURL: interaction.targetUser.avatarURL() ?? interaction.targetUser.defaultAvatarURL })
+      .setAuthor({ name: target.username, iconURL: interaction.targetUser.avatarURL() ?? interaction.targetUser.defaultAvatarURL })
       .setTimestamp();
     await interaction.followUp({ embeds:[embed], flags: MessageFlags.Ephemeral });
   }
