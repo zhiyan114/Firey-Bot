@@ -14,7 +14,6 @@ dotenv();
 /**
  * Sentry Initialization
  */
-
 sentryInit({
   dsn: process.env["SENTRY_DSN"],
   dist: process.env['COMMITHASH'],
@@ -25,6 +24,8 @@ sentryInit({
   beforeBreadcrumb,
   beforeSend,
   beforeSendTransaction: () => null,
+  // @ts-expect-error Bad Type Definition (track: https://github.com/getsentry/sentry-javascript/pull/16439)
+  beforeSendSpan: () => null,
 
   ignoreErrors: [
     "ETIMEDOUT",
@@ -62,7 +63,6 @@ sentryInit({
 /**
  * Start up checks
  */
-
 if(!process.env["BOTTOKEN"])
   throw new Error("No token provided");
 

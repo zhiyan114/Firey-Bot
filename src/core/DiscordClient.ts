@@ -6,10 +6,10 @@ import { getClient, suppressTracing } from "@sentry/node";
 import Redis from "ioredis";
 import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents } from "../events";
-import { unverifyKickLoader, ReactRoleLoader } from "../services";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
 import { TwitchClient } from "./TwitchClient";
 import { YoutubeClient } from "./YoutubeClient";
+import { unverifyKickLoader, ReactRoleLoader, VoiceChatReward } from "../services";
 
 
 
@@ -132,6 +132,7 @@ export class DiscordClient extends Client implements baseClient {
   private async loadServices() {
     await ReactRoleLoader(this);
     await (new unverifyKickLoader(this)).load();
+    await (new VoiceChatReward(this)).init();
   }
 
 }
