@@ -40,9 +40,11 @@ export class banCommand extends baseCommand {
   public async execute(interaction: CommandInteraction) {
     // Validation Checks
     if(!interaction.guild) return await interaction.reply("Interaction must be executed in a server");
-    const targetMember = interaction.options.get("user", true).member as GuildMember | null;
-    if(!targetMember || targetMember.user.bot)
+    const targetMember = interaction.options.get("user", true).member as GuildMember | null | undefined;
+    if(!targetMember)
       return await interaction.reply("Invalid User has been supplied");
+    if(targetMember.user.bot)
+      return await interaction.reply("Cant ban server bots.");
 
     // Get the supplied data
     const reason = interaction.options.get("reason",true).value as string;

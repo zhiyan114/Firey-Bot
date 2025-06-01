@@ -39,8 +39,8 @@ export class kickCommand extends baseCommand {
   }
 
   public async execute(interaction: CommandInteraction) {
-    const targetMember = interaction.options.get("user", true).member as GuildMember | null;
-    if(!targetMember || targetMember.user.bot)
+    const targetMember = interaction.options.get("user", true).member as GuildMember | null | undefined;
+    if(!targetMember)
       return await interaction.reply("Invalid User has been supplied");
 
     // supplied info
@@ -61,7 +61,7 @@ export class kickCommand extends baseCommand {
         value: issuer.getUsername(),
       },
     ];
-    if(invite) {
+    if(invite && !targetMember.user.bot) {
       const inviteLink = await new DiscordInvite(this.client, `kickInvite:${targetMember.id}`)
         .getTempInvite({
           maxAge: 604800,
@@ -78,7 +78,7 @@ export class kickCommand extends baseCommand {
     await target.sendMessage({
       title: "Kicked",
       color: "#FFFF00",
-      message: `You have been kicked from ${interaction.guild?.name ?? "unknown"}!${invite ? " A re-invite link has been attached to this message (expires in 1 week)." : ""}`,
+      message: `You have been kicked from ${interaction.guild?.name ?? "unknown"}!${(invite && !targetMember.user.bot) ? " A re-invite link has been attached to this message (expires in 1 week)." : ""}`,
       fields: kickField,
     });
     await targetMember.kick(reason);
