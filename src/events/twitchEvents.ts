@@ -3,7 +3,7 @@ import type { TwitchClient } from "../core/TwitchClient";
 import { baseTEvent } from "../core/baseEvent";
 import { TwitchUser } from "../utils/TwitchUser";
 import { processCommand } from "./helper/TwitchCommandHandler";
-import { withScope } from "@sentry/node";
+import { withIsolationScope } from "@sentry/node";
 
 
 export class TwitchEvents extends baseTEvent {
@@ -20,7 +20,7 @@ export class TwitchEvents extends baseTEvent {
   private async onMessage(channel: string, userstate: ChatUserstate, message: string, self: boolean) {
     if(self) return;
 
-    await withScope(async (scope) => {
+    await withIsolationScope(async (scope) => {
       if(!userstate["user-id"] || !userstate['username']) return;
 
       scope.setUser({
