@@ -5,7 +5,7 @@
 import { type VoiceState, type GuildMember, VoiceChannel } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
-import { captureException, logger, withScope } from "@sentry/node";
+import { captureException, logger, withIsolationScope } from "@sentry/node";
 
 const cacheName = "VCReward";
 
@@ -41,7 +41,7 @@ export class VoiceChatReward {
     const member = newState.member ?? oldState.member;
     if(!member || member?.user.bot) return;
 
-    await withScope(async scope => {
+    await withIsolationScope(async scope => {
       scope.setUser({
         id: member.user.id,
         username: member.user.username,
@@ -78,7 +78,7 @@ export class VoiceChatReward {
   private async onTick() {
     const users = this.userTable.values();
     for(const user of users) {
-      await withScope(async scope => {
+      await withIsolationScope(async scope => {
         scope.setUser({
           id: user.user.userID,
           username: user.user.username,

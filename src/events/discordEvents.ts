@@ -13,7 +13,7 @@ import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VertificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
-import { captureException, withScope } from "@sentry/node";
+import { captureException, withIsolationScope } from "@sentry/node";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
 
@@ -47,7 +47,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async createCommand(interaction: Interaction) {
-    return await withScope(async (scope) => {
+    return await withIsolationScope(async (scope) => {
       const gMember = interaction.member as GuildMember | null;
       scope.setUser({
         id: interaction.user.id,
@@ -68,7 +68,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async messageCreate(message: Message) {
-    await withScope(async (scope) => {
+    await withIsolationScope(async (scope) => {
       scope.setUser({
         id: message.author.id,
         username: message.author.username,
@@ -94,7 +94,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async guildMemberAdd(member: GuildMember) {
-    await withScope(async (scope) => {
+    await withIsolationScope(async (scope) => {
       scope.setUser({
         id: member.user.id,
         username: member.user.username,
@@ -140,7 +140,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async userUpdate(oldUser: User | PartialUser, newUser: User) {
-    await withScope(async (scope) => {
+    await withIsolationScope(async (scope) => {
       scope.setUser({
         id: newUser.id,
         username: newUser.username,
@@ -180,7 +180,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async voiceStateUpdate(old: VoiceState, now: VoiceState) {
-    await withScope(async (scope) => {
+    await withIsolationScope(async (scope) => {
 
       scope.setUser({
         id: now.member?.user.id,
