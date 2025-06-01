@@ -138,7 +138,7 @@ export class DiscordUser {
      * Algorithm determines if the user is using the old tag system or the new username system
      * @returns The current username
      */
-  public getUsername() {
+  public get username() {
     if(this.user.discriminator === "0") return this.user.username;
     return this.user.tag;
   }
@@ -146,7 +146,7 @@ export class DiscordUser {
   /**
    * General discord user ID getter w/o exposing user object
    */
-  public getUserID() {
+  public get userID() {
     return this.user.id;
   }
 
@@ -168,7 +168,7 @@ export class DiscordUser {
     try {
       const newData = await this.client.prisma.members.update({
         data: {
-          username: data ? data.username : this.getUsername(),
+          username: data ? data.username : this.username,
           displayname: data ? data.displayName : this.user.displayName,
           rulesconfirmedon: data?.rulesconfirmedon,
         },
@@ -203,7 +203,7 @@ export class DiscordUser {
       return await this.client.prisma.members.create({
         data: {
           id: this.user.id,
-          username: this.getUsername(),
+          username: this.username,
           displayname: this.user.displayName,
           rulesconfirmedon: rulesconfirmed,
         }

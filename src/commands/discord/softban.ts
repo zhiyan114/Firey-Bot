@@ -61,7 +61,7 @@ export class softBanCommand extends baseCommand {
       },
       {
         name: "Soft Banned By",
-        value: issuer.getUsername(),
+        value: issuer.username,
       }
     ];
     if(invite) {
