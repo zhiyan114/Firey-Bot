@@ -72,7 +72,6 @@ export class VoiceChatReward {
       return captureException(new VCError(`User missing from userTable, but leaveChannel Invoked. UserID Entry: ${member.id}`));
     await tableUser.computeReward();
     this.userTable.delete(member.id);
-
   };
 
   private async onTick() {
