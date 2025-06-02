@@ -40,8 +40,11 @@ COPY src/ ./src/
 COPY build.js ./build.js
 RUN npm run build
 
-# Perform build cleanup (or post-build stuff)
+# Post-Build Hook
 RUN scripts/postHook.sh
+
+# Build Cleanup
+RUN find dist/ -type f -name '*.map' -delete
 RUN npm prune --omit=dev
 
 
