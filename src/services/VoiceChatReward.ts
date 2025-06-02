@@ -72,7 +72,6 @@ export class VoiceChatReward {
       return captureException(new VCError(`User missing from userTable, but leaveChannel Invoked. UserID Entry: ${member.id}`));
     await tableUser.computeReward();
     this.userTable.delete(member.id);
-
   };
 
   private async onTick() {
@@ -86,7 +85,6 @@ export class VoiceChatReward {
           isVerified: user.member.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
         });
 
-        // Check if the user's voice channel have at least 2 non-bot users
         const channel = user.member.voice.channel;
         if(!channel)
           throw new VCError(`User (${user.user.userID}) is not in a voice channel, but tick() was called.`);
@@ -95,19 +93,30 @@ export class VoiceChatReward {
         if(state === undefined) {
           let cnt = 0;
           for(const [,memchk] of channel.members) {
-            if(!memchk.user.bot) cnt++;
+            // Channel must have at least 2 eligible users to earn points
+            if(this.userEligible(memchk)) cnt++;
             if(cnt === 2) break;
           }
           state = cnt >= 2;
           this.chEligible.set(channel.id, state);
         }
 
-        if(state === true)
+        if(state === true && this.userEligible(user.member))
           await user.tick();
       });
     }
 
     this.chEligible.clear();
+  }
+
+  private userEligible(member: GuildMember): boolean {
+    const vState = member.voice;
+    if(member.user.bot) return false; // Bots are not allowed to earn points
+    if(!vState.channel) return false; // Must be in a voice channel (edge case checks ig)
+    if(vState.mute || vState.selfMute) return false; // Must not be muted
+    if(vState.deaf || vState.selfDeaf) return false; // Must not be deafened
+    return true; // User is eligible to earn points
+
   }
 }
 
