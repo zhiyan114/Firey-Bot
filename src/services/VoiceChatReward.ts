@@ -76,8 +76,8 @@ export class VoiceChatReward {
 
   private async onTick() {
     const users = this.userTable.values();
-    await withIsolationScope(async scope => {
-      for(const user of users) {
+    for(const user of users) {
+      await withIsolationScope(async scope => {
         scope.setUser({
           id: user.user.userID,
           username: user.user.username,
@@ -103,8 +103,9 @@ export class VoiceChatReward {
 
         if(state === true && this.userEligible(user.member))
           await user.tick();
-      }
-    });
+      });
+    }
+
     this.chEligible.clear();
   }
 
