@@ -7,8 +7,7 @@ import { ChannelType, MessageFlags, REST, Routes } from "discord.js";
 import {
   EvalCommand, TwitchChatRelay, TwitchVerify, banCommand,
   getPointsCommand, kickCommand, leaderboardCommand, purgeCommand,
-  softBanCommand, unbanCommand, FeedbackCommand, heapDump,
-  ThrowError
+  softBanCommand, unbanCommand, FeedbackCommand, heapDump
 } from "../../commands/discord";
 import { captureException } from "@sentry/node";
 import { createHash, timingSafeEqual } from "crypto";
@@ -35,7 +34,6 @@ export class DiscordCommandHandler {
       new TwitchChatRelay(client),
       new FeedbackCommand(client),
       new heapDump(client),
-      new ThrowError(client),
     ] satisfies baseCommand[];
   }
 
