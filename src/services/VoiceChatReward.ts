@@ -59,7 +59,7 @@ export class VoiceChatReward {
 
   private async joinChannel(member: GuildMember) {
     if(this.userTable.delete(member.id))
-      captureException(new VCError(`userTable failed to clear correctly. UserID Entry: ${member.id}`));
+      captureException(new VCError(`userTable failed to clear correctly`));
 
     const user = new _internalUser(member, new DiscordUser(this.client, member.user));
     this.userTable.set(member.id, user);
@@ -69,7 +69,7 @@ export class VoiceChatReward {
   private async leaveChannel(member: GuildMember) {
     const tableUser = this.userTable.get(member.id);
     if(!tableUser)
-      return captureException(new VCError(`User missing from userTable, but leaveChannel Invoked. UserID Entry: ${member.id}`));
+      return captureException(new VCError(`User missing from userTable, but leaveChannel Invoked`));
     await tableUser.computeReward();
     this.userTable.delete(member.id);
   };
@@ -86,8 +86,16 @@ export class VoiceChatReward {
         });
 
         const channel = user.member.voice.channel;
-        if(!channel)
-          throw new VCError(`User (${user.user.userID}) is not in a voice channel, but tick() was called.`);
+        if(!channel) {
+          captureException(new VCError(`User is not in a voice channel, but tick() was called.`), {
+            contexts: {
+              member: {
+                voiceState: user.member.voice,
+              },
+            }
+          });
+          continue;
+        }
 
         let state = this.chEligible.get(channel.id);
         if(state === undefined) {
@@ -105,6 +113,7 @@ export class VoiceChatReward {
           await user.tick();
       }
     });
+
     this.chEligible.clear();
   }
 
