@@ -6,8 +6,8 @@ import { captureException } from "@sentry/node";
 export class ThrowError extends baseCommand {
   public client: DiscordClient;
   public metadata = new SlashCommandBuilder()
-    .setName("simerror")
-    .setDescription("Simulate an Exception to test Sentry")
+    .setName("eval")
+    .setDescription("Evaluates a code snippet for debugging purposes (DevTool)")
     .setContexts([InteractionContextType.Guild])
     .addBooleanOption(option=>
       option.setName("caught")
