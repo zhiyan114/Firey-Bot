@@ -1,4 +1,5 @@
 import type { Breadcrumb, ErrorEvent, EventHint, StackFrame } from "@sentry/node";
+import type { TransactionEvent } from "@sentry/core";
 import { relative } from "path";
 import { DiscordAPIError, DiscordjsError } from "discord.js";
 import { APIErrors } from "./utils/discordErrorCode";
@@ -57,4 +58,16 @@ export function frameStackIteratee(frame: StackFrame) {
   // Set the base path as the dist output to match the naming artifact on sentry
   frame.filename = `/${relative(__dirname, absPath).replace(/\\/g, "/")}`;
   return frame;
+}
+
+export function beforeSendTransaction(transaction: TransactionEvent) {
+  // Ignore callback stuff from PubSubHubbubAdd commentMore actions
+  if(new RegExp("/UwU/youtube/callback/").test(transaction.transaction ?? ""))
+    return null;
+  if(new RegExp("/test/").test(transaction.transaction ?? ""))
+    return null;
+  // Drop Prisma only transactionsAdd commentMore actions
+  if(transaction.transaction?.startsWith("prisma:"))
+    return null;
+  return transaction;
 }

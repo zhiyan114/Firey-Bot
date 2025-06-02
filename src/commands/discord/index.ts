@@ -10,3 +10,4 @@ export { TwitchChatRelay } from "./tbypass";
 export { TwitchVerify } from "./tverify";
 export { unbanCommand } from "./unban";
 export { heapDump } from "./heapDump";
+export { ThrowError } from "./ExceptionTest";
