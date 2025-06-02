@@ -7,7 +7,7 @@ import {
   flush
 } from "@sentry/node"; /* track https://github.com/getsentry/sentry-javascript/issues/15213 */
 import { config as dotenv } from "dotenv";
-import { beforeSend, beforeBreadcrumb, frameStackIteratee } from "./SentryFuncs";
+import { beforeSend, beforeBreadcrumb, frameStackIteratee, beforeSendTransaction } from "./SentryFuncs";
 
 dotenv();
 
@@ -23,7 +23,7 @@ sentryInit({
 
   beforeBreadcrumb,
   beforeSend,
-  beforeSendTransaction: () => null,
+  beforeSendTransaction,
   // @ts-expect-error Bad Type Definition (track: https://github.com/getsentry/sentry-javascript/pull/16439)
   beforeSendSpan: () => null,
 
