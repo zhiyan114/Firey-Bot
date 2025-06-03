@@ -2,7 +2,7 @@
 * Points reward system for voice chat activities
 * System does not track voice activity (API limitation), but assumes when there multiple users in the channel.
 */
-import { type VoiceState, type GuildMember, VoiceChannel } from "discord.js";
+import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
 import { captureException, logger, withIsolationScope } from "@sentry/node";
@@ -81,8 +81,8 @@ export class VoiceChatReward {
   };
 
   private async onTick() {
-    const users = this.userTable.values();
     await withIsolationScope(async scope => {
+      const users = this.userTable.values();
       for(const user of users) {
         scope.setUser({
           id: user.user.userID,
@@ -93,44 +93,81 @@ export class VoiceChatReward {
 
         const channel = user.member.voice.channel;
         if(!channel) {
-          captureException(new VCError(`User is not in a voice channel, but tick() was called.`), {
-            contexts: {
-              member: {
-                voiceState: user.member.voice,
-              },
-            }
-          });
+          captureException(new VCError(`User is not in a voice channel, but tick() was called.`),
+            { contexts: { member: { voiceState: user.member.voice } } });
           continue;
         }
 
-        let state = this.chEligible.get(channel.id);
-        if(state === undefined) {
-          let cnt = 0;
-          for(const [,memchk] of channel.members) {
-            // Channel must have at least 2 eligible users to earn points
-            if(this.userEligible(memchk)) cnt++;
-            if(cnt === 2) break;
-          }
-          state = cnt >= 2;
-          this.chEligible.set(channel.id, state);
-        }
+        // Check eligibility
+        if(this.ChannelEligible(channel)) {
+          if(channel.type === ChannelType.GuildVoice && !this.GV_userEligible(user.member))
+            return;
+          if(channel.type === ChannelType.GuildStageVoice && !this.GS_userEligible(user.member))
+            return;
 
-        if(state === true && this.userEligible(user.member))
           await user.tick();
+        }
       }
-    });
 
-    this.chEligible.clear();
+      this.chEligible.clear();
+    });
   }
 
-  private userEligible(member: GuildMember): boolean {
+  private ChannelEligible(channel: VoiceBasedChannel): boolean {
+    let state = this.chEligible.get(channel.id);
+    if(state === undefined) {
+      // Default State
+      state = false;
+
+      // Regular VC Eligibility Check
+      if(channel.type === ChannelType.GuildVoice) {
+        let cnt = 0;
+        for(const [,memchk] of channel.members) {
+          if(this.GV_userEligible(memchk)) cnt++;
+          if(cnt === 2) break;
+        }
+        state = cnt >= 2;
+      }
+
+      // Stage VC Eligibility Check
+      if(channel.type === ChannelType.GuildStageVoice) {
+        let hasSpeaker = false;
+        let hasAudience = false;
+        for(const [,memchk] of channel.members) {
+          // Find Speaker
+          if(!memchk.voice.suppress)
+            hasSpeaker = this.GS_userEligible(memchk);
+
+          // Find Audience
+          if(memchk.voice.suppress && !memchk.voice.mute)
+            hasAudience = this.GS_userEligible(memchk);
+
+          if(hasSpeaker && hasAudience) break; // No need to continue checking
+        }
+        state = hasSpeaker && hasAudience;
+      }
+
+      // Save State
+      this.chEligible.set(channel.id, state);
+    }
+    return state;
+  }
+
+  private GV_userEligible(member: GuildMember): boolean {
     const vState = member.voice;
     if(member.user.bot) return false; // Bots are not allowed to earn points
     if(!vState.channel) return false; // Must be in a voice channel (edge case checks ig)
-    if(vState.mute || vState.selfMute) return false; // Must not be muted
-    if(vState.deaf || vState.selfDeaf) return false; // Must not be deafened
+    if(vState.mute) return false; // Must not be muted
+    if(vState.deaf) return false; // Must not be deafened
     return true; // User is eligible to earn points
+  }
 
+  private GS_userEligible(member: GuildMember): boolean {
+    const vState = member.voice;
+    if(member.user.bot) return false; // Bots are not allowed to earn points
+    if(!vState.channel) return false; // Must be in a voice channel (edge case checks ig)
+    if(vState.suppress && vState.mute) return false; // Audience must not be muted
+    return !vState.suppress; // User is a speaker
   }
 }
 
