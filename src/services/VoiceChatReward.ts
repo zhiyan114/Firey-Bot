@@ -54,6 +54,9 @@ export class VoiceChatReward {
 
       if(oldState.channel !== null && newState.channel === null)
         return await this.leaveChannel(member);
+
+      if(this.userTable.delete(member.id))
+        this.userTable.set(member.id, new _internalUser(member, new DiscordUser(this.client, member.user)));
     });
   };
 
