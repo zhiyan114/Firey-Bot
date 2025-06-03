@@ -40,8 +40,7 @@ export function beforeSend(event: ErrorEvent, hint: EventHint) {
 export function beforeBreadcrumb(breadcrumb: Breadcrumb) {
   // List of urls to ignore
   const ignoreUrl = [
-    "https://api.twitch.tv",
-    "https://o125145.ingest.sentry.io", // Why is sentry being added to BC?????
+    "https://api.twitch.tv"
   ];
 
   // Ignore Http Breadcrumbs from the blacklisted url
