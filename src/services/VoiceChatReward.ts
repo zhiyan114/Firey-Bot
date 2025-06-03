@@ -55,8 +55,11 @@ export class VoiceChatReward {
       if(oldState.channel !== null && newState.channel === null)
         return await this.leaveChannel(member);
 
-      if(this.userTable.delete(member.id))
-        this.userTable.set(member.id, new _internalUser(member, new DiscordUser(this.client, member.user)));
+      // Update member object
+      const newMember = newState.member;
+      const _user = this.userTable.get(member.id);
+      if(newMember && _user)
+        _user.member = newMember;
     });
   };
 
@@ -142,10 +145,8 @@ class _internalUser {
     this.secCounted = 0;
   }
 
-  // Increment the time count
   public async tick() {
-
-    // Checkpoint every 1 minute
+    // Checkpoint every 3 minute
     this.secCounted += 3;
     if(this.secCounted % 60 === 0)
       await this.user.client.redis.set(this.user.getRedisKey(cacheName), this.secCounted.toString(), "EX", 3600);
