@@ -5,7 +5,7 @@ import { captureException } from "@sentry/node";
 import { DiscordCommand, LinkCommand, LurkCommand } from "../../commands/twitch";
 import { TwitchUser } from "../../utils/TwitchUser";
 
-const commands: baseTCommand[] = [
+export const commands: baseTCommand[] = [
   new LurkCommand(),
   new DiscordCommand(),
   new LinkCommand(),

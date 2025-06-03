@@ -37,6 +37,10 @@ export class DiscordCommandHandler {
     ] satisfies baseCommand[];
   }
 
+  public get availableCommands() {
+    return this.commands;
+  }
+
   public async commandRegister() {
     if(!process.env["CLIENTID"])
       throw Error("Missing CLIENTID as env variable");
