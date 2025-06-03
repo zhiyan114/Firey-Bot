@@ -24,8 +24,6 @@ sentryInit({
   beforeBreadcrumb,
   beforeSend,
   beforeSendTransaction: () => null,
-  // @ts-expect-error Bad Type Definition (track: https://github.com/getsentry/sentry-javascript/pull/16439)
-  beforeSendSpan: () => null,
 
   ignoreErrors: [
     "ETIMEDOUT",
