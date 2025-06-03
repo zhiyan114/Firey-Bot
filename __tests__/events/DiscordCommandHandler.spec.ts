@@ -12,7 +12,7 @@ const mockClient = jest.fn().mockImplementation(() => {
 });
 const handler = new DiscordCommandHandler(mockClient());
 
-describe("Duplcation Checks", ()=> {
+describe("Duplication Checks", ()=> {
   const commands = handler.availableCommands;
   test("Name/Description should not be duplicated", () => {
     for(let i = 0; i < commands.length; i++) {

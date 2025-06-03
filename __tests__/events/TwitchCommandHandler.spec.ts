@@ -1,6 +1,6 @@
 import { commands } from '../../src/events/helper/TwitchCommandHandler';
 
-describe("Duplcation Checks", ()=> {
+describe("Duplication Checks", ()=> {
   test("Name should not be duplicated", () => {
     for(let i = 0; i < commands.length; i++) {
       const command = commands[i];
