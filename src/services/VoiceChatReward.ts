@@ -42,24 +42,28 @@ export class VoiceChatReward {
     if(!member || member.user.bot) return;
 
     await withIsolationScope(async scope => {
-      scope.setUser({
-        id: member.user.id,
-        username: member.user.username,
-        isStaff: member.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
-        isVerified: member.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
-      });
+      try {
+        scope.setUser({
+          id: member.user.id,
+          username: member.user.username,
+          isStaff: member.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
+          isVerified: member.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
+        });
 
-      if(oldState.channel === null && newState.channel !== null)
-        return await this.joinChannel(member);
+        if(oldState.channel === null && newState.channel !== null)
+          return await this.joinChannel(member);
 
-      if(oldState.channel !== null && newState.channel === null)
-        return await this.leaveChannel(member);
+        if(oldState.channel !== null && newState.channel === null)
+          return await this.leaveChannel(member);
 
-      // Update member object
-      const newMember = newState.member;
-      const _user = this.userTable.get(member.id);
-      if(newMember && _user)
-        _user.member = newMember;
+        // Update member object
+        const newMember = newState.member;
+        const _user = this.userTable.get(member.id);
+        if(newMember && _user)
+          _user.member = newMember;
+      } catch (err) {
+        captureException(err);
+      }
     });
   };
 
