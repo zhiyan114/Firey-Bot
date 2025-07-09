@@ -5,7 +5,7 @@
  */
 
 import type { TwitchClient } from "../TwitchClient";
-import { captureException } from "@sentry/node";
+import { captureException } from "@sentry/node-core";
 import events from "events";
 import { fetch, Agent, errors } from "undici";
 

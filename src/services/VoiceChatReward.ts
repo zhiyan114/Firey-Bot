@@ -5,7 +5,7 @@
 import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
-import { captureException, logger, withIsolationScope } from "@sentry/node";
+import { captureException, logger, withIsolationScope } from "@sentry/node-core";
 
 const cacheName = "VCReward";
 

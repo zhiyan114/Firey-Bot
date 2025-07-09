@@ -13,7 +13,7 @@ import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VertificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
-import { captureException, withIsolationScope } from "@sentry/node";
+import { captureException, withIsolationScope } from "@sentry/node-core";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
 
@@ -58,7 +58,7 @@ export class DiscordEvents extends baseEvent {
       scope.setTag("platform", "discord");
       scope.setTag("eventType", "interactionCreate");
 
-      if(interaction.isCommand() || interaction.isContextMenuCommand())
+      if(interaction.isChatInputCommand() || interaction.isContextMenuCommand())
         return await this.commandHandler.commandEvent(interaction);
 
       if(interaction.isButton())

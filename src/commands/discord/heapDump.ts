@@ -3,7 +3,7 @@ import type { DiscordClient } from "../../core/DiscordClient";
 import { AttachmentBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { writeSnapshot } from "heapdump";
-import { captureException, captureMessage, withScope } from "@sentry/node";
+import { captureException, captureMessage, withScope } from "@sentry/node-core";
 import { createGzip } from "zlib";
 import { createReadStream, createWriteStream, unlinkSync, existsSync, statSync, readFileSync } from 'fs';
 import { pipeline } from 'stream/promises';

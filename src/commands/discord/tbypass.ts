@@ -14,7 +14,7 @@ import {
 } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
-import { captureException, suppressTracing } from "@sentry/node";
+import { captureException, suppressTracing } from "@sentry/node-core";
 
 export class TwitchChatRelay extends baseCommand {
   public client: DiscordClient;

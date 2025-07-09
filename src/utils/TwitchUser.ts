@@ -1,6 +1,6 @@
 import type { DiscordClient } from "../core/DiscordClient";
 import { Prisma } from "@prisma/client";
-import { captureException } from "@sentry/node";
+import { captureException } from "@sentry/node-core";
 import { DiscordUser } from "./DiscordUser";
 import { createHash } from "crypto";
 

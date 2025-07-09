@@ -3,7 +3,7 @@ import type { TwitchClient } from "../core/TwitchClient";
 import { baseTEvent } from "../core/baseEvent";
 import { TwitchUser } from "../utils/TwitchUser";
 import { processCommand } from "./helper/TwitchCommandHandler";
-import { withIsolationScope } from "@sentry/node";
+import { withIsolationScope } from "@sentry/node-core";
 
 
 export class TwitchEvents extends baseTEvent {
