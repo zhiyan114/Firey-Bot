@@ -2,11 +2,11 @@
   "dependencies": {
     "@discordjs/rest": "^2.0.0",
     "@prisma/client": "^6.5.0",
-    "@sentry/node": "^9.10.1",
+    "@sentry/node-core": "^9.36.0",
     "bufferutil": "^4.0.6",
     "canvas": "^3.0.1",
     "discord.js": "^14.11.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "heapdump": "^0.3.15",
     "ioredis": "^5.4.1",
@@ -22,14 +22,14 @@
     "lint:check": "eslint . --ext .ts",
     "build:check": "tsc -p tsconfig.json",
     "build": "rimraf dist && node build.js",
-    "start": "node ./dist/index.js"
+    "start": "node -r ./dist/loader.js ./dist/index.js"
   },
   "devDependencies": {
     "@sentry/cli": "^2.31.2",
     "@types/express": "^5.0.0",
     "@types/heapdump": "^0.3.4",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^22.10.7",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.12",
     "@types/node-cron": "^3.0.11",
     "@types/tmi.js": "^1.8.2",
     "@types/xml2js": "^0.4.11",

@@ -5,7 +5,7 @@
 import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
-import { captureException, logger, withIsolationScope } from "@sentry/node";
+import { captureException, logger, withIsolationScope } from "@sentry/node-core";
 
 const cacheName = "VCReward";
 
@@ -39,27 +39,31 @@ export class VoiceChatReward {
 
   private async voiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
     const member = newState.member ?? oldState.member;
-    if(!member || member?.user.bot) return;
+    if(!member || member.user.bot) return;
 
     await withIsolationScope(async scope => {
-      scope.setUser({
-        id: member.user.id,
-        username: member.user.username,
-        isStaff: member.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
-        isVerified: member.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
-      });
+      try {
+        scope.setUser({
+          id: member.user.id,
+          username: member.user.username,
+          isStaff: member.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
+          isVerified: member.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
+        });
 
-      if(oldState.channel === null && newState.channel !== null)
-        return await this.joinChannel(member);
+        if(oldState.channel === null && newState.channel !== null)
+          return await this.joinChannel(member);
 
-      if(oldState.channel !== null && newState.channel === null)
-        return await this.leaveChannel(member);
+        if(oldState.channel !== null && newState.channel === null)
+          return await this.leaveChannel(member);
 
-      // Update member object
-      const newMember = newState.member;
-      const _user = this.userTable.get(member.id);
-      if(newMember && _user)
-        _user.member = newMember;
+        // Update member object
+        const newMember = newState.member;
+        const _user = this.userTable.get(member.id);
+        if(newMember && _user)
+          _user.member = newMember;
+      } catch (err) {
+        captureException(err);
+      }
     });
   };
 
@@ -82,34 +86,43 @@ export class VoiceChatReward {
 
   private async onTick() {
     await withIsolationScope(async scope => {
-      const users = this.userTable.values();
-      for(const user of users) {
-        scope.setUser({
-          id: user.user.userID,
-          username: user.user.username,
-          isStaff: user.member.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
-          isVerified: user.member.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
-        });
+      try {
+        const users = this.userTable.values();
+        for(const user of users) {
+          scope.setUser({
+            id: user.user.userID,
+            username: user.user.username,
+            isStaff: user.member.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
+            isVerified: user.member.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
+          });
 
-        const channel = user.member.voice.channel;
-        if(!channel) {
-          captureException(new VCError(`User is not in a voice channel, but tick() was called.`),
-            { contexts: { member: { voiceState: user.member.voice } } });
-          continue;
+          const channel = user.member.voice.channel;
+          if(!channel) {
+            captureException(new VCError(`User is not in a voice channel, but tick() was called.`),
+              {
+                contexts: {
+                  VoiceState: {
+                    tableChannelID: user.member.voice.channelId,
+                    currentChannelID: (await this.client.guilds.cache.first()?.members.fetch(user.member.id))?.voice.channelId
+                  }
+                }
+              });
+            continue;
+          }
+
+          // Check eligibility
+          if(this.ChannelEligible(channel)) {
+            if(channel.type === ChannelType.GuildVoice && !this.GV_userEligible(user.member))
+              return;
+            if(channel.type === ChannelType.GuildStageVoice && !this.GS_userEligible(user.member))
+              return;
+
+            await user.tick();
+          }
         }
 
-        // Check eligibility
-        if(this.ChannelEligible(channel)) {
-          if(channel.type === ChannelType.GuildVoice && !this.GV_userEligible(user.member))
-            return;
-          if(channel.type === ChannelType.GuildStageVoice && !this.GS_userEligible(user.member))
-            return;
-
-          await user.tick();
-        }
-      }
-
-      this.chEligible.clear();
+        this.chEligible.clear();
+      } catch (err) { captureException(err); }
     });
   }
 

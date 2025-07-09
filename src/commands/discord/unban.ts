@@ -1,10 +1,10 @@
-import type { CommandInteraction } from "discord.js";
+import type { ChatInputCommandInteraction } from "discord.js";
 import type { DiscordClient } from "../../core/DiscordClient";
 import { DiscordAPIError, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { APIErrors } from "../../utils/discordErrorCode";
-import { captureException } from "@sentry/node";
+import { captureException } from "@sentry/node-core";
 
 export class unbanCommand extends baseCommand {
   client: DiscordClient;
@@ -35,7 +35,7 @@ export class unbanCommand extends baseCommand {
       );
   }
 
-  public async execute(interaction: CommandInteraction) {
+  public async execute(interaction: ChatInputCommandInteraction) {
     // Pull initial stuff
     const guild = interaction.guild;
     const targetUser = interaction.options.get("user", true).user;

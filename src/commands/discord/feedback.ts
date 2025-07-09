@@ -1,4 +1,4 @@
-import type { CommandInteraction, ModalSubmitInteraction } from "discord.js";
+import type { ChatInputCommandInteraction, ModalSubmitInteraction } from "discord.js";
 import type { DiscordClient } from "../../core/DiscordClient";
 import {
   ActionRowBuilder,
@@ -13,7 +13,7 @@ import {
 
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
-import { captureException, captureFeedback, suppressTracing } from "@sentry/node";
+import { captureException, captureFeedback } from "@sentry/node-core";
 
 export class FeedbackCommand extends baseCommand {
   client: DiscordClient;
@@ -37,7 +37,7 @@ export class FeedbackCommand extends baseCommand {
 
   }
 
-  public async execute(interaction: CommandInteraction) {
+  public async execute(interaction: ChatInputCommandInteraction) {
     const modalID = randomUUID();
     const allowDevDM = interaction.options.get("dminquiry", true).value as boolean;
 
@@ -80,19 +80,16 @@ export class FeedbackCommand extends baseCommand {
       FeedbackTextRow
     ]);
     await interaction.showModal(modal);
-
-    await suppressTracing(async() =>{
-      try {
-        await this.processResult(await interaction.awaitModalSubmit({
-          filter: (i) => i.customId === modalID && i.user.id === interaction.user.id,
-          time: 600000
-        }), allowDevDM, userSentryErrorID);
-      } catch(ex) {
-        if(ex instanceof DiscordjsError && ex.code === DiscordjsErrorCodes.InteractionCollectorError)
-          return await interaction.followUp({ content: "You took too long to submit the request!", flags: MessageFlags.Ephemeral });
-        captureException(ex);
-      }
-    });
+    try {
+      await this.processResult(await interaction.awaitModalSubmit({
+        filter: (i) => i.customId === modalID && i.user.id === interaction.user.id,
+        time: 600000
+      }), allowDevDM, userSentryErrorID);
+    } catch(ex) {
+      if(ex instanceof DiscordjsError && ex.code === DiscordjsErrorCodes.InteractionCollectorError)
+        return await interaction.followUp({ content: "You took too long to submit the request!", flags: MessageFlags.Ephemeral });
+      captureException(ex);
+    }
   }
 
   private async processResult(result: ModalSubmitInteraction, allowDevDM: boolean, sentryEventID?: string) {

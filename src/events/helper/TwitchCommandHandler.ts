@@ -1,7 +1,7 @@
 import type { ChatUserstate } from "tmi.js";
 import type { TwitchClient } from "../../core/TwitchClient";
 import type { baseTCommand } from "../../core/baseCommand";
-import { captureException } from "@sentry/node";
+import { captureException } from "@sentry/node-core";
 import { DiscordCommand, LinkCommand, LurkCommand } from "../../commands/twitch";
 import { TwitchUser } from "../../utils/TwitchUser";
 

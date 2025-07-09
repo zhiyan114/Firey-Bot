@@ -1,6 +1,6 @@
 // This should handle all command callbacks and registerations
 
-import type { CommandInteraction, ContextMenuCommandInteraction } from "discord.js";
+import type { ChatInputCommandInteraction, ContextMenuCommandInteraction } from "discord.js";
 import type { baseCommand } from "../../core/baseCommand";
 import type { DiscordClient } from "../../core/DiscordClient";
 import { ChannelType, MessageFlags, REST, Routes } from "discord.js";
@@ -9,7 +9,7 @@ import {
   getPointsCommand, kickCommand, leaderboardCommand, purgeCommand,
   softBanCommand, unbanCommand, FeedbackCommand, heapDump
 } from "../../commands/discord";
-import { captureException } from "@sentry/node";
+import { captureException } from "@sentry/node-core";
 import { createHash, timingSafeEqual } from "crypto";
 
 
@@ -85,7 +85,7 @@ export class DiscordCommandHandler {
     });
   }
 
-  public async commandEvent(interaction: CommandInteraction | ContextMenuCommandInteraction): Promise<void> {
+  public async commandEvent(interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction): Promise<void> {
     // Get the command
     const command = this.commands.find(c=>c.metadata.name===interaction.commandName) as baseCommand | undefined;
     if(!command) return;
