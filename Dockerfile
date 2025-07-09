@@ -73,4 +73,4 @@ RUN rm .env_build
 # Exposed web server port
 EXPOSE ${WEBSERVER_PORT}
 
-CMD node -r loader.js index.js
+CMD node -r ./loader.js ./index.js
