@@ -86,34 +86,36 @@ export class VoiceChatReward {
 
   private async onTick() {
     await withIsolationScope(async scope => {
-      const users = this.userTable.values();
-      for(const user of users) {
-        scope.setUser({
-          id: user.user.userID,
-          username: user.user.username,
-          isStaff: user.member.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
-          isVerified: user.member.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
-        });
+      try {
+        const users = this.userTable.values();
+        for(const user of users) {
+          scope.setUser({
+            id: user.user.userID,
+            username: user.user.username,
+            isStaff: user.member.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
+            isVerified: user.member.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
+          });
 
-        const channel = user.member.voice.channel;
-        if(!channel) {
-          captureException(new VCError(`User is not in a voice channel, but tick() was called.`),
-            { contexts: { member: { voiceState: user.member.voice } } });
-          continue;
+          const channel = user.member.voice.channel;
+          if(!channel) {
+            captureException(new VCError(`User is not in a voice channel, but tick() was called.`),
+              { contexts: { member: { voiceState: user.member.voice } } });
+            continue;
+          }
+
+          // Check eligibility
+          if(this.ChannelEligible(channel)) {
+            if(channel.type === ChannelType.GuildVoice && !this.GV_userEligible(user.member))
+              return;
+            if(channel.type === ChannelType.GuildStageVoice && !this.GS_userEligible(user.member))
+              return;
+
+            await user.tick();
+          }
         }
 
-        // Check eligibility
-        if(this.ChannelEligible(channel)) {
-          if(channel.type === ChannelType.GuildVoice && !this.GV_userEligible(user.member))
-            return;
-          if(channel.type === ChannelType.GuildStageVoice && !this.GS_userEligible(user.member))
-            return;
-
-          await user.tick();
-        }
-      }
-
-      this.chEligible.clear();
+        this.chEligible.clear();
+      } catch (err) { captureException(err); }
     });
   }
 
