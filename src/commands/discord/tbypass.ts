@@ -14,7 +14,7 @@ import {
 } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
-import { captureException, suppressTracing } from "@sentry/node-core";
+import { captureException } from "@sentry/node-core";
 
 export class TwitchChatRelay extends baseCommand {
   public client: DiscordClient;
@@ -73,18 +73,16 @@ export class TwitchChatRelay extends baseCommand {
     modalBox.addComponents(chatMessageAction);
     await interaction.showModal(modalBox);
 
-    await suppressTracing(async () => {
-      try {
-        await this.processResult(await interaction.awaitModalSubmit({
-          filter: (i) => i.customId === uniqueID && i.user.id === interaction.user.id,
-          time: 300000
-        }), tUser.username);
-      } catch(ex) {
-        if(ex instanceof DiscordjsError && ex.code === DiscordjsErrorCodes.InteractionCollectorError)
-          return await interaction.followUp({ content: "You took too long to submit the request!", flags: MessageFlags.Ephemeral });
-        captureException(ex);
-      }
-    });
+    try {
+      await this.processResult(await interaction.awaitModalSubmit({
+        filter: (i) => i.customId === uniqueID && i.user.id === interaction.user.id,
+        time: 300000
+      }), tUser.username);
+    } catch(ex) {
+      if(ex instanceof DiscordjsError && ex.code === DiscordjsErrorCodes.InteractionCollectorError)
+        return await interaction.followUp({ content: "You took too long to submit the request!", flags: MessageFlags.Ephemeral });
+      captureException(ex);
+    }
   }
 
   private async processResult(result: ModalSubmitInteraction, username: string) {
