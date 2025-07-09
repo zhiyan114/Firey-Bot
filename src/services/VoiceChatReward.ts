@@ -99,7 +99,14 @@ export class VoiceChatReward {
           const channel = user.member.voice.channel;
           if(!channel) {
             captureException(new VCError(`User is not in a voice channel, but tick() was called.`),
-              { contexts: { member: { voiceState: user.member.voice } } });
+              {
+                contexts: {
+                  VoiceState: {
+                    tableChannelID: user.member.voice.channelId,
+                    currentChannelID: (await this.client.guilds.cache.first()?.members.fetch(user.member.id))?.voice.channelId
+                  }
+                }
+              });
             continue;
           }
 
