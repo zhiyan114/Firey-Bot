@@ -1,4 +1,4 @@
-import type { CommandInteraction } from "discord.js";
+import type { ChatInputCommandInteraction } from "discord.js";
 import type { DiscordClient } from "../../core/DiscordClient";
 import {
   ChannelType,
@@ -40,7 +40,7 @@ export class purgeCommand extends baseCommand {
       );
   }
 
-  public async execute(interaction: CommandInteraction) {
+  public async execute(interaction: ChatInputCommandInteraction) {
     // Initial Setup
     const amount = interaction.options.get("amount", true).value as number;
     const reason = interaction.options.get("reason", false)?.value as string | undefined;

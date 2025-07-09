@@ -1,4 +1,4 @@
-import type { Channel, ColorResolvable, CommandInteraction } from "discord.js";
+import type { Channel, ChatInputCommandInteraction, ColorResolvable } from "discord.js";
 import type { DiscordClient } from "../../core/DiscordClient";
 import {
   ActionRowBuilder,
@@ -39,7 +39,7 @@ export class EvalCommand extends baseCommand {
     this.client = client;
   }
 
-  public async execute(interaction: CommandInteraction) {
+  public async execute(interaction: ChatInputCommandInteraction) {
     const code = interaction.options.get("code", true).value as string;
     const isAsync = interaction.options.get("async", true).value as boolean;
     const channel = interaction.channel;

@@ -1,5 +1,5 @@
 import type { DiscordClient } from "../../core/DiscordClient";
-import type { CommandInteraction, GuildMember } from "discord.js";
+import type { ChatInputCommandInteraction, GuildMember } from "discord.js";
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
@@ -37,7 +37,7 @@ export class banCommand extends baseCommand {
     this.access.roles?.push(client.config.adminRoleID);
   }
 
-  public async execute(interaction: CommandInteraction) {
+  public async execute(interaction: ChatInputCommandInteraction) {
     // Validation Checks
     if(!interaction.guild) return await interaction.reply("Interaction must be executed in a server");
     const targetMember = interaction.options.get("user", true).member as GuildMember | null | undefined;

@@ -1,4 +1,4 @@
-import type { CommandInteraction, ModalSubmitInteraction } from "discord.js";
+import type { ChatInputCommandInteraction, ModalSubmitInteraction } from "discord.js";
 import type { DiscordClient } from "../../core/DiscordClient";
 import {
   ActionRowBuilder,
@@ -35,7 +35,7 @@ export class TwitchChatRelay extends baseCommand {
       .setContexts([InteractionContextType.Guild]);
   }
 
-  public async execute(interaction: CommandInteraction) {
+  public async execute(interaction: ChatInputCommandInteraction) {
     if(!(interaction.member instanceof GuildMember)) return; // Not possible since the command usage is set disabled in DM
     const uniqueID = randomUUID();
 

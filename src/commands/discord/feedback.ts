@@ -1,4 +1,4 @@
-import type { CommandInteraction, ModalSubmitInteraction } from "discord.js";
+import type { ChatInputCommandInteraction, ModalSubmitInteraction } from "discord.js";
 import type { DiscordClient } from "../../core/DiscordClient";
 import {
   ActionRowBuilder,
@@ -37,7 +37,7 @@ export class FeedbackCommand extends baseCommand {
 
   }
 
-  public async execute(interaction: CommandInteraction) {
+  public async execute(interaction: ChatInputCommandInteraction) {
     const modalID = randomUUID();
     const allowDevDM = interaction.options.get("dminquiry", true).value as boolean;
 

@@ -39,7 +39,7 @@ export class VoiceChatReward {
 
   private async voiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
     const member = newState.member ?? oldState.member;
-    if(!member || member?.user.bot) return;
+    if(!member || member.user.bot) return;
 
     await withIsolationScope(async scope => {
       scope.setUser({
