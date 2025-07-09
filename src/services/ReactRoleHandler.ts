@@ -2,7 +2,7 @@ import type { Message, MessageReaction } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { ChannelType, DiscordAPIError, EmbedBuilder, } from "discord.js";
 import { APIErrors } from "../utils/discordErrorCode";
-import { captureException } from "@sentry/node";
+import { captureException } from "@sentry/node-core";
 
 export async function ReactRoleLoader(client: DiscordClient) {
   // General checks

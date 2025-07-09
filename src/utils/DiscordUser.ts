@@ -2,7 +2,7 @@ import type { APIEmbedField, ColorResolvable, User } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordAPIError, EmbedBuilder } from "discord.js";
 import { APIErrors } from "./discordErrorCode";
-import { captureException } from "@sentry/node";
+import { captureException } from "@sentry/node-core";
 import { Prisma } from "@prisma/client";
 import { createHash } from "crypto";
 

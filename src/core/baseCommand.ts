@@ -1,4 +1,4 @@
-import type { CommandInteraction, ContextMenuCommandBuilder, ContextMenuCommandInteraction, SlashCommandBuilder, SlashCommandOptionsOnlyBuilder } from "discord.js";
+import type { ChatInputCommandInteraction, ContextMenuCommandBuilder, ContextMenuCommandInteraction, SlashCommandBuilder, SlashCommandOptionsOnlyBuilder } from "discord.js";
 import type { DiscordClient } from "./DiscordClient";
 import type { ChatUserstate } from "tmi.js";
 import type { TwitchClient } from "./TwitchClient";
@@ -21,7 +21,7 @@ export abstract class baseCommand {
   abstract readonly client: DiscordClient;
   public readonly abstract metadata: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup"> | ContextMenuCommandBuilder | SlashCommandOptionsOnlyBuilder;
   public readonly abstract access: accessPerms;
-  public abstract execute(interaction: CommandInteraction | ContextMenuCommandInteraction): void | Promise<void | unknown>;
+  public abstract execute(interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction): void | Promise<void | unknown>;
 }
 
 

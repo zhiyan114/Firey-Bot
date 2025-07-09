@@ -1,8 +1,7 @@
 import type { ColorResolvable } from "discord.js";
 import type { DiscordClient } from "../DiscordClient";
 import { EmbedBuilder, TextChannel } from "discord.js";
-import { suppressTracing } from "@sentry/node";
-import { logger } from "@sentry/node";
+import { logger } from "@sentry/node-core";
 
 
 export interface LogData {
@@ -50,36 +49,31 @@ export class eventLogger {
   }
 
   async sendLog(log: LogData) {
-    await suppressTracing(async ()=>{
-      // Queue the log if the channel is not initialized
-      if(!this.channel) {
-        console.log(`Log channel not initialized, this log will be added to the pre-initialization queue! (Log Message: ${log.message})`);
-        this.logQueues.push(log);
-        return;
-      }
-
-      // Send the log
-      await this.channel.send({
-        content: log.type === "Error" ? "<@233955058604179457>" : undefined,
-        embeds: [this.prepareEmbed(log)]
-      });
-
-      switch(log.type) {
-        case "Interaction":
-          logger.debug(logger.fmt`[User Interaction] ${log.message}`, log.metadata);
-          break;
-        case "Info":
-          logger.info(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
-          break;
-        case "Warning":
-          logger.warn(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
-          break;
-        case "Error":
-          logger.error(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
-          break;
-      }
-
+    // Queue the log if the channel is not initialized
+    if(!this.channel) {
+      console.log(`Log channel not initialized, this log will be added to the pre-initialization queue! (Log Message: ${log.message})`);
+      this.logQueues.push(log);
+      return;
+    }
+    // Send the log
+    await this.channel.send({
+      content: log.type === "Error" ? "<@233955058604179457>" : undefined,
+      embeds: [this.prepareEmbed(log)]
     });
+    switch(log.type) {
+      case "Interaction":
+        logger.debug(logger.fmt`[User Interaction] ${log.message}`, log.metadata);
+        break;
+      case "Info":
+        logger.info(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
+        break;
+      case "Warning":
+        logger.warn(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
+        break;
+      case "Error":
+        logger.error(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
+        break;
+    }
   }
 
   private prepareEmbed(log: LogData): EmbedBuilder {

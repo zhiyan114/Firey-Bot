@@ -5,7 +5,7 @@
  */
 
 import type { TwitchClient } from "../TwitchClient";
-import { captureException } from "@sentry/node";
+import { captureException } from "@sentry/node-core";
 import events from "events";
 import { fetch, Agent, errors } from "undici";
 
@@ -120,7 +120,7 @@ export class streamClient extends events.EventEmitter {
     } catch(ex: unknown) {
       if(!this.errLogged) {
         this.errLogged = true;
-        if(ex instanceof errors.ConnectTimeoutError && ex.code === "UND_ERR_CONNECT_TIMEOUT")
+        if(ex instanceof errors.ConnectTimeoutError)
           return await this.client.discord.logger.sendLog({
             type: "Warning",
             message: `twitchStream: Connection Timeout - ${ex.message}`

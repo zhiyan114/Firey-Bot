@@ -1,4 +1,4 @@
-import type { CommandInteraction } from "discord.js";
+import type { ChatInputCommandInteraction } from "discord.js";
 import type { DiscordClient } from "../../core/DiscordClient";
 import { EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
@@ -26,7 +26,7 @@ export class TwitchVerify extends baseCommand {
       );
   }
 
-  public async execute(interaction: CommandInteraction) {
+  public async execute(interaction: ChatInputCommandInteraction) {
     const twitchUsername = interaction.options.get("username", true).value as string;
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const embed = new EmbedBuilder()

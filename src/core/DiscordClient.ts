@@ -2,7 +2,7 @@ import type { baseClient } from "./baseClient";
 import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketManagerOptions } from "discord.js";
 import config from '../config.json';
 import { PrismaClient } from "@prisma/client";
-import { getClient, suppressTracing } from "@sentry/node";
+import { getClient } from "@sentry/node-core";
 import Redis from "ioredis";
 import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents } from "../events";
@@ -111,12 +111,10 @@ export class DiscordClient extends Client implements baseClient {
   }
 
   public async dispose() {
-    return await suppressTracing(async() => {
-      // Close all connections
-      await this.prisma.$disconnect();
-      await this.redis.quit();
-      await this.destroy();
-    });
+    // Close all connections
+    await this.prisma.$disconnect();
+    await this.redis.quit();
+    await this.destroy();
   }
 
   public updateStatus() {
