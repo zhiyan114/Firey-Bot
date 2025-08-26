@@ -44,9 +44,6 @@ sentryInit({
   // Sentry New Feature Testing
   _experiments: {
     enableLogs: true,
-    beforeSendLog(log) {
-      return log;
-    },
   },
 
   integrations: [

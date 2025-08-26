@@ -2,7 +2,7 @@
   "dependencies": {
     "@discordjs/rest": "^2.0.0",
     "@prisma/client": "^6.5.0",
-    "@sentry/node-core": "^9.36.0",
+    "@sentry/node-core": "^10.5.0",
     "bufferutil": "^4.0.6",
     "canvas": "^3.0.1",
     "discord.js": "^14.11.0",
