@@ -9,7 +9,7 @@ import { DiscordEvents, RedisEvents } from "../events";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
 import { TwitchClient } from "./TwitchClient";
 import { YoutubeClient } from "./YoutubeClient";
-import { unverifyKickLoader, ReactRoleLoader, VoiceChatReward } from "../services";
+import { unverifyKickLoader, ReactRoleLoader } from "../services";
 
 
 
@@ -130,7 +130,6 @@ export class DiscordClient extends Client implements baseClient {
   private async loadServices() {
     await ReactRoleLoader(this);
     await (new unverifyKickLoader(this)).load();
-    await (new VoiceChatReward(this)).init();
   }
 
 }

@@ -5,7 +5,7 @@
 import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
-import { captureException, logger, withIsolationScope } from "@sentry/node-core";
+import { captureException, captureMessage, logger, withIsolationScope } from "@sentry/node-core";
 
 const cacheName = "VCReward";
 
@@ -69,7 +69,7 @@ export class VoiceChatReward {
 
   private async joinChannel(member: GuildMember) {
     if(this.userTable.delete(member.id))
-      captureException(new VCError(`userTable failed to clear correctly`));
+      captureMessage("userTable failed to clear correctly", "error");
 
     const user = new _internalUser(member, new DiscordUser(this.client, member.user));
     this.userTable.set(member.id, user);
@@ -79,7 +79,7 @@ export class VoiceChatReward {
   private async leaveChannel(member: GuildMember) {
     const tableUser = this.userTable.get(member.id);
     if(!tableUser)
-      return captureException(new VCError(`User missing from userTable, but leaveChannel Invoked`));
+      return captureMessage("User missing from userTable, but leaveChannel Invoked", "error");
     await tableUser.computeReward();
     this.userTable.delete(member.id);
   };
