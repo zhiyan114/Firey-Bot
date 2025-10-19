@@ -1,7 +1,8 @@
-import type { ChatInputCommandInteraction, ModalSubmitInteraction } from "discord.js";
+import type { ChatInputCommandInteraction, ModalSubmitInteraction, TextInputModalData } from "discord.js";
 import type { DiscordClient } from "../../core/DiscordClient";
 import {
   ActionRowBuilder,
+  ComponentType,
   DiscordjsError,
   DiscordjsErrorCodes,
   MessageFlags,
@@ -93,13 +94,13 @@ export class FeedbackCommand extends baseCommand {
   }
 
   private async processResult(result: ModalSubmitInteraction, allowDevDM: boolean, sentryEventID?: string) {
-    const components = result.components.map(c=>c.components[0]);
+    const components = result.components.map(c=>c.type === ComponentType.ActionRow && c.components[0]);
     await result.reply({ content: "Thank you for submitting the feedback!", flags: MessageFlags.Ephemeral });
     captureFeedback({
       associatedEventId: sentryEventID,
       name: result.user.username,
       email: allowDevDM ? `${result.user.id}@discord.dm` : undefined,
-      message: components.find(k=>k.customId === "feedback")?.value ?? "This shouldn't happened?!?!?",
+      message: components.find((k): k is TextInputModalData => k !== false && k.customId === "feedback")?.value ?? "This shouldn't happened?!?!?",
     });
     if(sentryEventID)
       await this.client.redis.del(`userSentryErrorID:${result.user.id}`);
