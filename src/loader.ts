@@ -24,6 +24,7 @@ sentryInit({
   maxValueLength: 1000,
   tracesSampleRate: 0,
   sendDefaultPii: true,
+  enableLogs: true,
 
   beforeBreadcrumb,
   beforeSend,
@@ -40,11 +41,6 @@ sentryInit({
     "ECONNRESET",
     "getaddrinfo"
   ],
-
-  // Sentry New Feature Testing
-  _experiments: {
-    enableLogs: true,
-  },
 
   integrations: [
     consoleLoggingIntegration({

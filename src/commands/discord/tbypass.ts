@@ -2,6 +2,7 @@ import type { ChatInputCommandInteraction, ModalSubmitInteraction } from "discor
 import type { DiscordClient } from "../../core/DiscordClient";
 import {
   ActionRowBuilder,
+  ComponentType,
   DiscordjsError,
   DiscordjsErrorCodes,
   GuildMember,
@@ -86,8 +87,8 @@ export class TwitchChatRelay extends baseCommand {
   }
 
   private async processResult(result: ModalSubmitInteraction, username: string) {
-    const components = result.components[0].components[0];
-    const message = components.value;
+    const components = result.components[0].type === ComponentType.ActionRow && result.components[0].components[0];
+    const message = (components !== false) ? components.value : "Invalid Component found in code";
 
     await this.client.twitch.say(this.client.config.twitch.channel, `[@${username}]: ${message}`);
     await result.reply({ content: "Message Sent!", flags: MessageFlags.Ephemeral });
