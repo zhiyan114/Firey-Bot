@@ -26,6 +26,10 @@ sentryInit({
   sendDefaultPii: true,
   enableLogs: true,
 
+  _experiments: {
+    enableMetrics: true,
+  },
+
   beforeBreadcrumb,
   beforeSend,
   beforeSendTransaction: () => null,

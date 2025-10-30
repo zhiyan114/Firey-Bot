@@ -9,7 +9,7 @@ import {
   getPointsCommand, kickCommand, leaderboardCommand, purgeCommand,
   softBanCommand, unbanCommand, FeedbackCommand, heapDump
 } from "../../commands/discord";
-import { captureException } from "@sentry/node-core";
+import { captureException, metrics } from "@sentry/node-core";
 import { createHash, timingSafeEqual } from "crypto";
 
 
@@ -110,6 +110,11 @@ export class DiscordCommandHandler {
     }
 
     try {
+      metrics.count(`discord.cmd.execute`, 1, {
+        attributes: {
+          name: interaction.commandName
+        }
+      });
       await command.execute(interaction);
     }
     catch(ex) {

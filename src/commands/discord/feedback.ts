@@ -1,13 +1,14 @@
 import type { ChatInputCommandInteraction, ModalSubmitInteraction, TextInputModalData } from "discord.js";
 import type { DiscordClient } from "../../core/DiscordClient";
 import {
-  ActionRowBuilder,
   ComponentType,
   DiscordjsError,
   DiscordjsErrorCodes,
+  LabelBuilder,
   MessageFlags,
   ModalBuilder,
   SlashCommandBuilder,
+  TextDisplayBuilder,
   TextInputBuilder,
   TextInputStyle
 } from "discord.js";
@@ -54,32 +55,21 @@ export class FeedbackCommand extends baseCommand {
     const sentryNotice = userSentryErrorID ?
       "Sentry did caught an error under your ID, so please use complete the field below instead!" :
       "For users who don't want a github account or issues captured by Sentry, complete the field below.";
-    const noticeTextRow = new ActionRowBuilder<TextInputBuilder>()
-      .addComponents(
-        new TextInputBuilder()
-          .setCustomId("notice")
-          .setLabel("Notice")
-          .setStyle(TextInputStyle.Paragraph)
-          .setValue(`Thank you for considering reporting the bug! Please use https://github.com/zhiyan114/Firey-Bot/issues if possible. ${sentryNotice} The form will expires in 10 minutes, so please complete it in a timely manner.`)
-      );
+    const noticeText = new TextDisplayBuilder()
+      .setContent(`Thank you for considering reporting the bug! Please use https://github.com/zhiyan114/Firey-Bot/issues if possible. ${sentryNotice} The form will expires in 10 minutes, so please complete it in a timely manner.`);
 
     // Create a large text input
-    const FeedbackTextRow = new ActionRowBuilder<TextInputBuilder>()
-      .addComponents(
-        new TextInputBuilder()
-          .setCustomId("feedback")
-          .setLabel("What should we change/fix?")
-          .setStyle(TextInputStyle.Paragraph)
-      );
+    const FeedBackTextLabel = new LabelBuilder({ label: 'Message', description: "What should we change/fix?" });
+    FeedBackTextLabel.setTextInputComponent(new TextInputBuilder()
+      .setCustomId("feedback")
+      .setStyle(TextInputStyle.Paragraph));
 
     // Create a dropdown to ask the user whether the dev can DM them for more details...
     // @TODO: Pending discord new modal box features
 
     // Finalize and send
-    modal.addComponents([
-      noticeTextRow,
-      FeedbackTextRow
-    ]);
+    modal.addTextDisplayComponents(noticeText);
+    modal.addLabelComponents(FeedBackTextLabel);
     await interaction.showModal(modal);
     try {
       await this.processResult(await interaction.awaitModalSubmit({

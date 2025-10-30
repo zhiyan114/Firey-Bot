@@ -1,12 +1,12 @@
 import type { ChatInputCommandInteraction, ModalSubmitInteraction } from "discord.js";
 import type { DiscordClient } from "../../core/DiscordClient";
 import {
-  ActionRowBuilder,
   ComponentType,
   DiscordjsError,
   DiscordjsErrorCodes,
   GuildMember,
   InteractionContextType,
+  LabelBuilder,
   MessageFlags,
   ModalBuilder,
   SlashCommandBuilder,
@@ -58,20 +58,19 @@ export class TwitchChatRelay extends baseCommand {
       .setTitle("Twitch Unfiltered Chat");
 
     // Textbox for the chat message
-    const chatMessageAction = new ActionRowBuilder<TextInputBuilder>()
-      .addComponents(
-        new TextInputBuilder()
-          .setCustomId(`chatMessage`)
-          .setLabel("Message")
-          .setPlaceholder("Type your message here (expire in 5 minutes)...")
-          .setMinLength(1)
-          .setStyle(TextInputStyle.Paragraph)
-          .setMaxLength(this.MaxMessageLength)
-          .setRequired(true)
-      );
+    const chatMessageLabel = new LabelBuilder({})
+      .setLabel('Message')
+      .setDescription("What message to override automod mdoeration")
+      .setTextInputComponent(new TextInputBuilder()
+        .setCustomId(`chatMessage`)
+        .setPlaceholder("Type your message here (expire in 5 minutes)...")
+        .setMinLength(1)
+        .setStyle(TextInputStyle.Paragraph)
+        .setMaxLength(this.MaxMessageLength)
+        .setRequired(true));
 
     // Show the box to the user
-    modalBox.addComponents(chatMessageAction);
+    modalBox.addLabelComponents(chatMessageLabel);
     await interaction.showModal(modalBox);
 
     try {

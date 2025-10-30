@@ -5,7 +5,7 @@ name: FlyIO Deployment
 
 on:
   push:
-    branches: [ deploy ]
+    branches: [ deploy, master ]
 
 jobs:
   Deployment:
