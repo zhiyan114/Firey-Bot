@@ -1,7 +1,7 @@
 import type { ChatUserstate } from "tmi.js";
 import type { TwitchClient } from "../../core/TwitchClient";
 import type { baseTCommand } from "../../core/baseCommand";
-import { captureException } from "@sentry/node-core";
+import { captureException, metrics } from "@sentry/node-core";
 import { DiscordCommand, LinkCommand, LurkCommand } from "../../commands/twitch";
 import { TwitchUser } from "../../utils/TwitchUser";
 
@@ -37,6 +37,11 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
   }
 
   try {
+    metrics.count(`twitch.cmd.execute`, 1, {
+      attributes: {
+        name: command.name
+      }
+    });
     await command.execute({
       channel: eventData.channel,
       user: eventData.user,
