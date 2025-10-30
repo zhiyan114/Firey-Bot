@@ -48,6 +48,7 @@ export default defineConfig([globalIgnores([
     indent: ["error", 2, {
       SwitchCase: 1,
     }],
+    "@typescript-eslint/no-deprecated": "error",
     semi: ["error", "always"],
     "no-async-promise-executor": "off",
     "@typescript-eslint/no-var-requires": "off",
