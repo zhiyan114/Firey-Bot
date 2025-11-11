@@ -60,7 +60,7 @@ export class TwitchChatRelay extends baseCommand {
     // Textbox for the chat message
     const chatMessageLabel = new LabelBuilder({})
       .setLabel('Message')
-      .setDescription("What message to override automod mdoeration")
+      .setDescription("What message to override automod filter")
       .setTextInputComponent(new TextInputBuilder()
         .setCustomId(`chatMessage`)
         .setPlaceholder("Type your message here (expire in 5 minutes)...")

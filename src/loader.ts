@@ -25,10 +25,7 @@ sentryInit({
   tracesSampleRate: 0,
   sendDefaultPii: true,
   enableLogs: true,
-
-  _experiments: {
-    enableMetrics: true,
-  },
+  enableMetrics: true,
 
   beforeBreadcrumb,
   beforeSend,
