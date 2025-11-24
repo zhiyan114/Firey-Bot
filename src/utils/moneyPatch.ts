@@ -28,7 +28,7 @@ export function moneyPatchReqID(interaction: Interaction, reqID: string) {
   // Patch channel message
   if(interaction.channel?.isSendable()) {
     // Patch Send
-    const oldSend = interaction.channel.send;
+    const oldSend = interaction.channel.send.bind(interaction.channel);
     // @ts-expect-error MoneyPatch
     interaction.channel.send = async (options: string | MessagePayload | MessageCreateOptions) => {
       if(typeof(options) === "string") {
@@ -44,7 +44,7 @@ export function moneyPatchReqID(interaction: Interaction, reqID: string) {
   // Patch interaction reply/followup stuff
   if(interaction.isCommand() || interaction.isUserContextMenuCommand()) {
     // eslint-disable-next-line
-    const oldReply = interaction.reply;
+    const oldReply = interaction.reply.bind(interaction);
     // @ts-expect-error MoneyPatch
     // eslint-disable-next-line
     interaction.reply = async function(options: string | MessagePayload | InteractionReplyOptions) {
@@ -57,7 +57,7 @@ export function moneyPatchReqID(interaction: Interaction, reqID: string) {
       return oldReply(options);
     };
 
-    const oldFollowUp = interaction.followUp;
+    const oldFollowUp = interaction.followUp.bind(interaction);
     interaction.followUp = async function(options: string | MessagePayload | InteractionReplyOptions) {
       if(typeof(options) === "string") {
         options += `\n\nRequest ID: ${reqID}`;
@@ -70,9 +70,8 @@ export function moneyPatchReqID(interaction: Interaction, reqID: string) {
   }
 
   // Patch user message
-  const oldUserSend = interaction.user.send;
-  // @ts-expect-error MoneyPatch
-  interaction.user = async (options: string | MessagePayload | MessageCreateOptions) => {
+  const oldUserSend = interaction.user.send.bind(interaction.user);
+  interaction.user.send = async (options: string | MessagePayload | MessageCreateOptions) => {
     if(typeof(options) === "string") {
       options += `\n\nRequest ID: ${reqID}`;
       return await oldUserSend(options);
