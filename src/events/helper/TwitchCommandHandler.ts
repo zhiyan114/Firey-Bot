@@ -43,11 +43,7 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
       }
     });
     await command.execute({
-      channel: eventData.channel,
-      user: eventData.user,
-      message: eventData.message,
-      self: eventData.self,
-      client: eventData.client,
+      ...eventData,
       args
     });
   } catch(ex) {

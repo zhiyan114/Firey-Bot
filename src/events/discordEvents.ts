@@ -16,6 +16,8 @@ import { APIErrors } from "../utils/discordErrorCode";
 import { captureException, withIsolationScope } from "@sentry/node-core";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
+import { randomUUID } from "crypto";
+import { moneyPatchReqID } from "../utils/moneyPatch";
 
 export class DiscordEvents extends baseEvent {
   client: DiscordClient;
@@ -48,6 +50,11 @@ export class DiscordEvents extends baseEvent {
 
   private async createCommand(interaction: Interaction) {
     return await withIsolationScope(async (scope) => {
+      const requestID = randomUUID();
+      scope.setContext("Session", { requestID })
+        .setAttribute("RequestID", requestID);
+      moneyPatchReqID(interaction, requestID);
+
       try {
         const gMember = interaction.member as GuildMember | null;
         scope.setUser({

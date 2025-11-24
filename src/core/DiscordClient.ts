@@ -10,6 +10,7 @@ import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
 import { TwitchClient } from "./TwitchClient";
 import { YoutubeClient } from "./YoutubeClient";
 import { unverifyKickLoader, ReactRoleLoader } from "../services";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 
 
@@ -64,7 +65,8 @@ export class DiscordClient extends Client implements baseClient {
       enableReadyCheck: false,
     });
     this.prisma = new PrismaClient({
-      errorFormat: "minimal"
+      errorFormat: "minimal",
+      adapter: new PrismaPg({ connectionString: process.env["POSTGRESQL_CONN"] })
     });
 
     // @ts-expect-error Override readonly property
