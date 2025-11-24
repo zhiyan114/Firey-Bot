@@ -10,6 +10,7 @@ on:
 jobs:
   BuildTest:
     runs-on: ubuntu-latest
+    environment: CI_ENV
     strategy:
       matrix:
         node-version: [22.x]
@@ -32,6 +33,9 @@ jobs:
       run: npm run build:check
     - name: Unit Test
       run: npm run test
+      env:
+        POSTGRESQL_CONN: ${{ secrets.POSTGRESQL_CONN }}
+
   # Build docker image
   DockerTest:
     runs-on: ubuntu-latest
