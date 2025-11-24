@@ -28,16 +28,17 @@ export function moneyPatchReqID(interaction: Interaction, reqID: string) {
   // Patch channel message
   if(interaction.channel?.isSendable()) {
     // Patch Send
-    const oldSend = interaction.channel.send.bind(interaction.channel);
-    // @ts-expect-error MoneyPatch
+    const oldSend = interaction.channel.send;
     interaction.channel.send = async (options: string | MessagePayload | MessageCreateOptions) => {
       if(typeof(options) === "string") {
         options += `\n\nRequest ID: ${reqID}`;
-        return await oldSend(options);
+        // @ts-expect-error MoneyPatch
+        return await oldSend.call(interaction.channel, options);
       }
 
       patchContent(options);
-      return await oldSend(options);
+      // @ts-expect-error MoneyPatch
+      return await oldSend.call(interaction.channel, options);
     };
   }
 
@@ -74,10 +75,10 @@ export function moneyPatchReqID(interaction: Interaction, reqID: string) {
   interaction.user.send = async (options: string | MessagePayload | MessageCreateOptions) => {
     if(typeof(options) === "string") {
       options += `\n\nRequest ID: ${reqID}`;
-      return await oldUserSend.call(interaction.user,options);
+      return await oldUserSend.call(interaction.user, options);
     }
 
     patchContent(options);
-    return await oldUserSend.call(interaction.user,options);
+    return await oldUserSend.call(interaction.user, options);
   };
 }
