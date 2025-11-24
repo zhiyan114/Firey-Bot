@@ -54,7 +54,7 @@ export function moneyPatchReqID(interaction: Interaction, reqID: string) {
       }
 
       patchContent(options);
-      return oldReply(options);
+      return await oldReply(options);
     };
 
     const oldFollowUp = interaction.followUp.bind(interaction);
@@ -65,7 +65,7 @@ export function moneyPatchReqID(interaction: Interaction, reqID: string) {
       }
 
       patchContent(options);
-      return oldFollowUp(options);
+      return await oldFollowUp(options);
     };
   }
 
