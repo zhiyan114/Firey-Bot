@@ -70,7 +70,7 @@ export function moneyPatchReqID(interaction: Interaction, reqID: string) {
   }
 
   // Patch user message
-  const oldUserSend = interaction.user.send;
+  const oldUserSend = interaction.user.send.bind(interaction.user);
   interaction.user.send = async (options: string | MessagePayload | MessageCreateOptions) => {
     if(typeof(options) === "string") {
       options += `\n\nRequest ID: ${reqID}`;
