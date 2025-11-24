@@ -51,7 +51,8 @@ export class DiscordEvents extends baseEvent {
   private async createCommand(interaction: Interaction) {
     return await withIsolationScope(async (scope) => {
       const requestID = randomUUID();
-      scope.setContext("Session", { requestID }); // Add setAttribute Here
+      scope.setContext("Session", { requestID })
+        .setAttribute("RequestID", requestID);
       moneyPatchReqID(interaction, requestID);
 
       try {
