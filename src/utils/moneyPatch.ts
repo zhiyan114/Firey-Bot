@@ -44,40 +44,40 @@ export function moneyPatchReqID(interaction: Interaction, reqID: string) {
   // Patch interaction reply/followup stuff
   if(interaction.isCommand() || interaction.isUserContextMenuCommand()) {
     // eslint-disable-next-line
-    const oldReply = interaction.reply.bind(interaction);
+    const oldReply = interaction.reply;
     // @ts-expect-error MoneyPatch
     // eslint-disable-next-line
     interaction.reply = async function(options: string | MessagePayload | InteractionReplyOptions) {
       if(typeof(options) === "string") {
         options += `\n\nRequest ID: ${reqID}`;
-        return await oldReply(options);
+        return await oldReply.call(interaction, options);
       }
 
       patchContent(options);
-      return await oldReply(options);
+      return await oldReply.call(interaction, options);
     };
 
-    const oldFollowUp = interaction.followUp.bind(interaction);
+    const oldFollowUp = interaction.followUp;
     interaction.followUp = async function(options: string | MessagePayload | InteractionReplyOptions) {
       if(typeof(options) === "string") {
         options += `\n\nRequest ID: ${reqID}`;
-        return await oldFollowUp(options);
+        return await oldFollowUp.call(interaction, options);
       }
 
       patchContent(options);
-      return await oldFollowUp(options);
+      return await oldFollowUp.call(interaction, options);
     };
   }
 
   // Patch user message
-  const oldUserSend = interaction.user.send.bind(interaction.user);
+  const oldUserSend = interaction.user.send;
   interaction.user.send = async (options: string | MessagePayload | MessageCreateOptions) => {
     if(typeof(options) === "string") {
       options += `\n\nRequest ID: ${reqID}`;
-      return await oldUserSend(options);
+      return await oldUserSend.call(interaction.user,options);
     }
 
     patchContent(options);
-    return await oldUserSend(options);
+    return await oldUserSend.call(interaction.user,options);
   };
 }
