@@ -51,8 +51,7 @@ export class DiscordEvents extends baseEvent {
   private async createCommand(interaction: Interaction) {
     return await withIsolationScope(async (scope) => {
       const requestID = randomUUID();
-      scope.setContext("Session", { requestID })
-        .setAttribute("RequestID", requestID);
+      scope.setAttribute("RequestID", requestID);
       moneyPatchReqID(interaction, requestID);
 
       try {
@@ -61,10 +60,13 @@ export class DiscordEvents extends baseEvent {
           id: interaction.user.id,
           username: interaction.user.username,
           isStaff: gMember?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? "unknown",
-          isVerified: gMember?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? "unknown"
+          isVerified: gMember?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? "unknown",
         });
-        scope.setTag("platform", "discord");
-        scope.setTag("eventType", "interactionCreate");
+        scope.setTags({
+          "platform": "discord",
+          "eventType": "interactionCreate",
+          requestID
+        });
 
         if(interaction.isChatInputCommand() || interaction.isContextMenuCommand())
           return await this.commandHandler.commandEvent(interaction);
