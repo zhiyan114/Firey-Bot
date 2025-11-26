@@ -51,8 +51,13 @@ export class DiscordEvents extends baseEvent {
   private async createCommand(interaction: Interaction) {
     return await withIsolationScope(async (scope) => {
       const requestID = randomUUID();
-      scope.setAttribute("RequestID", requestID);
-      MonkeyPatchReqID(interaction, requestID);
+      scope.setAttribute("RequestID", requestID)
+        .setTags({
+          "platform": "discord",
+          "eventType": "interactionCreate",
+          requestID
+        });
+      MonkeyPatchReqID(interaction);
 
       try {
         const gMember = interaction.member as GuildMember | null;
@@ -62,11 +67,6 @@ export class DiscordEvents extends baseEvent {
           isStaff: gMember?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? "unknown",
           isVerified: gMember?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? "unknown",
         });
-        scope.setTags({
-          "platform": "discord",
-          "eventType": "interactionCreate",
-          requestID
-        });
 
         if(interaction.isChatInputCommand() || interaction.isContextMenuCommand())
           return await this.commandHandler.commandEvent(interaction);
@@ -74,7 +74,7 @@ export class DiscordEvents extends baseEvent {
         if(interaction.isButton())
           if(interaction.customId === "RuleConfirm")
             return await VertificationHandler(this.client, interaction);
-      } catch(ex) { captureException(ex); }
+      } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     });
   }
 
@@ -102,7 +102,7 @@ export class DiscordEvents extends baseEvent {
 
         // Grant points
         await (new DiscordUser(this.client, message.author)).economy.chatRewardPoints(message.content);
-      } catch(ex) { captureException(ex); }
+      } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     });
   }
 
@@ -150,7 +150,7 @@ export class DiscordEvents extends baseEvent {
         // Send a welcome banner
         const BannerBuff = await (new BannerPic()).generate(user.username, member.user.displayAvatarURL({ size: 512, extension: "png" }));
         await channel.send({ files: [BannerBuff] });
-      } catch(ex) { captureException(ex); }
+      } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     });
   }
 
@@ -164,29 +164,30 @@ export class DiscordEvents extends baseEvent {
       scope.setTag("eventType", "userUpdate");
 
       if(oldUser.bot) return;
-
       const user = new DiscordUser(this.client, newUser);
 
-      // See if we need to update user's rule confirmation date
-      let updateVerifyStatus = false;
-      if(!(await user.getCacheData())?.rulesconfirmedon &&
-      (await this.client.guilds.cache.find(g=>g.id === this.client.config.guildID)
-        ?.members.fetch(newUser))
-        ?.roles.cache.find(role=>role.id === this.client.config.newUserRoleID))
-        updateVerifyStatus = true;
+      try {
+        // See if we need to update user's rule confirmation date
+        let updateVerifyStatus = false;
+        if(!(await user.getCacheData())?.rulesconfirmedon &&
+        (await this.client.guilds.cache.find(g=>g.id === this.client.config.guildID)
+          ?.members.fetch(newUser))
+          ?.roles.cache.find(role=>role.id === this.client.config.newUserRoleID))
+          updateVerifyStatus = true;
 
-      const rulesconfirmedon = updateVerifyStatus ? new Date() : undefined;
-      const username = oldUser.username !== newUser.username ? newUser.username : undefined;
-      const displayName = oldUser.username !== newUser.username ? newUser.username : undefined;
+        const rulesconfirmedon = updateVerifyStatus ? new Date() : undefined;
+        const username = oldUser.username !== newUser.username ? newUser.username : undefined;
+        const displayName = oldUser.username !== newUser.username ? newUser.username : undefined;
 
-      // Update user if any of the listed field changes
-      if(!rulesconfirmedon && !username && !displayName)
-        return;
-      await user.updateUserData({
-        rulesconfirmedon,
-        username,
-        displayName,
-      });
+        // Update user if any of the listed field changes
+        if(!rulesconfirmedon && !username && !displayName)
+          return;
+        await user.updateUserData({
+          rulesconfirmedon,
+          username,
+          displayName,
+        });
+      } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     });
   }
 
@@ -241,7 +242,7 @@ export class DiscordEvents extends baseEvent {
           });
 
         await channel.send({ embeds: [embed] });
-      } catch(ex) { captureException(ex); }
+      } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     });
   }
 }

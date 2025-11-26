@@ -25,6 +25,7 @@ export class TwitchEvents extends baseTEvent {
       const sessionID = randomUUID();
       scope.setAttribute("SessionID", sessionID)
         .setTag("SessionID", sessionID);
+
       try {
         if(!userstate["user-id"] || !userstate['username']) return;
 
@@ -64,7 +65,7 @@ export class TwitchEvents extends baseTEvent {
         if(!(uData?.memberid) || uData.memberid === "-1" || !discordUser) return;
         await discordUser.economy.chatRewardPoints(message);
       } catch(ex) {
-        captureException(ex);
+        captureException(ex, { mechanism: { handled: false } });
         this.client.say(channel, `@${userstate.username ?? "unknown"} command execution failed :{ (SessionID: ${sessionID})`);
       }
     });

@@ -118,7 +118,7 @@ export class DiscordCommandHandler {
       await command.execute(interaction);
     }
     catch(ex) {
-      const id = captureException(ex, { tags: { handled: "no" } });
+      const id = captureException(ex, { mechanism: { handled: false } });
       await this.client.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
 
       // Let the user know that something went wrong
