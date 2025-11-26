@@ -48,7 +48,7 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
     });
   } catch(ex) {
     // Feedback events are based on discord ID so there's that...
-    const eventID = captureException(ex, { tags: { handled: "no" } });
+    const eventID = captureException(ex, { mechanism: { handled: false } });
     const dClient = eventData.client.discord;
     if(!eventData.user["user-id"]) return true;
     const tUser = await new TwitchUser(dClient, eventData.user["user-id"]).getCacheData();
