@@ -4,6 +4,7 @@ import { baseTEvent } from "../core/baseEvent";
 import { TwitchUser } from "../utils/TwitchUser";
 import { processCommand } from "./helper/TwitchCommandHandler";
 import { captureException, withIsolationScope } from "@sentry/node-core";
+import { randomUUID } from "crypto";
 
 
 export class TwitchEvents extends baseTEvent {
@@ -21,6 +22,9 @@ export class TwitchEvents extends baseTEvent {
     if(self) return;
 
     await withIsolationScope(async (scope) => {
+      const sessionID = randomUUID();
+      scope.setAttribute("SessionID", sessionID)
+        .setTag("SessionID", sessionID);
       try {
         if(!userstate["user-id"] || !userstate['username']) return;
 
@@ -59,7 +63,10 @@ export class TwitchEvents extends baseTEvent {
         const discordUser = await tUser.getDiscordUser();
         if(!(uData?.memberid) || uData.memberid === "-1" || !discordUser) return;
         await discordUser.economy.chatRewardPoints(message);
-      } catch(ex) { captureException(ex); }
+      } catch(ex) {
+        captureException(ex);
+        this.client.say(channel, `@${userstate.username ?? "unknown"} command execution failed :{ (SessionID: ${sessionID})`);
+      }
     });
   }
 }
