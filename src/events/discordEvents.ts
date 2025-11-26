@@ -51,8 +51,13 @@ export class DiscordEvents extends baseEvent {
   private async createCommand(interaction: Interaction) {
     return await withIsolationScope(async (scope) => {
       const requestID = randomUUID();
-      scope.setAttribute("RequestID", requestID);
-      MonkeyPatchReqID(interaction, requestID);
+      scope.setAttribute("RequestID", requestID)
+        .setTags({
+          "platform": "discord",
+          "eventType": "interactionCreate",
+          requestID
+        });
+      MonkeyPatchReqID(interaction);
 
       try {
         const gMember = interaction.member as GuildMember | null;
@@ -61,11 +66,6 @@ export class DiscordEvents extends baseEvent {
           username: interaction.user.username,
           isStaff: gMember?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? "unknown",
           isVerified: gMember?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? "unknown",
-        });
-        scope.setTags({
-          "platform": "discord",
-          "eventType": "interactionCreate",
-          requestID
         });
 
         if(interaction.isChatInputCommand() || interaction.isContextMenuCommand())

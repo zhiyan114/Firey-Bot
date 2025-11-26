@@ -1,4 +1,5 @@
 // MonkeyPatch functions
+import { getCurrentScope, getIsolationScope } from "@sentry/node-core";
 import type {
   APIEmbed,
   APIModalInteractionResponseCallbackData,
@@ -17,9 +18,18 @@ import {
 } from "discord.js";
 
 
-export function MonkeyPatchReqID(interaction: Interaction, reqID: string) {
+export function MonkeyPatchReqID(interaction: Interaction, reqID?: string) {
+  reqID = reqID ??
+    getCurrentScope().getScopeData().tags["requestID"]?.toString() ??
+    getCurrentScope().getScopeData().attributes?.["requestID"]?.toString() ??
+    getIsolationScope().getScopeData().tags["requestID"]?.toString() ??
+    getIsolationScope().getScopeData().attributes?.["requestID"]?.toString();
+  if(!reqID)
+    throw new Error("MonkeyPatchReqID: Cannot patch with missing requestID");
   // Content Patcher
   function patchContent(options: MessagePayload | MessageCreateOptions | InteractionReplyOptions) {
+    if(!reqID) return; // Control Flow
+
     if(options instanceof MessagePayload) {
       // Do something in the future when used
       return;
