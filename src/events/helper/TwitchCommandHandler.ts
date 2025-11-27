@@ -27,7 +27,7 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
   // Grab command data stuff
   const args = eventData.message.split(" ");
   const cmdName = args[0].slice(1, args[0].length).toLowerCase();
-  const command = commands.find(c=>c.name.toLowerCase()===cmdName) as baseTCommand | undefined;
+  const command = commands.find(c=> c.name.toLowerCase() === cmdName);
   if(!command) return;
 
   // Check access privileges
