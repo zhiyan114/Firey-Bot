@@ -164,6 +164,6 @@ export function channelPatch(channel: Channel & {isPatched?: boolean}, reqID: st
 
 // Doesn't make sense to unpatch interaction as they're a throwaway class anyway...
 export function unpatch(object: (Channel | User) & {isPatched?: boolean}) {
-  // send functions will do a self-clean up and revert the class back to its original state when it's gets called again
+  // send functions will do a self-clean up and revert the class back to its original state when it gets called again
   object.isPatched = false;
 }
