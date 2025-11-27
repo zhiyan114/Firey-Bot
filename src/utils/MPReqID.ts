@@ -40,10 +40,13 @@ function patchContent(options: MessagePayload | MessageCreateOptions | Interacti
 }
 
 export function getReqIDFromScope() {
-  return getCurrentScope().getScopeData().tags["requestID"]?.toString() ??
-    getCurrentScope().getScopeData().attributes?.["requestID"]?.toString() ??
-    getIsolationScope().getScopeData().tags["requestID"]?.toString() ??
-    getIsolationScope().getScopeData().attributes?.["requestID"]?.toString();
+  const currentScope = getCurrentScope().getScopeData();
+  const isolationScope = getIsolationScope().getScopeData();
+
+  return currentScope.tags["requestID"]?.toString() ??
+    currentScope.attributes?.["requestID"]?.toString() ??
+    isolationScope.tags["requestID"]?.toString() ??
+    isolationScope.attributes?.["requestID"]?.toString();
 }
 
 export function patchAllInteraction(interaction: Interaction, reqID?: string) {
