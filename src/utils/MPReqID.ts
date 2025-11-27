@@ -21,22 +21,21 @@ import {
 
 // Content Patcher
 function patchContent(options: MessagePayload | MessageCreateOptions | InteractionReplyOptions, reqID: string) {
-  // Do something in the future when used
-  if(options instanceof MessagePayload)
-    return;
+  // Might be right, but no guarantee... Should write a test for this :pensive:
+  const newOpt = (options instanceof MessagePayload) ? options.options : options;
 
-  if(options.content) {
-    options.content += `\n\nRequest ID: ${reqID}`;
-    return;
-  }
+  if(newOpt.content && !newOpt.embeds)
+    newOpt.content += `\n\nRequest ID: ${reqID}`;
 
-  if(options.embeds && options.embeds.length > 0) {
-    const newEmbed = new EmbedBuilder(options.embeds[0] as APIEmbed);
+  if(newOpt.embeds && newOpt.embeds.length > 0) {
+    const oldEmbed = newOpt.embeds[0];
+    const newEmbed = new EmbedBuilder(("toJSON" in oldEmbed) ? oldEmbed.toJSON() : oldEmbed);
     newEmbed.addFields({ name: "Request ID", value: reqID });
-    // @ts-expect-error MonkeyPatch
-    options.embeds[0] = newEmbed;
-    return;
+    (newOpt.embeds[0] as JSONEncodable<APIEmbed> | APIEmbed) = newEmbed;
   }
+
+  if(options instanceof MessagePayload)
+    options.body = options.resolveBody().body;
 }
 
 export function getReqIDFromScope() {
