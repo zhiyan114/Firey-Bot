@@ -21,22 +21,26 @@ import {
 
 // Content Patcher
 function patchContent(options: MessagePayload | MessageCreateOptions | InteractionReplyOptions, reqID: string) {
-  // Do something in the future when used
+  // Might be right, but no guarantee... Should write a test for this :pensive:
+  const newOpt = (options instanceof MessagePayload) ? options.options : options;
+
+  if(newOpt.content && !newOpt.embeds) {
+    const addContent = `\n\nRequest ID: ${reqID}`;
+    if(newOpt.content.length+addContent.length <= 2000)
+      newOpt.content += addContent;
+  }
+
+  if(newOpt.embeds && newOpt.embeds.length > 0) {
+    const oldEmbed = newOpt.embeds[0];
+    const newEmbed = new EmbedBuilder(("toJSON" in oldEmbed) ? oldEmbed.toJSON() : oldEmbed);
+
+    if((newEmbed.toJSON().fields?.length ?? 0) < 25)
+      newEmbed.addFields({ name: "Request ID", value: reqID });
+    (newOpt.embeds[0] as JSONEncodable<APIEmbed> | APIEmbed) = newEmbed;
+  }
+
   if(options instanceof MessagePayload)
-    return;
-
-  if(options.content) {
-    options.content += `\n\nRequest ID: ${reqID}`;
-    return;
-  }
-
-  if(options.embeds && options.embeds.length > 0) {
-    const newEmbed = new EmbedBuilder(options.embeds[0] as APIEmbed);
-    newEmbed.addFields({ name: "Request ID", value: reqID });
-    // @ts-expect-error MonkeyPatch
-    options.embeds[0] = newEmbed;
-    return;
-  }
+    options.body = options.resolveBody().body;
 }
 
 export function getReqIDFromScope() {
@@ -84,7 +88,9 @@ export function followUpPatch(interaction: Interaction, reqID: string) {
 
   interaction.followUp = async function(options: string | MessagePayload | InteractionReplyOptions) {
     if(typeof(options) === "string") {
-      options += `\n\nRequest ID: ${reqID}`;
+      const newContent = `\n\nRequest ID: ${reqID}`;
+      if(options.length + newContent.length <= 2000)
+        options += newContent;
       return await oldFollowUp.call(interaction, options);
     }
 
@@ -103,7 +109,9 @@ export function replyPatch(interaction: Interaction, reqID: string) {
   // eslint-disable-next-line
   interaction.reply = async function(options: string | MessagePayload | InteractionReplyOptions) {
     if(typeof(options) === "string") {
-      options += `\n\nRequest ID: ${reqID}`;
+      const newContent = `\n\nRequest ID: ${reqID}`;
+      if(options.length + newContent.length <= 2000)
+        options += newContent;
       return await oldReply.call(interaction, options);
     }
 
@@ -126,7 +134,9 @@ export function userPatch(user: User & {isPatched?: boolean}, reqID: string) {
     }
 
     if(typeof(options) === "string") {
-      options += `\n\nRequest ID: ${reqID}`;
+      const newContent = `\n\nRequest ID: ${reqID}`;
+      if(options.length + newContent.length <= 2000)
+        options += newContent;
       return await oldUserSend.call(user, options);
     }
 
@@ -151,7 +161,9 @@ export function channelPatch(channel: Channel & {isPatched?: boolean}, reqID: st
     }
 
     if(typeof(options) === "string") {
-      options += `\n\nRequest ID: ${reqID}`;
+      const newContent = `\n\nRequest ID: ${reqID}`;
+      if(options.length + newContent.length <= 2000)
+        options += newContent;
       // @ts-expect-error MonkeyPatch
       return await oldSend.call(interaction.channel, options);
     }
