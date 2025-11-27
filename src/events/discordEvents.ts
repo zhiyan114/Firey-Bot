@@ -17,7 +17,7 @@ import { captureException, withIsolationScope } from "@sentry/node-core";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
-import { MonkeyPatchReqID } from "../utils/moneyPatch";
+import { patchAllInteraction } from "../utils/MPReqID";
 
 export class DiscordEvents extends baseEvent {
   client: DiscordClient;
@@ -57,7 +57,7 @@ export class DiscordEvents extends baseEvent {
           "eventType": "interactionCreate",
           requestID
         });
-      MonkeyPatchReqID(interaction);
+      patchAllInteraction(interaction);
 
       try {
         const gMember = interaction.member as GuildMember | null;

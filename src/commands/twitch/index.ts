@@ -1,9 +1,3 @@
-import { LurkCommand } from "./lurk";
-import { DiscordCommand } from "./discord";
-import { LinkCommand } from "./link";
-
-export {
-  LurkCommand,
-  DiscordCommand,
-  LinkCommand,
-};
+export { LurkCommand } from "./lurk";
+export { DiscordCommand } from "./discord";
+export { LinkCommand } from "./link";

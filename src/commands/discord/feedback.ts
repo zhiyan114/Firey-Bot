@@ -54,9 +54,9 @@ export class FeedbackCommand extends baseCommand {
     // Create a text notice
     const sentryNotice = userSentryErrorID ?
       "Sentry did caught an error under your ID, so please use complete the field below instead!" :
-      "For users who don't want a github account or issues captured by Sentry, complete the field below.";
+      "For users who don't want to create a github account, complete the field below.";
     const noticeText = new TextDisplayBuilder()
-      .setContent(`Thank you for considering reporting the bug! Please use https://github.com/zhiyan114/Firey-Bot/issues if possible. ${sentryNotice} The form will expires in 10 minutes, so please complete it in a timely manner.`);
+      .setContent(`Thank you for considering reporting the bug or requesting new feature! Please use https://github.com/zhiyan114/Firey-Bot/issues if possible. ${sentryNotice} The form will expires in 10 minutes, so please complete it in a timely manner.`);
 
     // Create a large text input
     const FeedBackTextLabel = new LabelBuilder({ label: 'Message', description: "What should we change/fix?" });
