@@ -113,12 +113,16 @@ export function replyPatch(interaction: Interaction, reqID: string) {
 }
 
 export function userPatch(user: User & {isPatched?: boolean}, reqID: string) {
+  if(user.isPatched) return;
+  user.isPatched = true;
+
   const oldUserSend = user.send;
   user.send = async (options: string | MessagePayload | MessageCreateOptions) => {
     // Unpatch OP
     if(!user.isPatched) {
       user.send = oldUserSend;
       delete user.isPatched;
+      return await oldUserSend.call(user, options);
     }
 
     if(typeof(options) === "string") {
@@ -132,7 +136,9 @@ export function userPatch(user: User & {isPatched?: boolean}, reqID: string) {
 }
 
 export function channelPatch(channel: Channel & {isPatched?: boolean}, reqID: string) {
+  if(channel.isPatched) return;
   if(!channel?.isSendable()) return;
+  channel.isPatched = true;
 
   const oldSend = channel.send;
   channel.send = async (options: string | MessagePayload | MessageCreateOptions) => {
@@ -140,6 +146,8 @@ export function channelPatch(channel: Channel & {isPatched?: boolean}, reqID: st
     if(!channel.isPatched) {
       channel.send = oldSend;
       delete channel.isPatched;
+      // @ts-expect-error MonkeyPatch
+      return await oldSend.call(channel, options);
     }
 
     if(typeof(options) === "string") {
@@ -156,6 +164,6 @@ export function channelPatch(channel: Channel & {isPatched?: boolean}, reqID: st
 
 // Doesn't make sense to unpatch interaction as they're a throwaway class anyway...
 export function unpatch(object: (Channel | User) & {isPatched?: boolean}) {
-  // send functions will do a self-clean up and revert the class back to its original state
+  // send functions will do a self-clean up and revert the class back to its original state when it's gets called again
   object.isPatched = false;
 }
