@@ -29,7 +29,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   public registerEvents() {
-    this.client.on("ready", this.onReady.bind(this));
+    this.client.on("clientReady", this.onReady.bind(this));
     this.client.on("interactionCreate", this.createCommand.bind(this));
     this.client.on("messageCreate", this.messageCreate.bind(this));
     this.client.on("guildMemberAdd", this.guildMemberAdd.bind(this));
