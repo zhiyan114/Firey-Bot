@@ -82,6 +82,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async messageCreate(message: Message) {
+    if(message.author.bot) return;
     await withScope(async (scope) => {
       try {
         scope.setUser({
@@ -98,7 +99,6 @@ export class DiscordEvents extends baseEvent {
         });
 
         // Channel Checks
-        if(message.author.bot) return;
         const channel = message.channel;
         if(channel.type !== ChannelType.GuildText) return;
 
