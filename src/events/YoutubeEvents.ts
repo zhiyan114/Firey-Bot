@@ -2,6 +2,7 @@ import type { GuildTextBasedChannel } from "discord.js";
 import type { NotifiedEvent, SubEvent, YoutubeClient } from "../core/YoutubeClient";
 import { ChannelType } from "discord.js";
 import { baseYEvent } from "../core/baseEvent";
+import { youtube } from "../config.json";
 
 
 export class YoutubeEvents extends baseYEvent {
@@ -13,7 +14,7 @@ export class YoutubeEvents extends baseYEvent {
     super();
     this.client = client;
     this.NotificationChannel = null;
-    this.config = client.discord.config.youtube;
+    this.config = youtube;
   }
 
   public registerEvents() {

@@ -4,6 +4,7 @@ import type { baseTCommand } from "../../core/baseCommand";
 import { captureException, metrics } from "@sentry/node-core";
 import { DiscordCommand, LinkCommand, LurkCommand } from "../../commands/twitch";
 import { TwitchUser } from "../../utils/TwitchUser";
+import { twitch } from "../../config.json";
 
 export const commands: baseTCommand[] = [
   new LurkCommand(),
@@ -22,7 +23,7 @@ type eventType = {
 export async function processCommand(eventData: eventType): Promise<boolean | undefined> {
   // Validate if this action is command
   eventData.message = eventData.message.trim();
-  if(eventData.message[0] !== eventData.client.discord.config.twitch.prefix) return;
+  if(eventData.message[0] !== twitch.prefix) return;
 
   // Grab command data stuff
   const args = eventData.message.split(" ");

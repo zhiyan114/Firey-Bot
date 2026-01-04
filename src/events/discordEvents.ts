@@ -18,6 +18,14 @@ import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { patchAllInteraction } from "../utils/MPReqID";
+import {
+  adminRoleID,
+  newUserRoleID,
+  noPoints,
+  welcomeChannelID,
+  guildID,
+  VCJoinLog
+} from "../config.json";
 
 export class DiscordEvents extends baseEvent {
   client: DiscordClient;
@@ -67,8 +75,8 @@ export class DiscordEvents extends baseEvent {
         scope.setUser({
           id: interaction.user.id,
           username: interaction.user.username,
-          isStaff: gMember?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? "unknown",
-          isVerified: gMember?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? "unknown",
+          isStaff: gMember?.roles.cache.some(r=>r.id === adminRoleID) ?? "unknown",
+          isVerified: gMember?.roles.cache.some(r=>r.id === newUserRoleID) ?? "unknown",
         });
 
         if(interaction.isChatInputCommand() || interaction.isContextMenuCommand())
@@ -82,14 +90,13 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async messageCreate(message: Message) {
-    if(message.author.bot) return;
     await withScope(async (scope) => {
       try {
         scope.setUser({
           id: message.author.id,
           username: message.author.username,
-          isStaff: message.member?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? "unknown",
-          isVerified: message.member?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? "unknown"
+          isStaff: message.member?.roles.cache.some(r=>r.id === adminRoleID) ?? "unknown",
+          isVerified: message.member?.roles.cache.some(r=>r.id === newUserRoleID) ?? "unknown"
         }).setTags({
           "platform": "discord",
           "eventType": "messageCreate"
@@ -99,13 +106,13 @@ export class DiscordEvents extends baseEvent {
         });
 
         // Channel Checks
+        if(message.author.bot) return;
         const channel = message.channel;
         if(channel.type !== ChannelType.GuildText) return;
 
         // Place where user wont be awarded with points
-        const noPointsConf = this.client.config.noPoints;
-        if(noPointsConf.channel.length > 0 && noPointsConf.channel.find(c=>c===channel.id)) return;
-        if(noPointsConf.category.length > 0 && noPointsConf.category.find(c=>channel.parentId === c)) return;
+        if(noPoints.channel.length > 0 && noPoints.channel.find(c=>c===channel.id)) return;
+        if(noPoints.category.length > 0 && noPoints.category.find(c=>channel.parentId === c)) return;
 
         // Grant points
         await (new DiscordUser(this.client, message.author)).economy.chatRewardPoints(message.content);
@@ -119,8 +126,8 @@ export class DiscordEvents extends baseEvent {
         scope.setUser({
           id: member.user.id,
           username: member.user.username,
-          isStaff: member.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
-          isVerified: member.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
+          isStaff: member.roles.cache.some(r=>r.id === adminRoleID),
+          isVerified: member.roles.cache.some(r=>r.id === newUserRoleID)
         }).setTags({
           "platform": "discord",
           "eventType": "guildMemberAdd"
@@ -141,7 +148,7 @@ export class DiscordEvents extends baseEvent {
         }
 
         // Send welcome message to user
-        const channel = await this.client.channels.fetch(this.client.config.welcomeChannelID);
+        const channel = await this.client.channels.fetch(welcomeChannelID);
         if(!channel || channel.type !== ChannelType.GuildText) return;
         const embed = new EmbedBuilder()
           .setColor("#00FFFF")
@@ -185,9 +192,9 @@ export class DiscordEvents extends baseEvent {
         // See if we need to update user's rule confirmation date
         let updateVerifyStatus = false;
         if(!(await user.getCacheData())?.rulesconfirmedon &&
-        (await this.client.guilds.cache.find(g=>g.id === this.client.config.guildID)
+        (await this.client.guilds.cache.find(g=>g.id === guildID)
           ?.members.fetch(newUser))
-          ?.roles.cache.find(role=>role.id === this.client.config.newUserRoleID))
+          ?.roles.cache.find(role=>role.id === newUserRoleID))
           updateVerifyStatus = true;
 
         const rulesconfirmedon = updateVerifyStatus ? new Date() : undefined;
@@ -216,8 +223,8 @@ export class DiscordEvents extends baseEvent {
         scope.setUser({
           id: now.member?.user.id,
           username: now.member?.user.username,
-          isStaff: now.member?.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
-          isVerified: now.member?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
+          isStaff: now.member?.roles.cache.some(r=>r.id === adminRoleID),
+          isVerified: now.member?.roles.cache.some(r=>r.id === newUserRoleID)
         }).setTags({
           "platform": "discord",
           "eventType": "voiceStateUpdate"
@@ -227,13 +234,12 @@ export class DiscordEvents extends baseEvent {
         });
 
         // Checking to see if the user needs to be reported on the log
-        const config = this.client.config.VCJoinLog;
-        const channel = await this.client.channels.fetch(config.channelID);
+        const channel = await this.client.channels.fetch(VCJoinLog.channelID);
         if(!channel || channel.type !== ChannelType.GuildText) return;
         if(!now.channel) return;
         if(old.channel?.id === now.channel.id) return;
         if(!now.member || now.member.user.bot) return;
-        if(config.excludeChannels.includes(now.channel.id)) return;
+        if(VCJoinLog.excludeChannels.includes(now.channel.id)) return;
 
         // Prepare embed
         const embed = new EmbedBuilder()

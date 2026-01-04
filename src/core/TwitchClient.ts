@@ -3,6 +3,7 @@ import type { DiscordClient } from "./DiscordClient";
 import { Client } from "tmi.js";
 import { StreamEvents, TwitchEvents } from "../events";
 import { streamClient } from "./helper/twitchStream";
+import { twitch } from "../config.json";
 
 
 
@@ -21,10 +22,10 @@ export class TwitchClient extends Client implements baseClient {
         username,
         password: `oauth:${token}`
       },
-      channels: [client.config.twitch.channel]
+      channels: [twitch.channel]
     });
     this.discord = client;
-    this.streamClient = new streamClient(this, client.config.twitch.channel);
+    this.streamClient = new streamClient(this, twitch.channel);
 
     // Register events
     new TwitchEvents(this)

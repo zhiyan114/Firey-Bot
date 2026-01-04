@@ -1,6 +1,5 @@
 import type { baseClient } from "./baseClient";
 import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketManagerOptions } from "discord.js";
-import config from '../config.json';
 import { PrismaClient } from "@prisma/client";
 import { getClient } from "@sentry/node-core";
 import Redis from "ioredis";
@@ -11,7 +10,7 @@ import { TwitchClient } from "./TwitchClient";
 import { YoutubeClient } from "./YoutubeClient";
 import { unverifyKickLoader, ReactRoleLoader } from "../services";
 import { PrismaPg } from "@prisma/adapter-pg";
-
+import { redisPrefix, youtube, guildID } from '../config.json';
 
 
 
@@ -27,7 +26,6 @@ import { PrismaPg } from "@prisma/adapter-pg";
  * @method updateStatus - Update the status of the bot
  */
 export class DiscordClient extends Client implements baseClient {
-  readonly config = config;
   readonly prisma: PrismaClient;
   readonly redis: Redis;
   readonly logger: eventLogger;
@@ -61,7 +59,7 @@ export class DiscordClient extends Client implements baseClient {
     this.logger = new eventLogger(this);
     this.redis = new Redis((process.env["ISDOCKER"] && !process.env["REDIS_CONN"]) ?
       "redis://redis:6379" : process.env["REDIS_CONN"] ?? "", {
-      keyPrefix: `${this.config.redisPrefix}:`,
+      keyPrefix: `${redisPrefix}:`,
       enableReadyCheck: false,
     });
     this.prisma = new PrismaClient({
@@ -89,7 +87,7 @@ export class DiscordClient extends Client implements baseClient {
       https: process.env["WEBSERVER_HTTPS"] === "true",
       FQDN: process.env["WEBSERVER_FQDN"] || "",
       Port: !port || Number.isNaN(parseInt(port)) ? undefined : parseInt(port),
-      PubSubPort: this.config.youtube.overridePort !== 0 ? this.config.youtube.overridePort : undefined,
+      PubSubPort: youtube.overridePort !== 0 ? youtube.overridePort : undefined,
       Path: "/UwU/youtube/callback/",
       secret: process.env["YTSECRET"]
     });
@@ -123,7 +121,7 @@ export class DiscordClient extends Client implements baseClient {
     this.user?.setPresence({
       status: "online",
       activities: [{
-        name: `${this.guilds.cache.find(g=>g.id===this.config.guildID)?.memberCount} cuties :Þ | ver ${this.sysVer}`,
+        name: `${this.guilds.cache.find(g=>g.id===guildID)?.memberCount} cuties :Þ | ver ${this.sysVer}`,
         type: ActivityType.Watching,
       }],
     });

@@ -4,6 +4,7 @@ import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "disco
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { DiscordInvite } from "../../utils/DiscordInvite";
+import { adminRoleID } from "../../config.json";
 
 export class softBanCommand extends baseCommand {
   client: DiscordClient;
@@ -16,7 +17,7 @@ export class softBanCommand extends baseCommand {
   constructor(client: DiscordClient) {
     super();
     this.client = client;
-    this.access.roles.push(client.config.adminRoleID);
+    this.access.roles.push(adminRoleID);
     this.metadata
       .setName("softban")
       .setDescription("Kicks the user but also deletes their message.")

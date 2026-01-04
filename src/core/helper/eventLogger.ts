@@ -2,6 +2,7 @@ import type { ColorResolvable } from "discord.js";
 import type { DiscordClient } from "../DiscordClient";
 import { EmbedBuilder, TextChannel } from "discord.js";
 import { logger } from "@sentry/node-core";
+import { logChannelID } from "../../config.json";
 
 
 export interface LogData {
@@ -35,7 +36,7 @@ export class eventLogger {
     }
 
     // Find and setup the channel
-    const unknownChannel = await this.client.channels.fetch(this.client.config.logChannelID);
+    const unknownChannel = await this.client.channels.fetch(logChannelID);
     if(unknownChannel === null)
       throw new Error("[Logger]: Log channel not found");
     if(!(unknownChannel instanceof TextChannel))

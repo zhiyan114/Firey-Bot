@@ -4,6 +4,7 @@ import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "disco
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { DiscordInvite } from "../../utils/DiscordInvite";
+import { adminRoleID } from "../../config.json";
 
 export class kickCommand extends baseCommand {
   client: DiscordClient;
@@ -16,7 +17,7 @@ export class kickCommand extends baseCommand {
   constructor(client: DiscordClient) {
     super();
     this.client = client;
-    this.access.roles.push(client.config.adminRoleID);
+    this.access.roles.push(adminRoleID);
     this.metadata
       .setName("kick")
       .setDescription("Kicks a target user.")

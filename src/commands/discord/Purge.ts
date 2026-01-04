@@ -11,6 +11,7 @@ import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { APIErrors } from "../../utils/discordErrorCode";
 import { captureException } from "@sentry/node-core";
+import { adminRoleID, logChannelID } from "../../config.json";
 
 export class purgeCommand extends baseCommand {
   client: DiscordClient;
@@ -23,7 +24,7 @@ export class purgeCommand extends baseCommand {
   constructor(client: DiscordClient) {
     super();
     this.client = client;
-    this.access.roles.push(client.config.adminRoleID);
+    this.access.roles.push(adminRoleID);
     this.metadata
       .setName("purge")
       .setDescription("Purge messages from a channel")
@@ -59,7 +60,7 @@ export class purgeCommand extends baseCommand {
       await interaction.followUp({ content: `Successfully purged ${amount} messages!`, flags: MessageFlags.Ephemeral });
 
       // zhiyan114's purge will not be logged for log channel for maintenance purposes
-      if(interaction.channel.id === this.client.config.logChannelID && interaction.user.id === "233955058604179457")
+      if(interaction.channel.id === logChannelID && interaction.user.id === "233955058604179457")
         return;
 
       // Log the purge

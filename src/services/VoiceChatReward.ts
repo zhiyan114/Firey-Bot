@@ -6,6 +6,7 @@ import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
 import { captureException, captureMessage, logger, withScope } from "@sentry/node-core";
+import { guildID, adminRoleID, newUserRoleID } from "../config.json";
 
 const cacheName = "VCReward";
 
@@ -22,7 +23,7 @@ export class VoiceChatReward {
   public async init() {
     // Load existing users in voice channels
     logger.debug("[VoiceChatReward]: Initializing VoiceChatReward Service...");
-    const guild = this.client.guilds.cache.get(this.client.config.guildID);
+    const guild = this.client.guilds.cache.get(guildID);
     if(!guild)
       throw new VCError("Guild not found");
     const channels = guild.channels.cache.filter(c => c instanceof VoiceChannel && c.members.size > 0);
@@ -46,8 +47,8 @@ export class VoiceChatReward {
         scope.setUser({
           id: member.user.id,
           username: member.user.username,
-          isStaff: member.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
-          isVerified: member.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
+          isStaff: member.roles.cache.some(r=>r.id === adminRoleID),
+          isVerified: member.roles.cache.some(r=>r.id === newUserRoleID)
         });
 
         if(oldState.channel === null && newState.channel !== null)
@@ -92,8 +93,8 @@ export class VoiceChatReward {
           scope.setUser({
             id: user.user.userID,
             username: user.user.username,
-            isStaff: user.member.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
-            isVerified: user.member.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
+            isStaff: user.member.roles.cache.some(r=>r.id === adminRoleID),
+            isVerified: user.member.roles.cache.some(r=>r.id === newUserRoleID)
           });
 
           const channel = user.member.voice.channel;

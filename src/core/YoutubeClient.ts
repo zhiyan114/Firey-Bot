@@ -7,6 +7,7 @@ import https from 'https';
 import { YoutubeEvents } from "../events";
 import { getIsolationScope, captureException } from "@sentry/node-core";
 import { httpRequestToRequestData } from "@sentry/core";
+import { youtube } from "../config.json";
 
 /*
 Example Reference
@@ -116,7 +117,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
       type: "Info",
       message: "Web server started!"
     });
-    this.subscribe(this.discord.config.youtube.youtubeChannelID);
+    this.subscribe(youtube.youtubeChannelID);
   }
 
   private HealthRoute(req: Express.Request, res: Express.Response) {
@@ -132,6 +133,6 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
   }
 
   public async dispose() {
-    await new Promise<void>((resolve, reject) => this.httpServer.close((res)=> res ? reject(res) : resolve()));
+    await new Promise<void>((resolve, reject) => this.httpServer.close((err)=> err ? reject(err) : resolve()));
   }
 }

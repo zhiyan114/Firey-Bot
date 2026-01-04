@@ -4,6 +4,7 @@ import { ChannelType, EmbedBuilder } from "discord.js";
 import { baseTEvent } from "../core/baseEvent";
 import { DiscordInvite } from "../utils/DiscordInvite";
 import { clearTwitchCache } from "../utils/TwitchUser";
+import { twitch } from "../config.json";
 
 
 
@@ -16,7 +17,7 @@ export class StreamEvents extends baseTEvent {
     super();
     this.client = client;
     this.lastStream = new Date();
-    this.config = client.discord.config.twitch;
+    this.config = twitch;
   }
 
   public registerEvents() {

@@ -4,6 +4,7 @@ import { EmbedBuilder } from "discord.js";
 import { schedule } from "node-cron";
 import { captureCheckIn, captureException } from "@sentry/node-core";
 import { createHash } from "crypto";
+import { guildID } from "../config.json";
 
 
 /**
@@ -47,7 +48,7 @@ export class unverifyKickLoader {
     let exeError = false;
 
     try {
-      const guild = this.client.guilds.cache.get(this.client.config.guildID);
+      const guild = this.client.guilds.cache.get(guildID);
       if(!guild) throw Error("[Service unverifyKick]: Supplied guild ID is not valid");
 
       const noRoleUsers = (await guild.members.fetch())?.filter(m=>m.roles.cache.size === 1);

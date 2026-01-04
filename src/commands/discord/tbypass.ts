@@ -16,6 +16,7 @@ import {
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
 import { captureException } from "@sentry/node-core";
+import { adminRoleID, twitch } from "../../config.json";
 
 export class TwitchChatRelay extends baseCommand {
   public client: DiscordClient;
@@ -29,7 +30,7 @@ export class TwitchChatRelay extends baseCommand {
   constructor(client: DiscordClient) {
     super();
     this.client = client;
-    this.access.roles.push(client.config.adminRoleID);
+    this.access.roles.push(adminRoleID);
     this.metadata
       .setName("tbypass")
       .setDescription("Send an unfiltered message on twitch chat (via bot account).")
@@ -89,7 +90,7 @@ export class TwitchChatRelay extends baseCommand {
     const components = result.components[0].type === ComponentType.ActionRow && result.components[0].components[0];
     const message = (components !== false) ? components.value : "Invalid Component found in code";
 
-    await this.client.twitch.say(this.client.config.twitch.channel, `[@${username}]: ${message}`);
+    await this.client.twitch.say(twitch.channel, `[@${username}]: ${message}`);
     await result.reply({ content: "Message Sent!", flags: MessageFlags.Ephemeral });
   }
 }
