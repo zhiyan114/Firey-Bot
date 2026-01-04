@@ -3,7 +3,7 @@ import type { TwitchClient } from "../core/TwitchClient";
 import { baseTEvent } from "../core/baseEvent";
 import { TwitchUser } from "../utils/TwitchUser";
 import { processCommand } from "./helper/TwitchCommandHandler";
-import { captureException, withIsolationScope } from "@sentry/node-core";
+import { captureException, withScope } from "@sentry/node-core";
 import { randomUUID } from "crypto";
 
 
@@ -21,7 +21,7 @@ export class TwitchEvents extends baseTEvent {
   private async onMessage(channel: string, userstate: ChatUserstate, message: string, self: boolean) {
     if(self) return;
 
-    await withIsolationScope(async (scope) => {
+    await withScope(async (scope) => {
       const sessionID = randomUUID();
       scope.setAttribute("SessionID", sessionID)
         .setTag("SessionID", sessionID);
