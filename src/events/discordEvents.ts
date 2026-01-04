@@ -51,12 +51,15 @@ export class DiscordEvents extends baseEvent {
   private async createCommand(interaction: Interaction) {
     return await withIsolationScope(async (scope) => {
       const requestID = randomUUID();
-      scope.setAttribute("RequestID", requestID)
-        .setTags({
-          "platform": "discord",
-          "eventType": "interactionCreate",
-          requestID
-        });
+      scope.setAttributes({
+        "RequestID": requestID,
+        "platform": "discord",
+        "eventType": "interactionCreate"
+      }).setTags({
+        "platform": "discord",
+        "eventType": "interactionCreate",
+        requestID
+      });
       patchAllInteraction(interaction);
 
       try {
@@ -86,9 +89,13 @@ export class DiscordEvents extends baseEvent {
           username: message.author.username,
           isStaff: message.member?.roles.cache.some(r=>r.id === this.client.config.adminRoleID) ?? "unknown",
           isVerified: message.member?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID) ?? "unknown"
+        }).setTags({
+          "platform": "discord",
+          "eventType": "messageCreate"
+        }).setAttributes({
+          "platform": "discord",
+          "eventType": "messageCreate"
         });
-        scope.setTag("platform", "discord");
-        scope.setTag("eventType", "messageCreate");
 
         // Channel Checks
         if(message.author.bot) return;
@@ -114,9 +121,13 @@ export class DiscordEvents extends baseEvent {
           username: member.user.username,
           isStaff: member.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
           isVerified: member.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
+        }).setTags({
+          "platform": "discord",
+          "eventType": "guildMemberAdd"
+        }).setAttributes({
+          "platform": "discord",
+          "eventType": "guildMemberAdd"
         });
-        scope.setTag("platform", "discord");
-        scope.setTag("eventType", "guildMemberAdd");
 
         if(member.user.bot) return;
         const user = new DiscordUser(this.client, member.user);
@@ -159,9 +170,13 @@ export class DiscordEvents extends baseEvent {
       scope.setUser({
         id: newUser.id,
         username: newUser.username,
+      }).setTags({
+        "platform": "discord",
+        "eventType": "userUpdate"
+      }).setAttributes({
+        "platform": "discord",
+        "eventType": "userUpdate"
       });
-      scope.setTag("platform", "discord");
-      scope.setTag("eventType", "userUpdate");
 
       if(oldUser.bot) return;
       const user = new DiscordUser(this.client, newUser);
@@ -203,9 +218,13 @@ export class DiscordEvents extends baseEvent {
           username: now.member?.user.username,
           isStaff: now.member?.roles.cache.some(r=>r.id === this.client.config.adminRoleID),
           isVerified: now.member?.roles.cache.some(r=>r.id === this.client.config.newUserRoleID)
+        }).setTags({
+          "platform": "discord",
+          "eventType": "voiceStateUpdate"
+        }).setAttributes({
+          "platform": "discord",
+          "eventType": "voiceStateUpdate"
         });
-        scope.setTag("platform", "discord");
-        scope.setTag("eventType", "voiceStateUpdate");
 
         // Checking to see if the user needs to be reported on the log
         const config = this.client.config.VCJoinLog;
