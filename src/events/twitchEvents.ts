@@ -32,9 +32,10 @@ export class TwitchEvents extends baseTEvent {
         scope.setUser({
           id: userstate["user-id"],
           username: userstate.username,
-          userType: userstate["user-type"] || "viewer"
-        });
-        scope.setTag("platform", "twitch");
+          userType: userstate["user-type"] ?? "viewer"
+        })
+          .setTag("platform", "twitch")
+          .setAttribute("platform", "twitch");
 
         // Keep username up to date
         const tUser = new TwitchUser(this.client.discord, userstate['user-id']);
