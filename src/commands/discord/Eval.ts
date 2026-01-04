@@ -11,6 +11,7 @@ import {
   SlashCommandBuilder
 } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
+import Sentry from "@sentry/node-core";
 
 export class EvalCommand extends baseCommand {
   public client: DiscordClient;
@@ -60,6 +61,7 @@ export class EvalCommand extends baseCommand {
         "guild",
         "member",
         "print",
+        "sentry",
         "utils",
         isAsync ? `return (async()=>{${code}})();` : code
       );
@@ -71,6 +73,7 @@ export class EvalCommand extends baseCommand {
         interaction.guild,
         interaction.member,
         print,
+        Sentry,
         {
           createMissingUser: this.createMissingUser,
           updateUser: this.updateUser,
