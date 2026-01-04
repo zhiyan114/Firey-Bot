@@ -52,9 +52,9 @@ export class DiscordEvents extends baseEvent {
     return await withIsolationScope(async (scope) => {
       const requestID = randomUUID();
       scope.setAttributes({
-        "RequestID": requestID,
         "platform": "discord",
-        "eventType": "interactionCreate"
+        "eventType": "interactionCreate",
+        requestID
       }).setTags({
         "platform": "discord",
         "eventType": "interactionCreate",
