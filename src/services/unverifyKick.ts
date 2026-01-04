@@ -5,6 +5,7 @@ import { schedule } from "node-cron";
 import { captureCheckIn, captureException } from "@sentry/node-core";
 import { createHash } from "crypto";
 import { guildID } from "../config.json";
+import { sendLog } from "../utils/eventLogger";
 
 
 /**
@@ -67,7 +68,7 @@ export class unverifyKickLoader {
         await member.send({ embeds: [embed] });
         await member.kick("User remains unverified for at least 24 hours");
 
-        await this.client.logger.sendLog({
+        await sendLog({
           type: "Warning",
           message: `**${member.user.username}** have been kicked from the server for not confirming the rules within 24 hours`
         });

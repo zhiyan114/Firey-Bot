@@ -3,7 +3,6 @@ import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketMana
 import { PrismaClient } from "@prisma/client";
 import { getClient } from "@sentry/node-core";
 import Redis from "ioredis";
-import { eventLogger } from "./helper/eventLogger";
 import { DiscordEvents, RedisEvents } from "../events";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
 import { TwitchClient } from "./TwitchClient";
@@ -19,8 +18,6 @@ import { redisPrefix, youtube, guildID } from '../config.json';
  * @class DiscordClient
  * @property {PrismaClient} prisma - Prisma ORM Client
  * @property {RedisClientType} redis - Redis Client
- * @property {eventLogger} logger - Event Logger
- * @property {config} config - Configuration
  * @method start - Start the client
  * @method dispose - Stop the client and dispose the resources
  * @method updateStatus - Update the status of the bot
@@ -28,7 +25,6 @@ import { redisPrefix, youtube, guildID } from '../config.json';
 export class DiscordClient extends Client implements baseClient {
   readonly prisma: PrismaClient;
   readonly redis: Redis;
-  readonly logger: eventLogger;
   readonly twitch: TwitchClient;
   readonly youtube: YoutubeClient;
   readonly sysVer: string; // Software Release Version
@@ -56,7 +52,6 @@ export class DiscordClient extends Client implements baseClient {
     this.sysVer = getClient()?.getOptions().release ?? "??????";
 
     // Initalize components
-    this.logger = new eventLogger(this);
     this.redis = new Redis((process.env["ISDOCKER"] && !process.env["REDIS_CONN"]) ?
       "redis://redis:6379" : process.env["REDIS_CONN"] ?? "", {
       keyPrefix: `${redisPrefix}:`,

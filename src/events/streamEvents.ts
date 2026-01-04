@@ -5,6 +5,7 @@ import { baseTEvent } from "../core/baseEvent";
 import { DiscordInvite } from "../utils/DiscordInvite";
 import { clearTwitchCache } from "../utils/TwitchUser";
 import { twitch } from "../config.json";
+import { sendLog } from "../utils/eventLogger";
 
 
 
@@ -34,7 +35,7 @@ export class StreamEvents extends baseTEvent {
     const channel = await this.client.discord.channels.fetch(this.config.notification.channelID);
     if(!channel) return;
     if(channel.type !== ChannelType.GuildText)
-      return await this.client.discord.logger.sendLog({
+      return await sendLog({
         type: "Error",
         message: "StreamClient: Notification channel is not a text channel!"
       });

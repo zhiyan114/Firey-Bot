@@ -4,6 +4,7 @@ import { Client } from "tmi.js";
 import { StreamEvents, TwitchEvents } from "../events";
 import { streamClient } from "./helper/twitchStream";
 import { twitch } from "../config.json";
+import { sendLog } from "../utils/eventLogger";
 
 
 
@@ -37,7 +38,7 @@ export class TwitchClient extends Client implements baseClient {
 
   public async start() {
     await this.connect();
-    await this.discord.logger.sendLog({
+    await sendLog({
       type: "Info",
       message: "Twitch client has been initialized!"
     });

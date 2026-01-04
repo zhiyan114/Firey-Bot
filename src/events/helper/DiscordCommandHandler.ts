@@ -11,6 +11,7 @@ import {
 } from "../../commands/discord";
 import { captureException, metrics } from "@sentry/node-core";
 import { createHash, timingSafeEqual } from "crypto";
+import { sendLog } from "../../utils/eventLogger";
 
 
 export class DiscordCommandHandler {
@@ -76,7 +77,7 @@ export class DiscordCommandHandler {
         value: currentHash.toString("base64")
       }
     });
-    await this.client.logger.sendLog({
+    await sendLog({
       type: "Info",
       message: "Application Command has been updated!",
       metadata: {

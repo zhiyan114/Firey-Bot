@@ -8,6 +8,7 @@ import { YoutubeEvents } from "../events";
 import { getIsolationScope, captureException } from "@sentry/node-core";
 import { httpRequestToRequestData } from "@sentry/core";
 import { youtube } from "../config.json";
+import { sendLog } from "../utils/eventLogger";
 
 /*
 Example Reference
@@ -113,7 +114,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
 
   public async start() {
     await new Promise<void>((resolve) => this.httpServer.listen(this.port, ()=>resolve()));
-    await this.discord.logger.sendLog({
+    await sendLog({
       type: "Info",
       message: "Web server started!"
     });

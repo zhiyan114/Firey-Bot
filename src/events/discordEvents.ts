@@ -7,7 +7,7 @@ import type {
   VoiceState
 } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
-import { ChannelType, DiscordAPIError, EmbedBuilder } from "discord.js";
+import { ChannelType, DiscordAPIError, EmbedBuilder, TextChannel } from "discord.js";
 import { baseEvent } from "../core/baseEvent";
 import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VertificationHandler } from "./helper/DiscordConfirmBtn";
@@ -24,8 +24,10 @@ import {
   noPoints,
   welcomeChannelID,
   guildID,
-  VCJoinLog
+  VCJoinLog,
+  logChannelID
 } from "../config.json";
+import { initialize as logInit, sendLog } from "../utils/eventLogger";
 
 export class DiscordEvents extends baseEvent {
   client: DiscordClient;
@@ -48,12 +50,17 @@ export class DiscordEvents extends baseEvent {
 
   private async onReady() {
     console.log(`Logged in as ${this.client.user?.tag}!`);
-    await this.client.logger.initalize();
-    await this.client.logger.sendLog({
+    await sendLog({
       type: "Info",
       message: "Discord client has been initialized!"
     });
     this.client.updateStatus();
+
+    // Initialize channel log system
+    const logChannel = (await this.client.guilds.fetch(guildID)).channels.fetch(logChannelID);
+    if(!(logChannel instanceof TextChannel))
+      throw Error("Specified log channel either not found or not a text channel");
+    await logInit(logChannel);
   }
 
   private async createCommand(interaction: Interaction) {

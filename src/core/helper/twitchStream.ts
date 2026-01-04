@@ -8,6 +8,7 @@ import type { TwitchClient } from "../TwitchClient";
 import { captureException } from "@sentry/node-core";
 import events from "events";
 import { fetch, Agent, errors } from "undici";
+import { sendLog } from "../../utils/eventLogger";
 
 // Type Reference: https://dev.twitch.tv/docs/api/reference#get-streams
 interface stringObjectType {
@@ -85,7 +86,7 @@ export class streamClient extends events.EventEmitter {
 
       const contentType = serverRes.headers.get("content-type");
       if(!contentType || contentType.includes("application/json") === false) {
-        return await this.client.discord.logger.sendLog({
+        return await sendLog({
           type: "Warning",
           message: `Twitch API has responded with invalid content type header: \`${contentType}\``
         });
@@ -94,7 +95,7 @@ export class streamClient extends events.EventEmitter {
 
       const bodyData = await serverRes.json() as twitchGetStreamType;
       if(!serverRes.ok)
-        return await this.client.discord.logger.sendLog({
+        return await sendLog({
           type: "Warning",
           message: `twitchStream: Status code did not respond with OK body: \`\`\`${bodyData}\`\`\``,
           metadata: {
@@ -111,7 +112,7 @@ export class streamClient extends events.EventEmitter {
       }
 
       if(this.errLogged)
-        await this.client.discord.logger.sendLog({
+        await sendLog({
           type: "Info",
           message: "Twitch API call can now be completed!"
         });
@@ -121,13 +122,13 @@ export class streamClient extends events.EventEmitter {
       if(!this.errLogged) {
         this.errLogged = true;
         if(ex instanceof errors.ConnectTimeoutError)
-          return await this.client.discord.logger.sendLog({
+          return await sendLog({
             type: "Warning",
             message: `twitchStream: Connection Timeout - ${ex.message}`
           });
 
         const sentryID = captureException(ex);
-        await this.client.discord.logger.sendLog({
+        await sendLog({
           type: "Warning",
           message: `twitchStream: Unhandled Exception, check sentry for more details: ${sentryID}`
         });

@@ -3,6 +3,7 @@ import type { NotifiedEvent, SubEvent, YoutubeClient } from "../core/YoutubeClie
 import { ChannelType } from "discord.js";
 import { baseYEvent } from "../core/baseEvent";
 import { youtube } from "../config.json";
+import { sendLog } from "../utils/eventLogger";
 
 
 export class YoutubeEvents extends baseYEvent {
@@ -44,7 +45,7 @@ export class YoutubeEvents extends baseYEvent {
 
   private async subscribe(data: SubEvent) {
     console.log("Youtube Notification Service: PubSubHubbub has been Subscribed...");
-    await this.client.discord.logger.sendLog({
+    await sendLog({
       type: "Info",
       message: "Youtube Notification Service: PubSubHubbub has been Subscribed..."
     });
@@ -52,7 +53,7 @@ export class YoutubeEvents extends baseYEvent {
     if(this.timeoutEvent) clearTimeout(this.timeoutEvent);
     this.timeoutEvent = setTimeout(()=> {
       this.client.subscribe(this.config.youtubeChannelID);
-      this.client.discord.logger.sendLog({
+      sendLog({
         type: "Info",
         message: "Youtube Notification Service: Renewing Subscription..."
       });
@@ -62,7 +63,7 @@ export class YoutubeEvents extends baseYEvent {
 
   private async unsubscribe() {
     console.log("Youtube Notification Service: Even has been unsubscribed, resubscribing...");
-    await this.client.discord.logger.sendLog({
+    await sendLog({
       type: "Warning",
       message: "Youtube Notification Service: Even has been unsubscribed, resubscribing..."
     });

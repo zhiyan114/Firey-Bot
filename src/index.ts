@@ -1,5 +1,6 @@
 import { DiscordClient } from "./core/DiscordClient";
 import { flush } from "@sentry/node-core";
+import { sendLog } from "./utils/eventLogger";
 
 /**
  * Start up checks
@@ -20,7 +21,7 @@ CoreClient
  */
 async function quitSignalHandler() {
   // Log initial shutdown message
-  await CoreClient.logger.sendLog({
+  await sendLog({
     type: "Info",
     message: "Shutdown Initiated... View logs for shutdown completion."
   });

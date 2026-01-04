@@ -5,6 +5,7 @@ import { APIErrors } from "./discordErrorCode";
 import { captureException } from "@sentry/node-core";
 import { Prisma } from "@prisma/client";
 import { createHash } from "crypto";
+import { sendLog } from "./eventLogger";
 
 type embedMessageType = {
     title: string;
@@ -264,7 +265,7 @@ export class DiscordUser {
       });
     } catch(ex) {
       if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2003")
-        await this.client.logger.sendLog({
+        await sendLog({
           type: "Warning",
           message: "actionLog failed due to missing target in the database",
           metadata: opt.metadata,
@@ -272,7 +273,7 @@ export class DiscordUser {
       else captureException(ex);
     }
 
-    await this.client.logger.sendLog({
+    await sendLog({
       type: "Interaction",
       message: opt.message,
       metadata: { reason: opt.reason, ...opt.metadata },
