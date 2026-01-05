@@ -15,7 +15,6 @@ const _logQueues: LogData[] = [];
 /**
  * Initialize logging service with a discord channel
  */
-
 export async function initialize(channel: Channel) {
   // Prevent double initialization
   if(!_channel) {

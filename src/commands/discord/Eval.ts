@@ -113,7 +113,7 @@ export class EvalCommand extends baseCommand {
         rulesconfirmedon: hasVerifyRole ? (new Date()) : undefined
       });
     }
-    await this.client.prisma.members.createMany({
+    await this.client.service.prisma.members.createMany({
       data: dataToPush,
       skipDuplicates: true,
     });
@@ -126,7 +126,7 @@ export class EvalCommand extends baseCommand {
 
     for(const [,member] of await guild.members.fetch()) {
       if(member.user.bot) continue;
-      await this.client.prisma.members.update({
+      await this.client.service.prisma.members.update({
         data: {
           username: member.user.username,
           displayname: member.user.displayName,

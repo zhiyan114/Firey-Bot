@@ -1,8 +1,10 @@
-import type { DiscordClient } from "../core/DiscordClient";
 import { Prisma } from "@prisma/client";
 import { captureException } from "@sentry/node-core";
-import { DiscordUser } from "./DiscordUser";
 import { createHash } from "crypto";
+import type Redis from "ioredis";
+import type { ServiceClient } from "../core/ServiceClient";
+import { DiscordUser } from "./DiscordUser";
+import type { DiscordClient } from "../core/DiscordClient";
 
 type updateUser = {
     memberid?: string,
@@ -26,13 +28,13 @@ type cacheData = {
 }
 // userid is for user's twitch ID; this class is used to manage twitch bot's redis cache system, replacing the current memory-based cache system.
 export class TwitchUser {
-  private client: DiscordClient;
+  private service: ServiceClient;
   private userid: string;
   private cachekey: string;
 
-  constructor(tClient: DiscordClient, userid: string) {
+  constructor(service: ServiceClient, userid: string) {
     this.userid = userid;
-    this.client = tClient;
+    this.service = service;
 
     // Use the first 6 digit of sha512 as user key
     const userHash = createHash("sha512").update(userid).digest("hex");
@@ -47,7 +49,7 @@ export class TwitchUser {
     // Check if the record already exist in redis
     if(await this.cacheExists()) {
       // Pull it up and use it
-      const data = await this.client.redis.hgetall(this.cachekey);
+      const data = await this.service.redis.hgetall(this.cachekey);
       if(data.memberid === "-1")
         return;
       return {
@@ -79,7 +81,7 @@ export class TwitchUser {
      * @returns {boolean} return true if exist, otherwise false
      */
   public async cacheExists(): Promise<boolean> {
-    return await this.client.redis.exists(this.cachekey) > 0;
+    return await this.service.redis.exists(this.cachekey) > 0;
   }
 
   /**
@@ -97,9 +99,9 @@ export class TwitchUser {
     if(newData.username !== undefined) filteredData["username"] = newData.username;
     if(newData.verified !== undefined) filteredData["verified"] = newData.verified.toString();
     // Update the cache
-    await this.client.redis.hset(this.cachekey, filteredData);
+    await this.service.redis.hset(this.cachekey, filteredData);
     // set redis expire key in 3 hours
-    await this.client.redis.expire(this.cachekey, 10800);
+    await this.service.redis.expire(this.cachekey, 10800);
   }
 
   /**
@@ -108,7 +110,7 @@ export class TwitchUser {
      */
   private async getUserFromDB(): Promise<null | userData> {
     try {
-      return await this.client.prisma.twitch.findUnique({
+      return await this.service.prisma.twitch.findUnique({
         where: {
           id: this.userid,
         }
@@ -126,7 +128,7 @@ export class TwitchUser {
      */
   public async createUser(data: createUser) {
     try {
-      return await this.client.prisma.twitch.create({
+      return await this.service.prisma.twitch.create({
         data: {
           id: this.userid,
           memberid: data.memberid,
@@ -146,7 +148,7 @@ export class TwitchUser {
      */
   public async updateUser(data: updateUser): Promise<boolean> {
     try {
-      await this.client.prisma.twitch.update({
+      await this.service.prisma.twitch.update({
         data: {
           memberid: data.memberid,
           username: data.username,
@@ -173,28 +175,28 @@ export class TwitchUser {
     }
   }
 
-  public async getDiscordUser(): Promise<DiscordUser | undefined> {
+  public async getDiscordUser(dClient: DiscordClient): Promise<DiscordUser | undefined> {
     const data = await this.getCacheData();
     if(!data?.memberid || data?.memberid === "-1") return;
-    const user = await this.client.users.fetch(data.memberid);
-    return new DiscordUser(this.client, user);
+    const user = await dClient.users.fetch(data.memberid);
+    return new DiscordUser(this.service, user);
   }
 }
 
 /**
  * This function clears all the cache that is created by this class
  */
-export const clearTwitchCache = async (client: DiscordClient) => {
+export const clearTwitchCache = async (redis: Redis) => {
   // Fixed race condition for streamClient event
-  if(client.redis.status === "ready")
+  if(redis.status === "ready")
     return;
 
   let oldCursor = "0";
   while(true) {
     // get all the values
-    const [cursor,keys] = await client.redis.scan(oldCursor, "MATCH", "twchuser:*", "COUNT", "1000");
+    const [cursor,keys] = await redis.scan(oldCursor, "MATCH", "twchuser:*", "COUNT", "1000");
     // Delete or Unlink all the items
-    for(const key of keys) await client.redis.unlink(key);
+    for(const key of keys) await redis.unlink(key);
     // scan has been completed
     if(cursor === "0") break;
     // scan not completed, assign the new cursor

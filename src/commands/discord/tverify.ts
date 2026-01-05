@@ -35,7 +35,7 @@ export class TwitchVerify extends baseCommand {
       .setTimestamp();
 
     // Check for the request and status
-    const userReq = await this.client.prisma.twitch.findUnique({
+    const userReq = await this.client.service.prisma.twitch.findUnique({
       select: {
         id: true,
         username: true,
@@ -64,7 +64,7 @@ export class TwitchVerify extends baseCommand {
       });
 
     // Process the request
-    await this.client.prisma.twitch.update({
+    await this.client.service.prisma.twitch.update({
       where: {
         id: userReq.id
       },
@@ -72,7 +72,7 @@ export class TwitchVerify extends baseCommand {
         verified: true
       }
     });
-    await (new TwitchUser(this.client, userReq.id)).updateDataCache({
+    await (new TwitchUser(this.client.service, userReq.id)).updateDataCache({
       memberid: interaction.user.id,
       username: userReq.username,
       verified: true

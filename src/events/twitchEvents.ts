@@ -1,17 +1,20 @@
 import type { ChatUserstate } from "tmi.js";
 import type { TwitchClient } from "../core/TwitchClient";
-import { baseTEvent } from "../core/baseEvent";
+import { baseEvent } from "../core/baseEvent";
 import { TwitchUser } from "../utils/TwitchUser";
 import { processCommand } from "./helper/TwitchCommandHandler";
 import { captureException, withScope } from "@sentry/node-core";
 import { randomUUID } from "crypto";
+import type { DiscordClient } from "../core/DiscordClient";
 
 
-export class TwitchEvents extends baseTEvent {
-  public client: TwitchClient;
-  constructor(client: TwitchClient) {
+export class TwitchEvents extends baseEvent {
+  readonly client: TwitchClient;
+  private dClient: DiscordClient;
+  constructor(client: TwitchClient, dClient: DiscordClient) {
     super();
     this.client = client;
+    this.dClient = dClient;
   }
 
   public registerEvents() {
@@ -38,7 +41,7 @@ export class TwitchEvents extends baseTEvent {
           .setAttribute("platform", "twitch");
 
         // Keep username up to date
-        const tUser = new TwitchUser(this.client.discord, userstate['user-id']);
+        const tUser = new TwitchUser(this.client.service, userstate['user-id']);
         const uData = await tUser.getCacheData();
         if(uData?.verified)
           if(userstate['username'] !== uData.username) {
@@ -62,7 +65,7 @@ export class TwitchEvents extends baseTEvent {
 
         // Point awarding system
         if(!this.client.streamClient.isStreaming) return;
-        const discordUser = await tUser.getDiscordUser();
+        const discordUser = await tUser.getDiscordUser(this.dClient);
         if(!(uData?.memberid) || uData.memberid === "-1" || !discordUser) return;
         await discordUser.economy.chatRewardPoints(message);
       } catch(ex) {

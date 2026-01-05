@@ -37,7 +37,7 @@ export class unverifyKickLoader {
 
   // Callback function to set the user a grace period
   async setGracePeriod(member: GuildMember) {
-    await this.client.redis.set(this.getRedisHash(member.id), "true", "EX", 86400);
+    await this.client.service.redis.set(this.getRedisHash(member.id), "true", "EX", 86400);
   }
 
   // Check if users is no longer in grace period and kick
@@ -56,7 +56,7 @@ export class unverifyKickLoader {
       if(noRoleUsers.size === 0) return;
 
       for(const [,member] of noRoleUsers) {
-        if(await this.client.redis.get(this.getRedisHash(member.id)))
+        if(await this.client.service.redis.get(this.getRedisHash(member.id)))
           continue;
 
         const embed = new EmbedBuilder()

@@ -200,12 +200,12 @@ class _internalUser {
     // Checkpoint every 3 minute
     this.secCounted += 3;
     if(this.secCounted % 60 === 0)
-      await this.user.client.redis.set(this.user.getRedisKey(cacheName), this.secCounted.toString(), "EX", 3600);
+      await this.user.service.redis.set(this.user.getRedisKey(cacheName), this.secCounted.toString(), "EX", 3600);
   }
 
   // Pull potential cache value in-case bot restarted while user in VC
   public async loadCache() {
-    const cacheData = await this.user.client.redis.get(this.user.getRedisKey(cacheName));
+    const cacheData = await this.user.service.redis.get(this.user.getRedisKey(cacheName));
     if(cacheData)
       this.secCounted = parseInt(cacheData);
   }
@@ -219,7 +219,7 @@ class _internalUser {
 
     // Grant points and clean the cache
     await this.user.economy.grantPoints(points);
-    await this.user.client.redis.del(this.user.getRedisKey(cacheName));
+    await this.user.service.redis.del(this.user.getRedisKey(cacheName));
   }
 };
 

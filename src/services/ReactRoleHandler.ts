@@ -15,7 +15,7 @@ export async function ReactRoleLoader(client: DiscordClient) {
 
 
   // Check if the react message exists
-  const msgID = (await client.prisma.config.findUnique({
+  const msgID = (await client.service.prisma.config.findUnique({
     where: {
       key: "reactMessageID"
     }
@@ -43,7 +43,7 @@ export async function ReactRoleLoader(client: DiscordClient) {
       .setColor("#00FFFF")
       .setDescription(finalDesc);
     msg = await channel.send({ embeds:[embed] });
-    await client.prisma.config.upsert({
+    await client.service.prisma.config.upsert({
       where: {
         key: "reactMessageID"
       },

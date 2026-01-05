@@ -41,7 +41,7 @@ export class TwitchChatRelay extends baseCommand {
     if(!(interaction.member instanceof GuildMember)) return; // Not possible since the command usage is set disabled in DM
     const uniqueID = randomUUID();
 
-    const tUser = await this.client.prisma.twitch.findUnique({
+    const tUser = await this.client.service.prisma.twitch.findUnique({
       select: {
         verified: true,
         username: true,
@@ -90,7 +90,7 @@ export class TwitchChatRelay extends baseCommand {
     const components = result.components[0].type === ComponentType.ActionRow && result.components[0].components[0];
     const message = (components !== false) ? components.value : "Invalid Component found in code";
 
-    await this.client.twitch.say(twitch.channel, `[@${username}]: ${message}`);
+    await this.client.tClient?.say(twitch.channel, `[@${username}]: ${message}`);
     await result.reply({ content: "Message Sent!", flags: MessageFlags.Ephemeral });
   }
 }

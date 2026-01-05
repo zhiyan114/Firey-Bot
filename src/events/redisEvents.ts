@@ -1,25 +1,23 @@
 // Worked on after logger is added...
 
-import type { DiscordClient } from "../core/DiscordClient";
 import { captureException } from "@sentry/node-core";
-import { baseEvent } from "../core/baseEvent";
 import { sendLog } from "../utils/eventLogger";
+import type Redis from "ioredis";
 
 
-export class RedisEvents extends baseEvent {
-  client: DiscordClient;
+export class RedisEvents {
+  client: Redis;
   private alreadyReconWarned = false;
   private errCount = 0;
 
-  constructor(client: DiscordClient) {
-    super();
+  constructor(client: Redis) {
     this.client = client;
   }
 
   public registerEvents() {
-    this.client.redis.on("error", this.error.bind(this));
-    this.client.redis.on("ready", this.ready.bind(this));
-    this.client.redis.on("reconnecting", this.reconnecting.bind(this));
+    this.client.on("error", this.error.bind(this));
+    this.client.on("ready", this.ready.bind(this));
+    this.client.on("reconnecting", this.reconnecting.bind(this));
 
     // Reset errCount per 30 minutes...
     setInterval(() => {

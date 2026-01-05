@@ -122,7 +122,7 @@ export class DiscordEvents extends baseEvent {
         if(noPoints.category.length > 0 && noPoints.category.find(c=>channel.parentId === c)) return;
 
         // Grant points
-        await (new DiscordUser(this.client, message.author)).economy.chatRewardPoints(message.content);
+        await (new DiscordUser(this.client.service, message.author)).economy.chatRewardPoints(message.content);
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     });
   }
@@ -144,7 +144,7 @@ export class DiscordEvents extends baseEvent {
         });
 
         if(member.user.bot) return;
-        const user = new DiscordUser(this.client, member.user);
+        const user = new DiscordUser(this.client.service, member.user);
 
         // Create new user entry
         try {
@@ -193,7 +193,7 @@ export class DiscordEvents extends baseEvent {
       });
 
       if(oldUser.bot) return;
-      const user = new DiscordUser(this.client, newUser);
+      const user = new DiscordUser(this.client.service, newUser);
 
       try {
         // See if we need to update user's rule confirmation date
