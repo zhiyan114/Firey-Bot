@@ -14,19 +14,16 @@ if(!process.env["BOTTOKEN"])
 if(!process.env["TWITCH_TOKEN"] || !process.env["TWITCH_USERNAME"])
   throw new Error("No twitch username/token provided");
 
-// Shared Services
-const svcClient = new ServiceClient();
-svcClient.start();
-
 /**
  * Setup our beloved client stuff and start it
  */
-
+const svcClient = new ServiceClient();
 const CoreClient = new DiscordClient(svcClient);
 const TwitchCli = new TwitchClient(svcClient, CoreClient);
 const YoutubeCli = new YoutubeClient(svcClient, CoreClient);
 
 (async ()=>{
+  await svcClient.start();
   await CoreClient.start(process.env["BOTTOKEN"]!);
   console.log("Bot started");
   await TwitchCli.start();
