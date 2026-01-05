@@ -17,7 +17,7 @@ const _logQueues: LogData[] = [];
  */
 export async function initialize(channel: Channel) {
   // Prevent double initialization
-  if(!_channel) {
+  if(_channel) {
     await sendLog({
       type: "Error",
       message: "System attempted to initialize log service twice"
