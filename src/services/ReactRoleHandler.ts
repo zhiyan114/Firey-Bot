@@ -3,19 +3,19 @@ import type { DiscordClient } from "../core/DiscordClient";
 import { ChannelType, DiscordAPIError, EmbedBuilder, } from "discord.js";
 import { APIErrors } from "../utils/discordErrorCode";
 import { captureException } from "@sentry/node-core";
+import { guildID, reactRoles } from "../config.json";
 
 export async function ReactRoleLoader(client: DiscordClient) {
   // General checks
-  const guild = client.guilds.cache.get(client.config.guildID);
+  const guild = client.guilds.cache.get(guildID);
   if(!guild) return;
-  const channel = guild.channels.cache.get(client.config.reactRoles.channelID);
+  const channel = guild.channels.cache.get(reactRoles.channelID);
   if(!channel) return;
   if(channel.type !== ChannelType.GuildText) return;
 
-  const config = client.config.reactRoles;
 
   // Check if the react message exists
-  const msgID = (await client.prisma.config.findUnique({
+  const msgID = (await client.service.prisma.config.findUnique({
     where: {
       key: "reactMessageID"
     }
@@ -31,8 +31,8 @@ export async function ReactRoleLoader(client: DiscordClient) {
 
   if(!msg) {
     // Fill in the placeholders
-    let finalDesc = config.Description;
-    for(const { Name, EmoteID } of config.reactionLists) {
+    let finalDesc = reactRoles.Description;
+    for(const { Name, EmoteID } of reactRoles.reactionLists) {
       const emoteName = client.emojis.resolve(EmoteID);
       if(!emoteName) continue;
       finalDesc = finalDesc.replaceAll(`{{${Name}}}`, `<${emoteName.animated ? "a" : ""}:${emoteName.name}:${emoteName.id}>`);
@@ -43,7 +43,7 @@ export async function ReactRoleLoader(client: DiscordClient) {
       .setColor("#00FFFF")
       .setDescription(finalDesc);
     msg = await channel.send({ embeds:[embed] });
-    await client.prisma.config.upsert({
+    await client.service.prisma.config.upsert({
       where: {
         key: "reactMessageID"
       },
@@ -62,8 +62,8 @@ export async function ReactRoleLoader(client: DiscordClient) {
   const emoteToRole: {[key: string]: string} = {};
 
   // Pull in all roles stuff
-  for(const { EmoteID, RoleID } of config.reactionLists) {
-    if(msg.reactions.cache.size !== config.reactionLists.length)
+  for(const { EmoteID, RoleID } of reactRoles.reactionLists) {
+    if(msg.reactions.cache.size !== reactRoles.reactionLists.length)
       await msg.react(EmoteID);
 
     emoteLists.push(EmoteID);

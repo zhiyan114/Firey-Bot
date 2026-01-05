@@ -1,5 +1,5 @@
 import { DiscordCommandHandler } from '../../src/events/helper/DiscordCommandHandler';
-import { SlashCommandOptionsOnlyBuilder } from 'discord.js';
+import { SlashCommandBuilder, SlashCommandOptionsOnlyBuilder } from 'discord.js';
 
 const mockClient = jest.fn().mockImplementation(() => {
   return {
@@ -21,6 +21,26 @@ describe("Duplication Checks", ()=> {
         const otherCommand = commands[j].metadata as SlashCommandOptionsOnlyBuilder;
         expect(command.name).not.toBe(otherCommand.name);
         expect(command.description).not.toBe(otherCommand.description);
+      }
+    }
+  })
+
+  test("Validate Name/Description length and format", ()=> {
+    for(const { metadata } of handler.availableCommands) {
+      expect(metadata.name).toMatch(/^[a-z0-9_-]{1,32}$/);
+      if(metadata instanceof SlashCommandBuilder)
+        expect(metadata.description).toMatch(/^[^\n]{1,100}$/)
+    }
+  })
+
+  test("Validate Slash Command Options Name/Description", () => {
+    for(const { metadata } of handler.availableCommands) {
+      if(!(metadata instanceof SlashCommandBuilder))
+        continue;
+      const opts = metadata.options.map(k=>k.toJSON());
+      for(const opt of opts) {
+        expect(opt.name).toMatch(/^[a-z0-9_-]{1,32}$/)
+        expect(opt.description).toMatch(/^[^\n]{1,100}$/)
       }
     }
   })

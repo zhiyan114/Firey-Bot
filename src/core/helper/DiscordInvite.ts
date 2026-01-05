@@ -7,14 +7,16 @@ import type {
   TextChannel,
   VoiceChannel
 } from "discord.js";
-import type { DiscordClient } from "../core/DiscordClient";
+import type { DiscordClient } from "../DiscordClient";
 import { createHash } from "crypto";
 import { ChannelType } from "discord.js";
+import type Redis from "ioredis";
 
 interface tempInviteOption extends InviteCreateOptions {
   channel?: GuildInvitableChannelResolvable;
   rawCode?: boolean;
   nocache?: boolean;
+  requestID?: string;
 }
 
 
@@ -25,21 +27,15 @@ interface tempInviteOption extends InviteCreateOptions {
  */
 export class DiscordInvite {
   private guild: Guild;
-  private client: DiscordClient;
-  private redisKey: string;
+  private redis: Redis;
   private baseUrl = "https://discord.gg/";
 
-  constructor(client: DiscordClient, requestid?: string, guild?: Guild) {
+  constructor(client: DiscordClient) {
     // Set the provided guild or the first one on the cache if this is a single server bot
-    this.client = client;
-    guild = guild ?? client.guilds.cache.first();
+    this.redis = client.service.redis;
+    const guild = client.guilds.cache.first();
     if(!guild) throw new DiscordInviteError("No guild is available for the bot");
     this.guild = guild;
-
-    // Key is made up of DiscInv:{First 6 digit of a sha512-hashed guild ID}:{First 6 digit of a sha512-hashed requestid or none if parm is null}
-    const guildHash = this.getHash(guild.id, 6);
-    const requestidHash = requestid ? `:${this.getHash(requestid, 6)}` : "";
-    this.redisKey = `DiscInv:${guildHash}${requestidHash}`;
   }
 
   /**
@@ -87,12 +83,17 @@ export class DiscordInvite {
   public async getTempInvite(inviteOpt?: tempInviteOption) {
     if(!inviteOpt) inviteOpt = {};
 
+    // Key is made up of DiscInv:{First 6 digit of a sha512-hashed guild ID}:{First 6 digit of a sha512-hashed requestid or none if parm is null}
+    const guildHash = this.getHash(this.guild.id, 6);
+    const requestidHash = inviteOpt.requestID ? `:${this.getHash(inviteOpt.requestID, 6)}` : "";
+    const redisKey = `DiscInv:${guildHash}${requestidHash}`;
+
     // Use the vanity code if possible
     if(this.guild.vanityURLCode) return inviteOpt.rawCode ? this.guild.vanityURLCode : this.baseUrl + this.guild.vanityURLCode;
 
     // Use the cached invite key if it exists
     if(!inviteOpt.nocache) {
-      const cache = await this.client.redis.get(this.redisKey);
+      const cache = await this.redis.get(redisKey);
       if(cache) return inviteOpt.rawCode ? cache : this.baseUrl + cache;
     }
 
@@ -114,7 +115,7 @@ export class DiscordInvite {
       return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
 
     // Save to cache if allowed
-    await this.client.redis.set(this.redisKey, inviteLink.code, "EX", inviteOpt.maxAge);
+    await this.redis.set(redisKey, inviteLink.code, "EX", inviteOpt.maxAge);
     return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
   }
 }

@@ -1,16 +1,21 @@
 import type { baseClient } from "./baseClient";
-import type { DiscordClient } from "./DiscordClient";
 import { Client } from "tmi.js";
 import { StreamEvents, TwitchEvents } from "../events";
 import { streamClient } from "./helper/twitchStream";
+import { twitch } from "../config.json";
+import { sendLog } from "../utils/eventLogger";
+import type { ServiceClient } from "./ServiceClient";
+import type { DiscordClient } from "./DiscordClient";
+import type { DiscordInvite } from "./helper/DiscordInvite";
 
 
 
 export class TwitchClient extends Client implements baseClient {
-  readonly discord: DiscordClient;
   readonly streamClient: streamClient;
+  readonly service: ServiceClient;
+  readonly dInvite: DiscordInvite;
 
-  constructor(client: DiscordClient, username: string, token: string) {
+  constructor(service: ServiceClient, dClient: DiscordClient) {
     super({
       connection: {
         reconnect: true,
@@ -18,25 +23,26 @@ export class TwitchClient extends Client implements baseClient {
       },
       // @TODO: Eventually configify this
       identity: {
-        username,
-        password: `oauth:${token}`
+        username: process.env["TWITCH_USERNAME"],
+        password: `oauth:${process.env["TWITCH_TOKEN"]}`
       },
-      channels: [client.config.twitch.channel]
+      channels: [twitch.channel]
     });
-    this.discord = client;
-    this.streamClient = new streamClient(this, client.config.twitch.channel);
+    this.streamClient = new streamClient(this, twitch.channel);
+    this.service = service;
+    this.dInvite = dClient.inviteManager;
 
     // Register events
-    new TwitchEvents(this)
+    new TwitchEvents(this, dClient)
       .registerEvents();
-    new StreamEvents(this)
+    new StreamEvents(this, dClient)
       .registerEvents();
 
   }
 
   public async start() {
     await this.connect();
-    await this.discord.logger.sendLog({
+    await sendLog({
       type: "Info",
       message: "Twitch client has been initialized!"
     });

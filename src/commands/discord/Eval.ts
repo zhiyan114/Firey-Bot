@@ -12,6 +12,7 @@ import {
 } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import Sentry from "@sentry/node-core";
+import { guildID, newUserRoleID } from "../../config.json";
 
 export class EvalCommand extends baseCommand {
   public client: DiscordClient;
@@ -101,18 +102,18 @@ export class EvalCommand extends baseCommand {
   // Automatically add missing users to the database
   private createMissingUser = async () => {
     const dataToPush: userDataType[] = [];
-    const guild = this.client.guilds.cache.find(g=>g.id === this.client.config.guildID);
+    const guild = this.client.guilds.cache.find(g=>g.id === guildID);
     if(!guild) return;
     for(const [,member] of await guild.members.fetch()) {
       if(member.user.bot) continue;
-      const hasVerifyRole = member.roles.cache.find(role=>role.id === this.client.config.newUserRoleID);
+      const hasVerifyRole = member.roles.cache.find(role=>role.id === newUserRoleID);
       dataToPush.push({
         id: member.user.id,
         username: member.user.tag,
         rulesconfirmedon: hasVerifyRole ? (new Date()) : undefined
       });
     }
-    await this.client.prisma.members.createMany({
+    await this.client.service.prisma.members.createMany({
       data: dataToPush,
       skipDuplicates: true,
     });
@@ -120,12 +121,12 @@ export class EvalCommand extends baseCommand {
 
   // Automatically update out-of-date user to the database
   private updateUser = async () => {
-    const guild = this.client.guilds.cache.find(g=>g.id === this.client.config.guildID);
+    const guild = this.client.guilds.cache.find(g=>g.id === guildID);
     if(!guild) return;
 
     for(const [,member] of await guild.members.fetch()) {
       if(member.user.bot) continue;
-      await this.client.prisma.members.update({
+      await this.client.service.prisma.members.update({
         data: {
           username: member.user.username,
           displayname: member.user.displayName,

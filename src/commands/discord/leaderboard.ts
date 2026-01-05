@@ -28,12 +28,12 @@ export class leaderboardCommand extends baseCommand {
 
   public async execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
-    const cacheData = await this.client.redis.get(this.cacheKey);
+    const cacheData = await this.client.service.redis.get(this.cacheKey);
     let boardData: boardData[] = cacheData ? JSON.parse(cacheData) : [];
 
     if (boardData.length === 0) {
       // Pull from DB if cache is empty
-      boardData = await this.client.prisma.members.findMany({
+      boardData = await this.client.service.prisma.members.findMany({
         select: {
           username: true,
           points: true
@@ -52,7 +52,7 @@ export class leaderboardCommand extends baseCommand {
       });
 
       // Cache it for 30 minutes
-      await this.client.redis.set(this.cacheKey, JSON.stringify(boardData), "EX", 1800);
+      await this.client.service.redis.set(this.cacheKey, JSON.stringify(boardData), "EX", 1800);
     }
 
     // Format it to string

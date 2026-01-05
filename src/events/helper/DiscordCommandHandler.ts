@@ -11,6 +11,7 @@ import {
 } from "../../commands/discord";
 import { captureException, metrics } from "@sentry/node-core";
 import { createHash, timingSafeEqual } from "crypto";
+import { sendLog } from "../../utils/eventLogger";
 
 
 export class DiscordCommandHandler {
@@ -46,7 +47,7 @@ export class DiscordCommandHandler {
       throw Error("Missing CLIENTID as env variable");
 
     // Check if the command is out-of-date
-    const oldHash = await this.client.prisma.config.findUnique({
+    const oldHash = await this.client.service.prisma.config.findUnique({
       where: {
         key: "command_hash"
       }
@@ -64,7 +65,7 @@ export class DiscordCommandHandler {
         }
       );
 
-    await this.client.prisma.config.upsert({
+    await this.client.service.prisma.config.upsert({
       where: {
         key: "command_hash"
       },
@@ -76,7 +77,7 @@ export class DiscordCommandHandler {
         value: currentHash.toString("base64")
       }
     });
-    await this.client.logger.sendLog({
+    await sendLog({
       type: "Info",
       message: "Application Command has been updated!",
       metadata: {
@@ -119,7 +120,7 @@ export class DiscordCommandHandler {
     }
     catch(ex) {
       const id = captureException(ex, { mechanism: { handled: false } });
-      await this.client.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
+      await this.client.service.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
 
       // Let the user know that something went wrong
       if(interaction.replied)

@@ -3,7 +3,7 @@ import type { DiscordClient } from "../../core/DiscordClient";
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
-import { DiscordInvite } from "../../utils/DiscordInvite";
+import { adminRoleID } from "../../config.json";
 
 export class kickCommand extends baseCommand {
   client: DiscordClient;
@@ -16,7 +16,7 @@ export class kickCommand extends baseCommand {
   constructor(client: DiscordClient) {
     super();
     this.client = client;
-    this.access.roles.push(client.config.adminRoleID);
+    this.access.roles.push(adminRoleID);
     this.metadata
       .setName("kick")
       .setDescription("Kicks a target user.")
@@ -62,11 +62,12 @@ export class kickCommand extends baseCommand {
       },
     ];
     if(invite && !targetMember.user.bot) {
-      const inviteLink = await new DiscordInvite(this.client, `kickInvite:${targetMember.id}`)
+      const inviteLink = await this.client.inviteManager
         .getTempInvite({
           maxAge: 604800,
           maxUses: 1,
           nocache: true,
+          requestID: `kickInvite:${targetMember.id}`
         });
       kickField.push({
         name: "Invite Link",

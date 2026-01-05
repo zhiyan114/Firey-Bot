@@ -3,6 +3,7 @@ import type { ChatInputCommandInteraction, GuildMember } from "discord.js";
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
+import { adminRoleID } from "../../config.json";
 
 export class banCommand extends baseCommand {
   public client: DiscordClient;
@@ -34,7 +35,7 @@ export class banCommand extends baseCommand {
   constructor(client: DiscordClient) {
     super();
     this.client = client;
-    this.access.roles?.push(client.config.adminRoleID);
+    this.access.roles?.push(adminRoleID);
   }
 
   public async execute(interaction: ChatInputCommandInteraction) {

@@ -3,7 +3,7 @@ import type { DiscordClient } from "../../core/DiscordClient";
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
-import { DiscordInvite } from "../../utils/DiscordInvite";
+import { adminRoleID } from "../../config.json";
 
 export class softBanCommand extends baseCommand {
   client: DiscordClient;
@@ -16,7 +16,7 @@ export class softBanCommand extends baseCommand {
   constructor(client: DiscordClient) {
     super();
     this.client = client;
-    this.access.roles.push(client.config.adminRoleID);
+    this.access.roles.push(adminRoleID);
     this.metadata
       .setName("softban")
       .setDescription("Kicks the user but also deletes their message.")
@@ -65,11 +65,12 @@ export class softBanCommand extends baseCommand {
       }
     ];
     if(invite) {
-      const inviteLink = await new DiscordInvite(this.client, `kickInvite:${targetMember.id}`)
+      const inviteLink = await this.client.inviteManager
         .getTempInvite({
           maxAge: 604800,
           maxUses: 1,
           nocache: true,
+          requestID: `kickInvite:${targetMember.id}`
         });
       sbanfield.push({
         name: "Invite Link",

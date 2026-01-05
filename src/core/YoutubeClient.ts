@@ -1,12 +1,9 @@
 import type { baseClient } from "./baseClient";
-import type { DiscordClient } from "./DiscordClient";
 import YouTubeNotifier from "../utils/youtube-notifier";
-import Express, { type NextFunction } from 'express';
-import http from 'http';
-import https from 'https';
 import { YoutubeEvents } from "../events";
-import { getIsolationScope, captureException } from "@sentry/node-core";
-import { httpRequestToRequestData } from "@sentry/core";
+import { youtube } from "../config.json";
+import type { DiscordClient } from "./DiscordClient";
+import type { ServiceClient } from "./ServiceClient";
 
 /*
 Example Reference
@@ -54,56 +51,33 @@ export interface NotifiedEvent {
   updated: Date;
 }
 
-interface config {
-    client: DiscordClient;
-    FQDN: string;
-    Path: string;
-    https?: boolean;
-    PubSubPort?: number;
-    Port?: number;
-    secret?: string;
-}
-
-// Sentry JS SDK Implementation
-interface MiddlewareError extends Error {
-  status?: number | string;
-  statusCode?: number | string;
-  status_code?: number | string;
-  output?: {
-    statusCode?: number | string;
-  };
-}
-
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export declare interface YoutubeClient extends YouTubeNotifier {
     on(event: "notified", listener: (data: NotifiedEvent) => void): this;
     on(event: "subscribe" | "unsubscribe", listener: (data: SubEvent) => void): this;
 }
 
+
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class YoutubeClient extends YouTubeNotifier implements baseClient {
-  readonly express: Express.Express;
-  readonly httpServer: https.Server | http.Server;
-  readonly discord: DiscordClient;
-  readonly port: number;
+  readonly service;
+  readonly _alertChannel;
+  constructor(service: ServiceClient, dClient: DiscordClient) {
+    const PubSubPort = youtube.overridePort !== 0 ? youtube.overridePort : process.env["WEBSERVER_PORT"];
+    const Protocol = (process.env["WEBSERVER_HTTPS"] === "true") ? "https" : "http";
+    const FQDN = process.env["WEBSERVER_FQDN"] ?? "";
+    const Path = "/UwU/youtube/callback/";
+    const pubsuburl = `${Protocol}://${FQDN}${PubSubPort ? `:${PubSubPort}` : ""}${Path}`;
 
-  constructor(config: config) {
-    const PubSubPort = config.PubSubPort ?? config.Port;
-    const pubsuburl = `${config.https ? "https" : "http"}://${config.FQDN}${PubSubPort ? `:${PubSubPort}` : ""}${config.Path}`;
     super({
       hubCallback: pubsuburl,
       middleware: true,
-      secret: config.secret ?? "NotifierSecret_ShouldNotBeExposed",
+      secret: process.env["YTSECRET"] ?? "NotifierSecret_ShouldNotBeExposed",
     });
+    this.service = service;
+    this._alertChannel = dClient.getChannel(youtube.guildChannelID);
+    service.express.use(Path, this.listener());
     console.log(`Current PubSub URL: ${pubsuburl}`);
-
-    this.express = Express();
-    this.discord = config.client;
-    this.port = config.Port ?? 80;
-    this.express.use(config.Path, this.listener());
-    this.express.get("/test/", this.HealthRoute);
-    this.express.use(this.errMiddleWare); // Sentry Error Handler
-    this.httpServer = config.https ? https.createServer(this.express) : http.createServer(this.express);
 
     // Register events
     new YoutubeEvents(this)
@@ -111,27 +85,14 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
   }
 
   public async start() {
-    await new Promise<void>((resolve) => this.httpServer.listen(this.port, ()=>resolve()));
-    await this.discord.logger.sendLog({
-      type: "Info",
-      message: "Web server started!"
-    });
-    this.subscribe(this.discord.config.youtube.youtubeChannelID);
-  }
-
-  private HealthRoute(req: Express.Request, res: Express.Response) {
-    res.status(200).send("You have been OwO");
-  }
-
-  private errMiddleWare(err: MiddlewareError, req: http.IncomingMessage, res: http.ServerResponse, next: NextFunction) {
-    const statusCode = parseInt((err.status ?? err.statusCode ?? err.status_code ?? err.output?.statusCode ?? "500") as string, 10);
-    getIsolationScope().setSDKProcessingMetadata({ normalizedRequest: httpRequestToRequestData(req) });
-    if(statusCode >= 500)
-      (res as { sentry?: string }).sentry = captureException(err, { mechanism: { type: 'middleware', handled: false } });
-    next(err);
+    this.subscribe(youtube.youtubeChannelID);
   }
 
   public async dispose() {
-    await new Promise<void>((resolve, reject) => this.httpServer.close((res)=> res ? reject(res) : resolve()));
+    // this.unsubscribe(youtube.youtubeChannelID);
+  }
+
+  get alertChannel() {
+    return this._alertChannel;
   }
 }

@@ -4,6 +4,8 @@ import { EmbedBuilder } from "discord.js";
 import { schedule } from "node-cron";
 import { captureCheckIn, captureException } from "@sentry/node-core";
 import { createHash } from "crypto";
+import { guildID } from "../config.json";
+import { sendLog } from "../utils/eventLogger";
 
 
 /**
@@ -35,7 +37,7 @@ export class unverifyKickLoader {
 
   // Callback function to set the user a grace period
   async setGracePeriod(member: GuildMember) {
-    await this.client.redis.set(this.getRedisHash(member.id), "true", "EX", 86400);
+    await this.client.service.redis.set(this.getRedisHash(member.id), "true", "EX", 86400);
   }
 
   // Check if users is no longer in grace period and kick
@@ -47,14 +49,14 @@ export class unverifyKickLoader {
     let exeError = false;
 
     try {
-      const guild = this.client.guilds.cache.get(this.client.config.guildID);
+      const guild = this.client.guilds.cache.get(guildID);
       if(!guild) throw Error("[Service unverifyKick]: Supplied guild ID is not valid");
 
       const noRoleUsers = (await guild.members.fetch())?.filter(m=>m.roles.cache.size === 1);
       if(noRoleUsers.size === 0) return;
 
       for(const [,member] of noRoleUsers) {
-        if(await this.client.redis.get(this.getRedisHash(member.id)))
+        if(await this.client.service.redis.get(this.getRedisHash(member.id)))
           continue;
 
         const embed = new EmbedBuilder()
@@ -66,7 +68,7 @@ export class unverifyKickLoader {
         await member.send({ embeds: [embed] });
         await member.kick("User remains unverified for at least 24 hours");
 
-        await this.client.logger.sendLog({
+        await sendLog({
           type: "Warning",
           message: `**${member.user.username}** have been kicked from the server for not confirming the rules within 24 hours`
         });

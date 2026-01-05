@@ -49,7 +49,7 @@ export class FeedbackCommand extends baseCommand {
       .setTitle("Feedback");
 
     // Let the user know if sentry caught the last error via description text
-    const userSentryErrorID = await this.client.redis.get(`userSentryErrorID:${interaction.user.id}`) ?? undefined;
+    const userSentryErrorID = await this.client.service.redis.get(`userSentryErrorID:${interaction.user.id}`) ?? undefined;
 
     // Create a text notice
     const sentryNotice = userSentryErrorID ?
@@ -93,6 +93,6 @@ export class FeedbackCommand extends baseCommand {
       message: components.find((k): k is TextInputModalData => k !== false && k.customId === "feedback")?.value ?? "This shouldn't happened?!?!?",
     });
     if(sentryEventID)
-      await this.client.redis.del(`userSentryErrorID:${result.user.id}`);
+      await this.client.service.redis.del(`userSentryErrorID:${result.user.id}`);
   }
 }

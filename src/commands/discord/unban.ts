@@ -5,6 +5,7 @@ import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { APIErrors } from "../../utils/discordErrorCode";
 import { captureException } from "@sentry/node-core";
+import { adminRoleID } from "../../config.json";
 
 export class unbanCommand extends baseCommand {
   client: DiscordClient;
@@ -17,7 +18,7 @@ export class unbanCommand extends baseCommand {
   constructor(client: DiscordClient) {
     super();
     this.client = client;
-    this.access.roles.push(client.config.adminRoleID);
+    this.access.roles.push(adminRoleID);
     this.metadata
       .setName("unban")
       .setDescription("Remove a user from the ban list")
