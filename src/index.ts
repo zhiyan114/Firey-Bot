@@ -23,20 +23,19 @@ svcClient.start();
  */
 
 const CoreClient = new DiscordClient(svcClient);
-CoreClient.start(process.env["BOTTOKEN"])
-  .then(()=>console.log("Bot started"));
-
 const TwitchCli = new TwitchClient(svcClient, CoreClient);
-TwitchCli.start();
-CoreClient.setTwitchClient(TwitchCli);
-
 const YoutubeCli = new YoutubeClient(svcClient, CoreClient);
-YoutubeCli.start();
 
-// POST PROCESSING EVENTS HERE
-svcClient.postProcess();
+(async ()=>{
+  await CoreClient.start(process.env["BOTTOKEN"]!);
+  console.log("Bot started");
+  await TwitchCli.start();
+  CoreClient.setTwitchClient(TwitchCli);
+  await YoutubeCli.start();
 
-
+  // POST PROCESSING EVENTS HERE
+  svcClient.postProcess();
+})();
 
 /**
  * Handle cleanups

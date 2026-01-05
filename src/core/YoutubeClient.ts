@@ -4,6 +4,7 @@ import { YoutubeEvents } from "../events";
 import { youtube } from "../config.json";
 import type { DiscordClient } from "./DiscordClient";
 import type { ServiceClient } from "./ServiceClient";
+import type { TextChannel } from "discord.js";
 
 /*
 Example Reference
@@ -61,7 +62,8 @@ export declare interface YoutubeClient extends YouTubeNotifier {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class YoutubeClient extends YouTubeNotifier implements baseClient {
   readonly service;
-  readonly _alertChannel;
+  private _alertChannel?: TextChannel;
+  private dClient: DiscordClient;
   constructor(service: ServiceClient, dClient: DiscordClient) {
     const PubSubPort = youtube.overridePort !== 0 ? youtube.overridePort : process.env["WEBSERVER_PORT"];
     const Protocol = (process.env["WEBSERVER_HTTPS"] === "true") ? "https" : "http";
@@ -75,7 +77,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
       secret: process.env["YTSECRET"] ?? "NotifierSecret_ShouldNotBeExposed",
     });
     this.service = service;
-    this._alertChannel = dClient.getChannel(youtube.guildChannelID);
+    this.dClient = dClient;
     service.express.use(Path, this.listener());
     console.log(`Current PubSub URL: ${pubsuburl}`);
 
@@ -85,6 +87,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
   }
 
   public async start() {
+    this._alertChannel = await this.dClient.getTChannel(youtube.guildChannelID);
     this.subscribe(youtube.youtubeChannelID);
   }
 
