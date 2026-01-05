@@ -79,11 +79,10 @@ export class DiscordClient extends Client implements baseClient {
     });
   }
 
-  public getChannel(id: string) {
-    const Alertch = this.guilds.cache.first()
-      ?.channels.cache.find(k=>k.id === id);
+  public async getTChannel(id: string) {
+    const Alertch = await this.channels.fetch(id);
     if(!Alertch)
-      throw Error("No discord channel found with the given ID for youtube alert");
+      throw Error("No valid discord channel found with the given ID for youtube alert");
     if(!(Alertch instanceof TextChannel))
       throw Error("The given discord channel is not a text channel");
     return Alertch;

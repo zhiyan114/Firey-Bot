@@ -34,7 +34,7 @@ export class YoutubeEvents extends baseEvent {
     console.log(`Video (${data.video.id}) was notified with Publish: ${data.published} and Updated: ${data.updated}`);
 
     const rolePing = this.config.pingRoleID !== "0" ? `<@&${this.config.pingRoleID}>` : "";
-    this.client.alertChannel.send({ content: `${rolePing} New Video is out!! Check it out here: ${data.video.link}` });
+    this.client.alertChannel?.send({ content: `${rolePing} New Video is out!! Check it out here: ${data.video.link}` });
   }
 
   private async subscribe(data: SubEvent) {
