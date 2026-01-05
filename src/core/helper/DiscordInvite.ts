@@ -11,6 +11,7 @@ import type { DiscordClient } from "../DiscordClient";
 import { createHash } from "crypto";
 import { ChannelType } from "discord.js";
 import type Redis from "ioredis";
+import { guildID } from "../../config.json";
 
 interface tempInviteOption extends InviteCreateOptions {
   channel?: GuildInvitableChannelResolvable;
@@ -26,16 +27,15 @@ interface tempInviteOption extends InviteCreateOptions {
  * @param guild the guild server to generate the invite
  */
 export class DiscordInvite {
-  private guild: Guild;
+  private guild?: Guild;
+  private client: DiscordClient;
   private redis: Redis;
   private baseUrl = "https://discord.gg/";
 
   constructor(client: DiscordClient) {
     // Set the provided guild or the first one on the cache if this is a single server bot
     this.redis = client.service.redis;
-    const guild = client.guilds.cache.first();
-    if(!guild) throw new DiscordInviteError("No guild is available for the bot");
-    this.guild = guild;
+    this.client = client;
   }
 
   /**
@@ -82,6 +82,8 @@ export class DiscordInvite {
      */
   public async getTempInvite(inviteOpt?: tempInviteOption) {
     if(!inviteOpt) inviteOpt = {};
+    if(!this.guild)
+      this.guild = await this.client.guilds.fetch(guildID);
 
     // Key is made up of DiscInv:{First 6 digit of a sha512-hashed guild ID}:{First 6 digit of a sha512-hashed requestid or none if parm is null}
     const guildHash = this.getHash(this.guild.id, 6);
