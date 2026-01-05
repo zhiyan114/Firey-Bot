@@ -57,7 +57,7 @@ export class DiscordEvents extends baseEvent {
     this.client.updateStatus();
 
     // Initialize channel log system
-    const logChannel = (await this.client.guilds.fetch(guildID)).channels.fetch(logChannelID);
+    const logChannel = await (await this.client.guilds.fetch(guildID)).channels.fetch(logChannelID);
     if(!(logChannel instanceof TextChannel))
       throw Error("Specified log channel either not found or not a text channel");
     await logInit(logChannel);
