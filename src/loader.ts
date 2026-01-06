@@ -8,9 +8,15 @@ import {
   consoleLoggingIntegration,
   extraErrorDataIntegration,
   rewriteFramesIntegration,
+  SentryContextManager,
   init as sentryInit,
+  setupOpenTelemetryLogger,
+  validateOpenTelemetrySetup,
 } from "@sentry/node-core"; /* track https://github.com/getsentry/sentry-javascript/issues/15213 */
 import { config as dotenv } from "dotenv";
+import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
+import { SentryPropagator, SentrySampler, SentrySpanProcessor } from "@sentry/opentelemetry";
+import { context, propagation, trace } from "@opentelemetry/api";
 
 dotenv();
 
@@ -18,7 +24,7 @@ dotenv();
 /**
  * Sentry Initialization
  */
-sentryInit({
+const cli = sentryInit({
   dsn: process.env["SENTRY_DSN"],
   dist: process.env['COMMITHASH'],
   maxValueLength: 1000,
@@ -108,4 +114,22 @@ function frameStackIteratee(frame: StackFrame) {
   // Set the base path as the dist output to match the naming artifact on sentry
   frame.filename = `/${relative(__dirname, absPath).replace(/\\/g, "/")}`;
   return frame;
+}
+
+
+// OpenTelemetry Loader
+if(cli) {
+  const provider = new NodeTracerProvider({
+    sampler: new SentrySampler(cli),
+    spanProcessors: [
+      new SentrySpanProcessor(),
+    ],
+  });
+
+  trace.setGlobalTracerProvider(provider);
+  propagation.setGlobalPropagator(new SentryPropagator());
+  context.setGlobalContextManager(new SentryContextManager());
+
+  setupOpenTelemetryLogger();
+  validateOpenTelemetrySetup();
 }
