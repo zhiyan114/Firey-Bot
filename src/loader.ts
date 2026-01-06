@@ -116,6 +116,8 @@ function frameStackIteratee(frame: StackFrame) {
   return frame;
 }
 
+
+// OpenTelemetry Loader
 if(cli) {
   const provider = new NodeTracerProvider({
     sampler: new SentrySampler(cli),
