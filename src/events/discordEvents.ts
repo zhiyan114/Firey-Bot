@@ -13,7 +13,7 @@ import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VertificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
-import { captureException, withScope } from "@sentry/node-core";
+import { captureException, logger, withScope } from "@sentry/node-core";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
@@ -267,12 +267,16 @@ export class DiscordEvents extends baseEvent {
           ]);
 
         // See if username needs to be added as well
-        if(now.member.user.username !== now.member.user.displayName)
+        const UNMatchDN = now.member.user.username === now.member.user.displayName;
+        if(!UNMatchDN)
           embed.addFields({
             name: "Username",
             value: now.member.user.username
           });
 
+        logger.info(logger.fmt`${now.member.user[UNMatchDN ? "username" : "displayName"]} joined voice channel: ${now.channel.name}`, {
+          channelID: now.channel.id
+        });
         await channel.send({ embeds: [embed] });
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     });
