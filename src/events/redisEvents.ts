@@ -1,6 +1,6 @@
 // Worked on after logger is added...
 
-import { captureException } from "@sentry/node-core";
+import { captureException, logger } from "@sentry/node-core";
 import { sendLog } from "../utils/eventLogger";
 import type Redis from "ioredis";
 
@@ -40,7 +40,7 @@ export class RedisEvents {
     this.alreadyReconWarned = false;
     this.errCount = 0;
 
-    console.log("Redis Connected");
+    logger.info("Redis Connected");
     sendLog({
       type: "Info",
       message: "Redis: Connection Established"
@@ -53,7 +53,7 @@ export class RedisEvents {
     if(this.alreadyReconWarned)
       return;
 
-    console.log("Redis reconnecting...");
+    logger.debug("Redis reconnecting...");
     sendLog({
       type: "Warning",
       message: "Redis: Connection Issue, Reconnecting..."
