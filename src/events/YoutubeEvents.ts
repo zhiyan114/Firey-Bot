@@ -32,7 +32,7 @@ export class YoutubeEvents extends baseEvent {
       return;
 
     await this.client.service.redis.set(`youtube:${data.video.id}`, "true", "EX", 43200);
-    logger.info(`Published Youtube Video ID: ${data.video.id}`, {
+    logger.info(logger.fmt`Published Youtube Video ID: ${data.video.id}`, {
       publishTime: data.published,
       updateTime: data.updated
     });

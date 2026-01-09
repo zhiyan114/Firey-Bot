@@ -36,7 +36,7 @@ export async function initialize(channel: Channel) {
 export async function sendLog(log: LogData) {
   // Queue the log if the channel is not initialized
   if(!_channel) {
-    logger.debug(`Log added to pre-initialization queue: ${log.message}`);
+    logger.debug(logger.fmt`Log added to pre-initialization queue: ${log.message}`);
     _logQueues.push(log);
     return;
   }
