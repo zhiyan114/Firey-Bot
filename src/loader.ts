@@ -36,7 +36,6 @@ const cli = sentryInit({
   beforeBreadcrumb,
   beforeSend,
   beforeSendLog,
-  beforeSendTransaction: () => null,
 
   ignoreErrors: [
     "ETIMEDOUT",
@@ -60,8 +59,23 @@ const cli = sentryInit({
   ],
 });
 
+// OpenTelemetry Loader
+if(cli) {
+  const provider = new NodeTracerProvider({
+    sampler: new SentrySampler(cli),
+    spanProcessors: [
+      new SentrySpanProcessor(),
+    ],
+  });
 
-const errCntDB = new Map<string, number>();
+  trace.setGlobalTracerProvider(provider);
+  propagation.setGlobalPropagator(new SentryPropagator());
+  context.setGlobalContextManager(new SentryContextManager());
+
+  setupOpenTelemetryLogger();
+  validateOpenTelemetrySetup();
+}
+
 
 function beforeSend(event: ErrorEvent, hint: EventHint) {
   const ex = hint.originalException;
@@ -72,23 +86,6 @@ function beforeSend(event: ErrorEvent, hint: EventHint) {
   if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null; // Somehow...
   if(ex instanceof Error && ex.message.includes('Could not load the "sharp"')) return null; // Holy Hell, sharp...
   if(ex instanceof errors.SocketError && ex.message === "other side closed") return null; // Probably just discord's WS downtime
-
-  // Ignore same errors if seen more than 5 times
-  if(typeof(ex) === "string") {
-    const cnt = errCntDB.get(ex) ?? 0;
-    if(cnt > 5) return null;
-    errCntDB.set(ex, cnt + 1);
-  }
-  if(typeof(ex) === "number" || typeof(ex) === "bigint") {
-    const cnt = errCntDB.get(ex.toString()) ?? 0;
-    if(cnt >= 5) return null;
-    errCntDB.set(ex.toString(), cnt + 1);
-  }
-  if(ex instanceof Error) {
-    const cnt = errCntDB.get(ex.name+ex.message) ?? 0;
-    if(cnt >= 5) return null;
-    errCntDB.set(ex.name+ex.message, cnt + 1);
-  }
 
   return event;
 }
@@ -117,22 +114,4 @@ function frameStackIteratee(frame: StackFrame) {
 function beforeSendLog(log: Log) {
   console.log(`[${log.level}]: ${log.message}`);
   return log;
-}
-
-
-// OpenTelemetry Loader
-if(cli) {
-  const provider = new NodeTracerProvider({
-    sampler: new SentrySampler(cli),
-    spanProcessors: [
-      new SentrySpanProcessor(),
-    ],
-  });
-
-  trace.setGlobalTracerProvider(provider);
-  propagation.setGlobalPropagator(new SentryPropagator());
-  context.setGlobalContextManager(new SentryContextManager());
-
-  setupOpenTelemetryLogger();
-  validateOpenTelemetrySetup();
 }
