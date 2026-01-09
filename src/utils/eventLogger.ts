@@ -22,7 +22,6 @@ export async function initialize(channel: Channel) {
       type: "Error",
       message: "System attempted to initialize log service twice"
     });
-    return console.log("Log channel already initialized!");
   }
   if(!(channel instanceof TextChannel))
     throw new Error("[Logger]: Attempted to initialize log channel with a non-text channel");
@@ -37,7 +36,7 @@ export async function initialize(channel: Channel) {
 export async function sendLog(log: LogData) {
   // Queue the log if the channel is not initialized
   if(!_channel) {
-    console.debug(`Log added to pre-initialization queue: ${log.message}`);
+    logger.debug(`Log added to pre-initialization queue: ${log.message}`);
     _logQueues.push(log);
     return;
   }

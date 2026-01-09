@@ -1,11 +1,11 @@
 import type { Breadcrumb, ErrorEvent, EventHint, StackFrame } from "@sentry/node-core";
+import type { Log } from "@sentry/core";
 import { relative } from "path";
 import { DiscordAPIError, DiscordjsError } from "discord.js";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
 import { errors } from 'undici';
 import {
-  consoleLoggingIntegration,
   extraErrorDataIntegration,
   rewriteFramesIntegration,
   SentryContextManager,
@@ -35,6 +35,7 @@ const cli = sentryInit({
 
   beforeBreadcrumb,
   beforeSend,
+  beforeSendLog,
   beforeSendTransaction: () => null,
 
   ignoreErrors: [
@@ -50,9 +51,6 @@ const cli = sentryInit({
   ],
 
   integrations: [
-    consoleLoggingIntegration({
-      levels: ["error", "warn", "log"],
-    }),
     extraErrorDataIntegration({
       depth: 5
     }),
@@ -114,6 +112,11 @@ function frameStackIteratee(frame: StackFrame) {
   // Set the base path as the dist output to match the naming artifact on sentry
   frame.filename = `/${relative(__dirname, absPath).replace(/\\/g, "/")}`;
   return frame;
+}
+
+function beforeSendLog(log: Log) {
+  console.log(`[${log.level}]: ${log.message}`);
+  return log;
 }
 
 

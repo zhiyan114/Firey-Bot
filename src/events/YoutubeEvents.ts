@@ -2,6 +2,7 @@ import type { NotifiedEvent, SubEvent, YoutubeClient } from "../core/YoutubeClie
 import { baseEvent } from "../core/baseEvent";
 import { youtube } from "../config.json";
 import { sendLog } from "../utils/eventLogger";
+import { logger } from "@sentry/node-core";
 
 
 export class YoutubeEvents extends baseEvent {
@@ -31,14 +32,16 @@ export class YoutubeEvents extends baseEvent {
       return;
 
     await this.client.service.redis.set(`youtube:${data.video.id}`, "true", "EX", 43200);
-    console.log(`Video (${data.video.id}) was notified with Publish: ${data.published} and Updated: ${data.updated}`);
+    logger.info(`Published Youtube Video ID: ${data.video.id}`, {
+      publishTime: data.published,
+      updateTime: data.updated
+    });
 
     const rolePing = this.config.pingRoleID !== "0" ? `<@&${this.config.pingRoleID}>` : "";
     this.client.alertChannel?.send({ content: `${rolePing} New Video is out!! Check it out here: ${data.video.link}` });
   }
 
   private async subscribe(data: SubEvent) {
-    console.log("Youtube Notification Service: PubSubHubbub has been Subscribed...");
     await sendLog({
       type: "Info",
       message: "Youtube Notification Service: PubSubHubbub has been Subscribed..."
@@ -56,7 +59,6 @@ export class YoutubeEvents extends baseEvent {
   }
 
   private async unsubscribe() {
-    console.log("Youtube Notification Service: Even has been unsubscribed, resubscribing...");
     await sendLog({
       type: "Warning",
       message: "Youtube Notification Service: Even has been unsubscribed, resubscribing..."
