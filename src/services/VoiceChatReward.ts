@@ -35,7 +35,7 @@ export class VoiceChatReward {
     // Bind the events
     setInterval(this.onTick.bind(this), 3000); // Tick every 3 seconds
     this.client.on("voiceStateUpdate", this.voiceStateUpdate.bind(this));
-    logger.debug(`[VoiceChatReward]: VoiceChatReward Service Initialized (total users loaded: ${this.userTable.size})`);
+    logger.debug(logger.fmt`[VoiceChatReward]: VoiceChatReward Service Initialized (total users loaded: ${this.userTable.size})`);
   }
 
   private async voiceStateUpdate(oldState: VoiceState, newState: VoiceState) {

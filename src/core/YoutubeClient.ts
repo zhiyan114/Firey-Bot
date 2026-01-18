@@ -5,6 +5,7 @@ import { youtube } from "../config.json";
 import type { DiscordClient } from "./DiscordClient";
 import type { ServiceClient } from "./ServiceClient";
 import type { TextChannel } from "discord.js";
+import { logger } from "@sentry/node-core";
 
 /*
 Example Reference
@@ -79,7 +80,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
     this.service = service;
     this.dClient = dClient;
     service.express.use(Path, this.listener());
-    console.log(`Current PubSub URL: ${pubsuburl}`);
+    logger.info(`Configured PubSub URL: ${pubsuburl}`);
 
     // Register events
     new YoutubeEvents(this)

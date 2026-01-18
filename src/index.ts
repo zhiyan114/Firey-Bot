@@ -1,5 +1,5 @@
 import { DiscordClient } from "./core/DiscordClient";
-import { flush } from "@sentry/node-core";
+import { logger, close } from "@sentry/node-core";
 import { sendLog } from "./utils/eventLogger";
 import { TwitchClient } from "./core/TwitchClient";
 import { YoutubeClient } from "./core/YoutubeClient";
@@ -25,7 +25,7 @@ const YoutubeCli = new YoutubeClient(svcClient, CoreClient);
 (async ()=>{
   await svcClient.start();
   await CoreClient.start(process.env["BOTTOKEN"]!);
-  console.log("Bot started");
+  logger.info("Bot started");
   await TwitchCli.start();
   CoreClient.setTwitchClient(TwitchCli);
   await YoutubeCli.start();
@@ -43,13 +43,12 @@ async function quitSignalHandler() {
     type: "Info",
     message: "Shutdown Initiated... View logs for shutdown completion."
   });
-  console.log("Shutdown Initiated...");
 
   // Perform cleanup
   await CoreClient.dispose();
   await TwitchCli.dispose();
   await TwitchCli.dispose();
-  await flush(15000);
+  await close(15000);
 
   // Complete the shutdown
   console.log("Shutdown Complete!");
