@@ -6,7 +6,6 @@
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
     "@sentry/node-core": "^10.34.0",
-    "@sentry/node-native": "^10.34.0",
     "@sentry/opentelemetry": "^10.32.1",
     "bufferutil": "^4.0.6",
     "canvas": "^3.0.1",
