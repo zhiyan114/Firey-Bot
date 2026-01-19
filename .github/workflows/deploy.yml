@@ -25,16 +25,16 @@ jobs:
         cache: 'npm'
     - name: Setup FlyIO
       uses: superfly/flyctl-actions/setup-flyctl@master
-    - name: install package
-      run: npm ci
-    - name: lint check
-      run: npm run lint:check
-    - name: Prisma Checker
-      run: npx prisma generate
-    - name: Type Check
-      run: npm run build:check
-    - name: Unit Test
-      run: npm run test
+    # - name: install package
+    #   run: npm ci
+    # - name: lint check
+    #   run: npm run lint:check
+    # - name: Prisma Checker
+    #   run: npx prisma generate
+    # - name: Type Check
+    #   run: npm run build:check
+    # - name: Unit Test
+    #   run: npm run test
     - name: Deploy FlyIO
       run: flyctl deploy --remote-only --ha=false --build-arg ENVIRONMENT=$ENVIRONMENT --build-arg SENTRY_ORG=$SENTRY_ORG --build-arg SENTRY_PROJECT=$SENTRY_PROJECT --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
       env:

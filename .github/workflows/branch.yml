@@ -24,6 +24,8 @@ jobs:
 #        cache: 'npm'
     - name: install package
       run: npm ci
+    - name: High Vulnerability Audit
+      run: npm audit --audit-level high
     - name: lint check
       run: npm run lint:check
     - name: Prisma Checker

@@ -63,6 +63,10 @@ export class ServiceClient extends baseClient {
       await this.redis.connect();
   }
 
+  public preProcess() {
+    this._express.use(this.preScopeMidware);
+  }
+
   public postProcess() {
     this._express.use(this.errMiddleWare);
   }
@@ -95,5 +99,19 @@ export class ServiceClient extends baseClient {
     if(statusCode >= 500)
       (res as { sentry?: string }).sentry = captureException(err, { mechanism: { type: 'middleware', handled: false } });
     next(err);
+  }
+
+  private preScopeMidware(req: http.IncomingMessage, res: http.ServerResponse, next: NextFunction) {
+    getIsolationScope()
+      .setAttributes({
+        platform: "ExpressJS",
+        userAgent: req.headers["user-agent"]
+      })
+      .setTags({
+        platform: "ExpressJS",
+        userAgent: req.headers["user-agent"]
+      });
+
+    next();
   }
 }
