@@ -23,6 +23,9 @@ const TwitchCli = new TwitchClient(svcClient, CoreClient);
 const YoutubeCli = new YoutubeClient(svcClient, CoreClient);
 
 (async ()=>{
+  // PRE PROCESSING EVENTS
+  svcClient.preProcess();
+
   await svcClient.start();
   await CoreClient.start(process.env["BOTTOKEN"]!);
   logger.info("Bot started");
