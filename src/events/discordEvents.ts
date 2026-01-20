@@ -4,7 +4,8 @@ import type {
   Message,
   User,
   PartialUser,
-  VoiceState
+  VoiceState,
+  Guild
 } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { ChannelType, DiscordAPIError, EmbedBuilder, TextChannel } from "discord.js";
@@ -46,6 +47,7 @@ export class DiscordEvents extends baseEvent {
     this.client.on("userUpdate", this.userUpdate.bind(this));
     this.client.on("guildMemberRemove", this.guildMemberRemove.bind(this));
     this.client.on("voiceStateUpdate", this.voiceStateUpdate.bind(this));
+    this.client.on("guildDelete", this.guildDelete.bind(this));
   }
 
   private async onReady() {
@@ -279,6 +281,27 @@ export class DiscordEvents extends baseEvent {
         });
         await channel.send({ embeds: [embed] });
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
+    });
+  }
+
+  private guildDelete(guild: Guild) {
+    withIsolationScope(async scope =>{
+      scope
+        .setAttributes({
+          platform: "discord",
+          eventType: "guildDelete",
+          guildID: guild.id,
+          guildName: guild.name
+        })
+        .setTags({
+          platform: "discord",
+          eventType: "guildDelete"
+        });
+
+      if(guildID !== guild.id)
+        return logger.warn(logger.fmt`Bot was removed from unauthorized guild!`);
+
+      return logger.error("Bot was removed from primary guild!");
     });
   }
 }
