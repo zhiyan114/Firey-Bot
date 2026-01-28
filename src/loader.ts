@@ -17,7 +17,6 @@ import { config as dotenv } from "dotenv";
 import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
 import { SentryPropagator, SentrySampler, SentrySpanProcessor } from "@sentry/opentelemetry";
 import { context, propagation, trace } from "@opentelemetry/api";
-import { eventLoopBlockIntegration } from "@sentry/node-native";
 
 dotenv();
 
@@ -56,10 +55,6 @@ const cli = sentryInit({
     }),
     rewriteFramesIntegration({
       iteratee: frameStackIteratee
-    }),
-    eventLoopBlockIntegration({
-      threshold: 250,
-      maxEventsPerHour: 3,
     })
   ],
 });
