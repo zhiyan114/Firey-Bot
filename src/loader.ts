@@ -12,7 +12,7 @@ import {
   init as sentryInit,
   setupOpenTelemetryLogger,
   validateOpenTelemetrySetup,
-} from "@sentry/node-core"; /* track https://github.com/getsentry/sentry-javascript/issues/15213 */
+} from "@sentry/node-core";
 import { config as dotenv } from "dotenv";
 import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
 import { SentryPropagator, SentrySampler, SentrySpanProcessor } from "@sentry/opentelemetry";
