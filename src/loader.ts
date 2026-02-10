@@ -4,7 +4,6 @@ import { relative } from "path";
 import { DiscordAPIError, DiscordjsError, HTTPError } from "discord.js";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
-import { errors } from 'undici';
 import {
   extraErrorDataIntegration,
   rewriteFramesIntegration,
@@ -46,7 +45,9 @@ const cli = sentryInit({
     "NetworkError",
     "ECONNREFUSED",
     "ECONNRESET",
-    "getaddrinfo"
+    "getaddrinfo",
+    "other side closed",
+    'Could not load the "sharp"'
   ],
 
   integrations: [
@@ -84,8 +85,6 @@ function beforeSend(event: ErrorEvent, hint: EventHint) {
   if(ex instanceof DiscordAPIError && ex.code === APIErrors.UNKNOWN_INTERACTION) return null; // Nothing we can do, really...
   if(ex instanceof DiscordjsError && ex.code === "GuildMembersTimeout") return null; // Known issue with discord's backend API
   if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null; // Somehow...
-  if(ex instanceof Error && ex.message.includes('Could not load the "sharp"')) return null; // Holy Hell, sharp...
-  if(ex instanceof errors.SocketError && ex.message === "other side closed") return null; // Probably just discord's WS downtime
   if(ex instanceof HTTPError && Math.floor(ex.status/100) === 5) return null; // Discord server-related issue
 
   return event;
