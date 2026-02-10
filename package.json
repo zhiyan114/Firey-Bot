@@ -46,9 +46,6 @@
     "ts-jest": "^29.1.2",
     "typescript": "^5.4.5"
   },
-  "overrides": {
-    "hono": "^4.11.7"
-  },
   "name": "firey-bot",
   "description": "This bot is developed to serve a single server; thus, codes are not reusable without modification.",
   "version": "1.0.0",
