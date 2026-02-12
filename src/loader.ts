@@ -47,7 +47,8 @@ const cli = sentryInit({
     "ECONNRESET",
     "getaddrinfo",
     "other side closed",
-    'Could not load the "sharp"'
+    'Could not load the "sharp"', // container complaining about sharp for no reason before :pensive:
+    "GatewayRateLimitError"
   ],
 
   integrations: [
