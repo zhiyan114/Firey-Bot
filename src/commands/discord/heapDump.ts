@@ -99,11 +99,11 @@ export class heapDump extends baseCommand {
           embeds: [generateMemUsageEmbed()]
         } satisfies InteractionReplyOptions;
 
-        const fileSize = statSync(fileName).size;
-        if(fileSize < 10 * 1000 * 1000) {
+        const zipFileSize = statSync(outputName).size;
+        if(zipFileSize < 10 * 1000 * 1000) {
           // Discord Attachment
           followUpData.files.push(new AttachmentBuilder(`./${outputName}`, { name: outputName }));
-        } else if(fileSize < 100 * 1000 * 1000) {
+        } else if(zipFileSize < 100 * 1000 * 1000) {
           // Sentry Attachment
           scope.addAttachment({
             data: readFileSync(outputName),
