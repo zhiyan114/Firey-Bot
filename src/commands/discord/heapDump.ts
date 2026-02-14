@@ -140,7 +140,7 @@ function generateMemUsageEmbed() {
   const memUsage = process.memoryUsage();
   return new EmbedBuilder()
     .setTitle("Node Memory Usage")
-    .setDescription(`Heap Usage: ${((memUsage.heapUsed/memUsage.heapTotal)*2).toFixed(2)}%`)
+    .setDescription(`Heap Usage: ${((memUsage.heapUsed/memUsage.heapTotal)*100).toFixed(2)}%`)
     .setFields([
       { name: "RSS", value: numToByteSizeStr(memUsage.rss) },
       { name: "Heap Total", value: numToByteSizeStr(memUsage.heapTotal) },
