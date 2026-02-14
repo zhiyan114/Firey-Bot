@@ -1,6 +1,6 @@
 import type { ChatInputCommandInteraction, InteractionReplyOptions } from "discord.js";
 import type { DiscordClient } from "../../core/DiscordClient";
-import { AttachmentBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { writeSnapshot } from "heapdump";
 import { captureException, captureMessage, withScope } from "@sentry/node-core";
@@ -22,10 +22,20 @@ export class heapDump extends baseCommand {
     this.client = client;
     this.metadata
       .setName("heapdump")
-      .setDescription("Request NodeJS Heap Dump (DevTool)");
+      .setDescription("Request NodeJS Heap Dump (DevTool)")
+      .addBooleanOption(opt=>
+        opt.setName("memsizeonly")
+          .setDescription("Only pull node memory usage (not heapdumping)")
+      );
   }
 
   async execute(interaction: ChatInputCommandInteraction) {
+    const memSizeOnly = interaction.options.get("memsizeonly", false)?.value as boolean | undefined;
+    if(memSizeOnly) {
+      return await interaction.reply({
+        embeds: [generateMemUsageEmbed()]
+      });
+    }
     await withScope(async (scope) => {
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
@@ -85,13 +95,14 @@ export class heapDump extends baseCommand {
           content: `Heap dump created successfully.`,
           flags: MessageFlags.Ephemeral,
           files: [] as AttachmentBuilder[],
+          embeds: [generateMemUsageEmbed()]
         } satisfies InteractionReplyOptions;
 
         const fileSize = statSync(fileName).size;
-        if(fileSize < 25 * 1024 * 1024) {
+        if(fileSize < 10 * 1000 * 1000) {
           // Discord Attachment
           followUpData.files.push(new AttachmentBuilder(`./${outputName}`, { name: outputName }));
-        } else if(fileSize < 100 * 1024 * 1024) {
+        } else if(fileSize < 100 * 1000 * 1000) {
           // Sentry Attachment
           scope.addAttachment({
             data: readFileSync(outputName),
@@ -112,4 +123,28 @@ export class heapDump extends baseCommand {
 
     });
   }
+}
+
+const sizeTable = ["bytes", "KB", "MB", "GB", "TB", "PB", "?????"];
+function numToByteSizeStr(value: number) {
+  let sizeUnitIndex = 0;
+  while (value > 1000) {
+    value /= 1000;
+    sizeUnitIndex++;
+  }
+  return `${value.toFixed(2)} ${sizeTable[sizeUnitIndex]}`;
+}
+
+function generateMemUsageEmbed() {
+  const memUsage = process.memoryUsage();
+  return new EmbedBuilder()
+    .setTitle("Node Memory Usage")
+    .setDescription(`Heap Usage: ${((memUsage.heapUsed/memUsage.heapTotal)*2).toFixed(2)}%`)
+    .setFields([
+      { name: "RSS", value: numToByteSizeStr(memUsage.rss) },
+      { name: "Heap Total", value: numToByteSizeStr(memUsage.heapTotal) },
+      { name: "Heap Used", value: numToByteSizeStr(memUsage.heapUsed) },
+      { name: "External", value: numToByteSizeStr(memUsage.external) },
+      { name: "Array Buffers", value: numToByteSizeStr(memUsage.arrayBuffers) }
+    ]);
 }
