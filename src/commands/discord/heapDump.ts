@@ -26,6 +26,7 @@ export class heapDump extends baseCommand {
       .addBooleanOption(opt=>
         opt.setName("memsizeonly")
           .setDescription("Only pull node memory usage (not heapdumping)")
+          .setRequired(false)
       );
   }
 
