@@ -34,7 +34,8 @@ export class heapDump extends baseCommand {
     const memSizeOnly = interaction.options.get("memsizeonly", false)?.value as boolean | undefined;
     if(memSizeOnly) {
       return await interaction.reply({
-        embeds: [generateMemUsageEmbed()]
+        embeds: [generateMemUsageEmbed()],
+        flags: MessageFlags.Ephemeral
       });
     }
     await withScope(async (scope) => {
