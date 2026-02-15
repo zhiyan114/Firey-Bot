@@ -22,6 +22,10 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 #        cache: 'npm'
+    - name: Setup FlyIO
+      uses: superfly/flyctl-actions/setup-flyctl@master
+    - name: Validate flyio conf
+      run: fly config validate
     - name: install package
       run: npm ci
     - name: High Vulnerability Audit
