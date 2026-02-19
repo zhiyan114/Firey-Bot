@@ -52,6 +52,7 @@ export class unverifyKickLoader {
       const guild = this.client.guilds.cache.get(guildID);
       if(!guild) throw Error("[Service unverifyKick]: Supplied guild ID is not valid");
 
+      // System is for anti-bot purpose, so users having role is sufficient enough...
       const noRoleUsers = (await guild.members.fetch())?.filter(m=>m.roles.cache.size === 1);
       if(noRoleUsers.size === 0) return;
 
