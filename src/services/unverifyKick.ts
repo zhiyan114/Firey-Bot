@@ -2,7 +2,7 @@ import type { GuildMember } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { EmbedBuilder } from "discord.js";
 import { CronJob } from "cron";
-import { captureCheckIn, captureException, cron } from "@sentry/node-core";
+import { captureException, cron } from "@sentry/node-core";
 import { createHash } from "crypto";
 import { guildID } from "../config.json";
 import { sendLog } from "../utils/eventLogger";
@@ -43,8 +43,6 @@ export class unverifyKickLoader {
 
   // Check if users is no longer in grace period and kick
   async checkAndKick() {
-    let exeError = false;
-
     try {
       const guild = this.client.guilds.cache.get(guildID);
       if(!guild) throw Error("[Service unverifyKick]: Supplied guild ID is not valid");
@@ -71,12 +69,10 @@ export class unverifyKickLoader {
           message: `**${member.user.username}** have been kicked from the server for not confirming the rules within 24 hours`
         });
       }
-
     } catch(ex) {
       captureException(ex, {
-        tags: { handled: "no" }
+        mechanism: { handled: false }
       });
-      exeError = true;
     }
   }
 }
