@@ -59,17 +59,14 @@ export class DiscordInvite {
      * @param channel The channel to check
      * @returns whether the channel is eligible or not
      */
-  private isInviteChannel(channel?: Channel | null) {
+  private isInviteChannel(channel?: Channel | null): boolean {
     if(!channel) return false;
 
-    const validChannel = [
+    return [
       ChannelType.GuildText,
       ChannelType.GuildVoice,
       ChannelType.GuildAnnouncement
-    ].find(ch=> ch === channel.type);
-
-    if(!validChannel) return false;
-    return true;
+    ].find(ch=> ch === channel.type) !== undefined;
   }
 
   /**

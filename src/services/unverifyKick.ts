@@ -1,8 +1,8 @@
 import type { GuildMember } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { EmbedBuilder } from "discord.js";
-import { schedule } from "node-cron";
-import { captureCheckIn, captureException } from "@sentry/node-core";
+import { CronJob } from "cron";
+import { captureException, cron } from "@sentry/node-core";
 import { createHash } from "crypto";
 import { guildID } from "../config.json";
 import { sendLog } from "../utils/eventLogger";
@@ -31,7 +31,8 @@ export class unverifyKickLoader {
     this.client.on('guildMemberAdd', this.setGracePeriod.bind(this));
 
     // Set cronjob to check every 5 minutes
-    schedule("*/5 * * * *", this.checkAndKick.bind(this));
+    new (cron.instrumentCron(CronJob, "unverifykick-service"))
+    ("*/5 * * * *", this.checkAndKick.bind(this), null, true);
 
   }
 
@@ -42,16 +43,11 @@ export class unverifyKickLoader {
 
   // Check if users is no longer in grace period and kick
   async checkAndKick() {
-    const checkInId = captureCheckIn({
-      monitorSlug: "unverifykick-service",
-      status: "in_progress",
-    });
-    let exeError = false;
-
     try {
       const guild = this.client.guilds.cache.get(guildID);
       if(!guild) throw Error("[Service unverifyKick]: Supplied guild ID is not valid");
 
+      // System is for anti-bot purpose, so users having role is sufficient enough...
       const noRoleUsers = (await guild.members.fetch())?.filter(m=>m.roles.cache.size === 1);
       if(noRoleUsers.size === 0) return;
 
@@ -73,19 +69,10 @@ export class unverifyKickLoader {
           message: `**${member.user.username}** have been kicked from the server for not confirming the rules within 24 hours`
         });
       }
-
     } catch(ex) {
       captureException(ex, {
-        tags: { handled: "no" }
+        mechanism: { handled: false }
       });
-      exeError = true;
-    } finally {
-      if(checkInId)
-        captureCheckIn({
-          monitorSlug: "unverifykick-service",
-          status: exeError === true ? "error" : "ok",
-          checkInId,
-        });
     }
   }
 }

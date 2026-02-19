@@ -63,8 +63,7 @@ export class DiscordUser {
     */
   public async isVerified() {
     // check to see if the user is already in the discord server and has the said role.
-    if((await this.getCacheData())?.rulesconfirmedon) return true;
-    return false;
+    return (await this.getCacheData())?.rulesconfirmedon !== undefined;
   }
 
   /**

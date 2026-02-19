@@ -192,14 +192,9 @@ export const clearTwitchCache = async (redis: Redis) => {
     return;
 
   let oldCursor = "0";
-  while(true) {
-    // get all the values
+  do {
     const [cursor,keys] = await redis.scan(oldCursor, "MATCH", "twchuser:*", "COUNT", "1000");
-    // Delete or Unlink all the items
     for(const key of keys) await redis.unlink(key);
-    // scan has been completed
-    if(cursor === "0") break;
-    // scan not completed, assign the new cursor
     oldCursor = cursor;
-  }
+  } while(oldCursor !== "0");
 };
