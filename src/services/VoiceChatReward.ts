@@ -167,15 +167,18 @@ export class VoiceChatReward {
     return state;
   }
 
+  // VoiceChat Algo
   private GV_userEligible(member: GuildMember): boolean {
     const vState = member.voice;
-    if(member.user.bot) return false; // Bots are not allowed to earn points
-    if(!vState.channel) return false; // Must be in a voice channel (edge case checks ig)
-    if(vState.mute) return false; // Must not be muted
-    if(vState.deaf) return false; // Must not be deafened
-    return true; // User is eligible to earn points
+    return (
+      !member.user.bot &&
+      vState.channel !== null &&
+      !vState.mute &&
+      !vState.deaf
+    );
   }
 
+  // StageChat Algo
   private GS_userEligible(member: GuildMember): boolean {
     const vState = member.voice;
     if(member.user.bot) return false; // Bots are not allowed to earn points
