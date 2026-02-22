@@ -45,6 +45,8 @@ export class DiscordCommandHandler {
   public async commandRegister() {
     if(!process.env["CLIENTID"])
       throw Error("Missing CLIENTID as env variable");
+    if(!process.env["BOTTOKEN"])
+      throw Error("Missing BOTTOKEN as env variable");
 
     // Check if the command is out-of-date
     const oldHash = await this.client.service.prisma.config.findUnique({
@@ -57,7 +59,7 @@ export class DiscordCommandHandler {
       return;
 
     // Command out-of-date, register it
-    await new REST({ version: "10" }).setToken(process.env["BOTTOKEN"]!)
+    await new REST({ version: "10" }).setToken(process.env["BOTTOKEN"])
       .put(
         Routes.applicationCommands(process.env["CLIENTID"]),
         {
