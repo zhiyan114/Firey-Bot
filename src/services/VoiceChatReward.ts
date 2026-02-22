@@ -87,7 +87,12 @@ export class VoiceChatReward {
     this.userTable.delete(member.id);
 
     // Cache-locking to prevent RC to duplicate reward (fast join-leave-join)
-    try { this.cacheLock.set(member.id, true); await tableUser.computeReward(); }
+    try {
+      this.cacheLock.set(member.id, true);
+      await tableUser.user.service.redis.del(tableUser.user.getRedisKey(cacheName));
+      this.cacheLock.delete(member.id);
+      await tableUser.computeReward();
+    }
     catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     finally { this.cacheLock.delete(member.id); }
   };
@@ -229,7 +234,6 @@ class _internalUser {
 
     // Grant points and clean the cache
     await this.user.economy.grantPoints(points);
-    await this.user.service.redis.del(this.user.getRedisKey(cacheName));
   }
 };
 
