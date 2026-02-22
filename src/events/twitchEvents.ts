@@ -3,7 +3,7 @@ import type { TwitchClient } from "../core/TwitchClient";
 import { baseEvent } from "../core/baseEvent";
 import { TwitchUser } from "../utils/TwitchUser";
 import { processCommand } from "./helper/TwitchCommandHandler";
-import { captureException, withIsolationScope } from "@sentry/node-core";
+import { captureException, startNewTrace, withIsolationScope } from "@sentry/node-core";
 import { randomUUID } from "crypto";
 import type { DiscordClient } from "../core/DiscordClient";
 
@@ -24,7 +24,7 @@ export class TwitchEvents extends baseEvent {
   private async onMessage(channel: string, userstate: ChatUserstate, message: string, self: boolean) {
     if(self) return;
 
-    await withIsolationScope(async (scope) => {
+    startNewTrace(() => withIsolationScope(async (scope) => {
       const sessionID = randomUUID();
       scope.setAttribute("SessionID", sessionID)
         .setTag("SessionID", sessionID);
@@ -72,6 +72,6 @@ export class TwitchEvents extends baseEvent {
         captureException(ex, { mechanism: { handled: false } });
         this.client.say(channel, `@${userstate.username ?? "unknown"} command execution failed :{ (SessionID: ${sessionID})`);
       }
-    });
+    }));
   }
 }

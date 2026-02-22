@@ -5,7 +5,7 @@
 import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
-import { captureException, captureMessage, logger, withIsolationScope } from "@sentry/node-core";
+import { captureException, captureMessage, logger, startNewTrace, withIsolationScope } from "@sentry/node-core";
 import { guildID, adminRoleID, newUserRoleID } from "../config.json";
 
 const cacheName = "VCReward";
@@ -42,7 +42,7 @@ export class VoiceChatReward {
     const member = newState.member ?? oldState.member;
     if(!member || member.user.bot) return;
 
-    await withIsolationScope(async scope => {
+    startNewTrace(() => withIsolationScope(async scope => {
       try {
         scope.setUser({
           id: member.user.id,
@@ -65,7 +65,7 @@ export class VoiceChatReward {
       } catch (err) {
         captureException(err);
       }
-    });
+    }));
   };
 
   private async joinChannel(member: GuildMember) {
@@ -86,7 +86,7 @@ export class VoiceChatReward {
   };
 
   private async onTick() {
-    await withIsolationScope(async scope => {
+    startNewTrace(() => withIsolationScope(async scope => {
       try {
         const users = this.userTable.values();
         for(const user of users) {
@@ -124,7 +124,7 @@ export class VoiceChatReward {
 
         this.chEligible.clear();
       } catch (err) { captureException(err); }
-    });
+    }));
   }
 
   private ChannelEligible(channel: VoiceBasedChannel): boolean {
