@@ -5,7 +5,7 @@
 import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
-import { captureException, captureMessage, logger, startNewTrace, withIsolationScope } from "@sentry/node-core";
+import { captureException, logger, startNewTrace, withIsolationScope } from "@sentry/node-core";
 import { guildID, adminRoleID, newUserRoleID } from "../config.json";
 
 const cacheName = "VCReward";
@@ -51,10 +51,10 @@ export class VoiceChatReward {
           isVerified: member.roles.cache.some(r=>r.id === newUserRoleID)
         });
 
-        if(oldState.channel === null && newState.channel !== null)
+        if(!oldState.channel && newState.channel)
           return await this.joinChannel(member);
 
-        if(oldState.channel !== null && newState.channel === null)
+        if(oldState.channel && !newState.channel)
           return await this.leaveChannel(member);
 
         // Update member object
@@ -70,7 +70,7 @@ export class VoiceChatReward {
 
   private async joinChannel(member: GuildMember) {
     if(this.userTable.delete(member.id))
-      captureMessage("userTable failed to clear correctly", "error");
+      return logger.warn(logger.fmt`[VoiceChatReward]: User ${member.user.tag} already exist in user mapping, but`);
 
     const user = new _internalUser(member, new DiscordUser(this.client, member.user));
     this.userTable.set(member.id, user);
@@ -80,9 +80,9 @@ export class VoiceChatReward {
   private async leaveChannel(member: GuildMember) {
     const tableUser = this.userTable.get(member.id);
     if(!tableUser)
-      return captureMessage("User missing from userTable, but leaveChannel Invoked", "error");
-    await tableUser.computeReward();
+      return console.warn(logger.fmt`[VoiceChatReward]: User ${member.user.tag} left voice channel, but no existing records are found?`);
     this.userTable.delete(member.id);
+    await tableUser.computeReward();
   };
 
   private onTick = async () => {
