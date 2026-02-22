@@ -127,9 +127,9 @@ export class VoiceChatReward {
           // Check eligibility
           if(this.ChannelEligible(channel)) {
             if(channel.type === ChannelType.GuildVoice && !this.GV_userEligible(user.member))
-              return;
+              continue;
             if(channel.type === ChannelType.GuildStageVoice && !this.GS_userEligible(user.member))
-              return;
+              continue;
 
             await user.tick();
           }
