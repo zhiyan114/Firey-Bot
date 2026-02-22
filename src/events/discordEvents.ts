@@ -66,7 +66,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async createCommand(interaction: Interaction) {
-    startNewTrace(() => withIsolationScope(async (scope) => {
+    await startNewTrace(async () => await withIsolationScope(async (scope) => {
       const requestID = randomUUID();
       scope.setAttributes({
         "platform": "discord",
@@ -99,7 +99,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async messageCreate(message: Message) {
-    startNewTrace(() => withIsolationScope(async (scope) => {
+    await startNewTrace(async () => await withIsolationScope(async (scope) => {
       try {
         scope.setUser({
           id: message.author.id,
@@ -130,7 +130,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async guildMemberAdd(member: GuildMember) {
-    startNewTrace(() => withIsolationScope(async (scope) => {
+    await startNewTrace(async () => await withIsolationScope(async (scope) => {
       try {
         scope.setUser({
           id: member.user.id,
@@ -182,7 +182,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async userUpdate(oldUser: User | PartialUser, newUser: User) {
-    startNewTrace(() => withIsolationScope(async (scope) => {
+    await startNewTrace(async () => await withIsolationScope(async (scope) => {
       scope.setUser({
         id: newUser.id,
         username: newUser.username,
@@ -227,7 +227,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async voiceStateUpdate(old: VoiceState, now: VoiceState) {
-    startNewTrace(() => withIsolationScope(async (scope) => {
+    await startNewTrace(async () => await withIsolationScope(async (scope) => {
       try {
         scope.setUser({
           id: now.member?.user.id,
@@ -285,7 +285,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private guildDelete(guild: Guild) {
-    startNewTrace(() => withIsolationScope(async scope =>{
+    startNewTrace(() => withIsolationScope(scope =>{
       scope
         .setAttributes({
           platform: "discord",

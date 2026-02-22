@@ -24,7 +24,7 @@ export class TwitchEvents extends baseEvent {
   private async onMessage(channel: string, userstate: ChatUserstate, message: string, self: boolean) {
     if(self) return;
 
-    startNewTrace(() => withIsolationScope(async (scope) => {
+    await startNewTrace(async () => await withIsolationScope(async (scope) => {
       const sessionID = randomUUID();
       scope.setAttribute("SessionID", sessionID)
         .setTag("SessionID", sessionID);
