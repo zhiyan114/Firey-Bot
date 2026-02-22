@@ -14,7 +14,7 @@ import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VertificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
-import { captureException, logger, withIsolationScope } from "@sentry/node-core";
+import { captureException, logger, withIsolationScope, startNewTrace } from "@sentry/node-core";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
@@ -66,7 +66,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async createCommand(interaction: Interaction) {
-    return await withIsolationScope(async (scope) => {
+    await startNewTrace(async () => await withIsolationScope(async (scope) => {
       const requestID = randomUUID();
       scope.setAttributes({
         "platform": "discord",
@@ -95,11 +95,11 @@ export class DiscordEvents extends baseEvent {
           if(interaction.customId === "RuleConfirm")
             return await VertificationHandler(this.client, interaction);
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-    });
+    }));
   }
 
   private async messageCreate(message: Message) {
-    await withIsolationScope(async (scope) => {
+    await startNewTrace(async () => await withIsolationScope(async (scope) => {
       try {
         scope.setUser({
           id: message.author.id,
@@ -126,11 +126,11 @@ export class DiscordEvents extends baseEvent {
         // Grant points
         await (new DiscordUser(this.client.service, message.author)).economy.chatRewardPoints(message.content);
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-    });
+    }));
   }
 
   private async guildMemberAdd(member: GuildMember) {
-    await withIsolationScope(async (scope) => {
+    await startNewTrace(async () => await withIsolationScope(async (scope) => {
       try {
         scope.setUser({
           id: member.user.id,
@@ -178,11 +178,11 @@ export class DiscordEvents extends baseEvent {
         const BannerBuff = await (new BannerPic()).generate(user.username, member.user.displayAvatarURL({ size: 512, extension: "png" }));
         await channel.send({ files: [BannerBuff] });
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-    });
+    }));
   }
 
   private async userUpdate(oldUser: User | PartialUser, newUser: User) {
-    await withIsolationScope(async (scope) => {
+    await startNewTrace(async () => await withIsolationScope(async (scope) => {
       scope.setUser({
         id: newUser.id,
         username: newUser.username,
@@ -219,7 +219,7 @@ export class DiscordEvents extends baseEvent {
           displayName,
         });
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-    });
+    }));
   }
 
   private guildMemberRemove() {
@@ -227,7 +227,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async voiceStateUpdate(old: VoiceState, now: VoiceState) {
-    await withIsolationScope(async (scope) => {
+    await startNewTrace(async () => await withIsolationScope(async (scope) => {
       try {
         scope.setUser({
           id: now.member?.user.id,
@@ -281,11 +281,11 @@ export class DiscordEvents extends baseEvent {
         });
         await channel.send({ embeds: [embed] });
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-    });
+    }));
   }
 
   private guildDelete(guild: Guild) {
-    withIsolationScope(async scope =>{
+    startNewTrace(() => withIsolationScope(scope =>{
       scope
         .setAttributes({
           platform: "discord",
@@ -302,6 +302,6 @@ export class DiscordEvents extends baseEvent {
         return logger.warn(logger.fmt`Bot was removed from unauthorized guild!`);
 
       return logger.error("Bot was removed from primary guild!");
-    });
+    }));
   }
 }
