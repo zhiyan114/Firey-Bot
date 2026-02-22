@@ -24,8 +24,6 @@ jobs:
 #        cache: 'npm'
     - name: install package
       run: npm ci
-    - name: High Vulnerability Audit
-      run: npm audit --audit-level high
     - name: lint check
       run: npm run lint:check
     - name: Prisma Checker
@@ -34,6 +32,8 @@ jobs:
       run: npm run build:check
     - name: Unit Test
       run: npm run test
+    - name: High Vulnerability Audit
+      run: npm audit --audit-level high
 
   # Build docker image
   DockerTest:
