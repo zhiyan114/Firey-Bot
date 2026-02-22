@@ -72,7 +72,7 @@ export class VoiceChatReward {
 
   private async joinChannel(member: GuildMember) {
     if(this.userTable.delete(member.id))
-      return logger.warn(logger.fmt`[VoiceChatReward]: User ${member.user.tag} already exist in user mapping, but`);
+      return logger.warn(logger.fmt`[VoiceChatReward]: User ${member.user.tag} already exist in user mapping, but user just join the voice channel?`);
 
     const user = new _internalUser(member, new DiscordUser(this.client, member.user));
     this.userTable.set(member.id, user);
