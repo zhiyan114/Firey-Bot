@@ -87,6 +87,7 @@ export class VoiceChatReward {
     this.userTable.delete(member.id);
 
     // Cache-locking to prevent RC to duplicate reward (fast join-leave-join)
+    // Redis cache is only used to load in existing progress when software updates, not used by computeReward
     try {
       this.cacheLock.set(member.id, true);
       await tableUser.user.service.redis.del(tableUser.user.getRedisKey(cacheName));
@@ -226,7 +227,7 @@ class _internalUser {
   }
 
   public async computeReward() {
-    const rewardCount = Math.floor(this.secCounted / (600)); // RNG points per 10 minutes
+    const rewardCount = Math.floor(this.secCounted / 600); // RNG points per 10 minutes
     let points = 0;
     // Grant 7-11 points per rewardCount
     for(let i = 0; i < rewardCount; i++)
