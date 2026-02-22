@@ -5,7 +5,7 @@
 import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
-import { captureException, captureMessage, logger, startNewTrace, withIsolationScope } from "@sentry/node-core";
+import { captureException, logger, startNewTrace, withIsolationScope } from "@sentry/node-core";
 import { guildID, adminRoleID, newUserRoleID } from "../config.json";
 
 const cacheName = "VCReward";
@@ -14,10 +14,12 @@ const cacheName = "VCReward";
 export class VoiceChatReward {
   private userTable: Map<string, _internalUser>;
   private chEligible: Map<string, boolean>;
+  private cacheLock: Map<string, boolean>;
   constructor(private client: DiscordClient) {
     this.client = client;
     this.userTable = new Map<string, _internalUser>();
     this.chEligible = new Map<string, boolean>(); // Store status if the given voice channel have at least 2 non-bot users
+    this.cacheLock = new Map<string, boolean>(); // Prevent user from loading redis cache value while reward is being computed
   };
 
   public async init() {
@@ -51,10 +53,10 @@ export class VoiceChatReward {
           isVerified: member.roles.cache.some(r=>r.id === newUserRoleID)
         });
 
-        if(oldState.channel === null && newState.channel !== null)
+        if(!oldState.channel && newState.channel)
           return await this.joinChannel(member);
 
-        if(oldState.channel !== null && newState.channel === null)
+        if(oldState.channel && !newState.channel)
           return await this.leaveChannel(member);
 
         // Update member object
@@ -70,19 +72,30 @@ export class VoiceChatReward {
 
   private async joinChannel(member: GuildMember) {
     if(this.userTable.delete(member.id))
-      captureMessage("userTable failed to clear correctly", "error");
+      logger.warn(logger.fmt`[VoiceChatReward]: User ${member.user.tag} already exist in user mapping, but user just join the voice channel?`);
 
     const user = new _internalUser(member, new DiscordUser(this.client, member.user));
     this.userTable.set(member.id, user);
-    await user.loadCache();
+    if(!this.cacheLock.get(member.id))
+      await user.loadCache();
   }
 
   private async leaveChannel(member: GuildMember) {
     const tableUser = this.userTable.get(member.id);
     if(!tableUser)
-      return captureMessage("User missing from userTable, but leaveChannel Invoked", "error");
-    await tableUser.computeReward();
+      return console.warn(logger.fmt`[VoiceChatReward]: User ${member.user.tag} left voice channel, but no existing records are found?`);
     this.userTable.delete(member.id);
+
+    // Cache-locking to prevent RC to duplicate reward (fast join-leave-join)
+    // Redis cache is only used to load in existing progress when software updates, not used by computeReward
+    try {
+      this.cacheLock.set(member.id, true);
+      await tableUser.user.service.redis.del(tableUser.user.getRedisKey(cacheName));
+      this.cacheLock.delete(member.id);
+      await tableUser.computeReward();
+    }
+    catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
+    finally { this.cacheLock.delete(member.id); }
   };
 
   private onTick = async () => {
@@ -114,9 +127,9 @@ export class VoiceChatReward {
           // Check eligibility
           if(this.ChannelEligible(channel)) {
             if(channel.type === ChannelType.GuildVoice && !this.GV_userEligible(user.member))
-              return;
+              continue;
             if(channel.type === ChannelType.GuildStageVoice && !this.GS_userEligible(user.member))
-              return;
+              continue;
 
             await user.tick();
           }
@@ -124,7 +137,7 @@ export class VoiceChatReward {
 
         this.chEligible.clear();
       } catch (err) { captureException(err, { mechanism: { handled: false } });
-      } finally { setTimeout(this.onTick, 3000); }
+      } finally { setTimeout(this.onTick, 5000); }
     }));
   };
 
@@ -154,7 +167,7 @@ export class VoiceChatReward {
             hasSpeaker = this.GS_userEligible(memchk);
 
           // Find Audience
-          if(memchk.voice.suppress && !memchk.voice.mute)
+          if(memchk.voice.suppress && !memchk.voice.deaf)
             hasAudience = this.GS_userEligible(memchk);
 
           if(hasSpeaker && hasAudience) break; // No need to continue checking
@@ -184,8 +197,7 @@ export class VoiceChatReward {
     const vState = member.voice;
     if(member.user.bot) return false; // Bots are not allowed to earn points
     if(!vState.channel) return false; // Must be in a voice channel (edge case checks ig)
-    if(vState.suppress && vState.mute) return false; // Audience must not be muted
-    return !vState.suppress; // User is a speaker
+    return !vState.suppress || !(vState.suppress && vState.deaf); // User is a speaker (doesnt have to be actively speaking) OR a listening audience
   }
 }
 
@@ -202,8 +214,8 @@ class _internalUser {
 
   public async tick() {
     // Checkpoint every 3 minute
-    this.secCounted += 3;
-    if(this.secCounted % 60 === 0)
+    this.secCounted += 5;
+    if(this.secCounted % 60 === 0 || this.secCounted % 60 < 5)
       await this.user.service.redis.set(this.user.getRedisKey(cacheName), this.secCounted.toString(), "EX", 3600);
   }
 
@@ -215,7 +227,7 @@ class _internalUser {
   }
 
   public async computeReward() {
-    const rewardCount = Math.floor(this.secCounted / (600)); // RNG points per 10 minutes
+    const rewardCount = Math.floor(this.secCounted / 600); // RNG points per 10 minutes
     let points = 0;
     // Grant 7-11 points per rewardCount
     for(let i = 0; i < rewardCount; i++)
@@ -223,7 +235,6 @@ class _internalUser {
 
     // Grant points and clean the cache
     await this.user.economy.grantPoints(points);
-    await this.user.service.redis.del(this.user.getRedisKey(cacheName));
   }
 };
 

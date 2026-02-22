@@ -3,7 +3,7 @@ import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketMana
 import { getClient } from "@sentry/node-core";
 import { DiscordEvents } from "../events";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
-import { unverifyKickLoader, ReactRoleLoader } from "../services";
+import { unverifyKickLoader, ReactRoleLoader, VoiceChatReward } from "../services";
 import { guildID } from '../config.json';
 import type { ServiceClient } from "./ServiceClient";
 import { DiscordInvite } from "./helper/DiscordInvite";
@@ -100,6 +100,7 @@ export class DiscordClient extends Client implements baseClient {
   private async loadServices() {
     await ReactRoleLoader(this);
     await (new unverifyKickLoader(this)).load();
+    await (new VoiceChatReward(this)).init();
   }
 
 }

@@ -1,5 +1,5 @@
 import { DiscordClient } from "./core/DiscordClient";
-import { logger, close } from "@sentry/node-core";
+import { logger, close, startNewTrace } from "@sentry/node-core";
 import { sendLog } from "./utils/eventLogger";
 import { TwitchClient } from "./core/TwitchClient";
 import { YoutubeClient } from "./core/YoutubeClient";
@@ -22,7 +22,7 @@ const CoreClient = new DiscordClient(svcClient);
 const TwitchCli = new TwitchClient(svcClient, CoreClient);
 const YoutubeCli = new YoutubeClient(svcClient, CoreClient);
 
-(async ()=>{
+startNewTrace(async () => {
   // PRE PROCESSING EVENTS
   svcClient.preProcess();
 
@@ -35,7 +35,7 @@ const YoutubeCli = new YoutubeClient(svcClient, CoreClient);
 
   // POST PROCESSING EVENTS HERE
   svcClient.postProcess();
-})();
+});
 
 /**
  * Handle cleanups
