@@ -14,10 +14,12 @@ const cacheName = "VCReward";
 export class VoiceChatReward {
   private userTable: Map<string, _internalUser>;
   private chEligible: Map<string, boolean>;
+  private cacheLock: Map<string, boolean>;
   constructor(private client: DiscordClient) {
     this.client = client;
     this.userTable = new Map<string, _internalUser>();
     this.chEligible = new Map<string, boolean>(); // Store status if the given voice channel have at least 2 non-bot users
+    this.cacheLock = new Map<string, boolean>(); // Prevent user from loading redis cache value while reward is being computed
   };
 
   public async init() {
@@ -74,7 +76,8 @@ export class VoiceChatReward {
 
     const user = new _internalUser(member, new DiscordUser(this.client, member.user));
     this.userTable.set(member.id, user);
-    await user.loadCache();
+    if(!this.cacheLock.get(member.id))
+      await user.loadCache();
   }
 
   private async leaveChannel(member: GuildMember) {
@@ -82,7 +85,11 @@ export class VoiceChatReward {
     if(!tableUser)
       return console.warn(logger.fmt`[VoiceChatReward]: User ${member.user.tag} left voice channel, but no existing records are found?`);
     this.userTable.delete(member.id);
-    await tableUser.computeReward();
+
+    // Cache-locking to prevent RC to duplicate reward (fast join-leave-join)
+    try { this.cacheLock.set(member.id, true); await tableUser.computeReward(); }
+    catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
+    finally { this.cacheLock.delete(member.id); }
   };
 
   private onTick = async () => {
