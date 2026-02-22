@@ -124,7 +124,7 @@ export class VoiceChatReward {
 
         this.chEligible.clear();
       } catch (err) { captureException(err, { mechanism: { handled: false } });
-      } finally { setTimeout(this.onTick, 3000); }
+      } finally { setTimeout(this.onTick, 5000); }
     }));
   };
 
@@ -184,7 +184,7 @@ export class VoiceChatReward {
     const vState = member.voice;
     if(member.user.bot) return false; // Bots are not allowed to earn points
     if(!vState.channel) return false; // Must be in a voice channel (edge case checks ig)
-    return !vState.suppress || !(vState.suppress && vState.deaf); // User is a speaker OR a listening audience
+    return !vState.suppress || !(vState.suppress && vState.deaf); // User is a speaker (doesnt have to be actively speaking) OR a listening audience
   }
 }
 
@@ -201,7 +201,7 @@ class _internalUser {
 
   public async tick() {
     // Checkpoint every 3 minute
-    this.secCounted += 3;
+    this.secCounted += 5;
     if(this.secCounted % 60 === 0)
       await this.user.service.redis.set(this.user.getRedisKey(cacheName), this.secCounted.toString(), "EX", 3600);
   }
