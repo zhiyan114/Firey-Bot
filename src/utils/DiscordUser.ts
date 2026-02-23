@@ -1,7 +1,7 @@
 import type { APIEmbedField, ColorResolvable, User } from "discord.js";
 import { DiscordAPIError, EmbedBuilder } from "discord.js";
 import { APIErrors } from "./discordErrorCode";
-import { captureException } from "@sentry/node-core";
+import { captureException, metrics } from "@sentry/node-core";
 import { Prisma } from "@prisma/client";
 import { createHash } from "crypto";
 import { sendLog } from "./eventLogger";
@@ -393,7 +393,11 @@ class UserEconomy {
     }
 
     // Grant the point
-    await this.grantPoints(this.rngRewardPoints(5,10));
+    const ptVal = this.rngRewardPoints(5,10);
+    await this.grantPoints(ptVal);
+    metrics.count("discord.points.accumulation", ptVal, {
+      attributes: { medium: "text" }
+    });
     return true;
   }
 

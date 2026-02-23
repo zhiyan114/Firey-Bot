@@ -5,7 +5,7 @@
 import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
-import { captureException, logger, startNewTrace, withIsolationScope } from "@sentry/node-core";
+import { captureException, logger, metrics, startNewTrace, withIsolationScope } from "@sentry/node-core";
 import { guildID, adminRoleID, newUserRoleID } from "../config.json";
 
 const cacheName = "VCReward";
@@ -235,6 +235,9 @@ class _internalUser {
 
     // Grant points and clean the cache
     await this.user.economy.grantPoints(points);
+    metrics.count("discord.points.accumulation", points, {
+      attributes: { medium: "voice" }
+    });
   }
 };
 
