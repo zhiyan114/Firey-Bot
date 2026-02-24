@@ -376,6 +376,7 @@ class UserEconomy {
         - longer than 10 characters
         - does not only contain numbers, special character, emoji, or links
         - does not only have repeating characters
+        - Does not only contain ping
       If the user is not eligible, their reward cooldown timer resets while not getting any points
       */
 
@@ -383,9 +384,18 @@ class UserEconomy {
       text.length < 10 || // Length check
       (/^[0-9]+$/g).test(text) || // Number Check
       (/^[^a-zA-Z0-9]+$/g).test(text) || // Special Character check
-      (/^(:[a-zA-Z0-9_]+: ?)+$/g).test(text) || // Emoji check
+      (/^( ?:[a-zA-Z0-9_]+: ?)+$/g).test(text) || // Emoji-only check
+      (/^(?:\p{Extended_Pictographic}|\s|<a?:\w+:\d+>)+$/u).test(text) || // Emoji-only check v2
       (/(.)\1{3,}/g).test(text) || // Repeating character check
-      (/https?:\/\/[^\s]+/g).test(text) // link check
+      (/^(?:<@!?[\d]{17,19}>|<@&[\d]{17,19}>|@everyone|@here|\s)+$/).test(text) || // Ping only
+      (/^(https?:\/\/[^\s]+|\s)+$/i).test(text) || // link only check
+      text // More strict length check
+        .replace(/(\p{Extended_Pictographic}|<a?:\w+:\d+>)/gu, '')
+        .replace(/<@!?[\d]{17,19}>|<@&[\d]{17,19}>|@here|@everyone/g, '')
+        .replace(/https?:\/\/[^\s]+/gi, '')
+        .replace(/<a?:\w+:\d+>/g, '')
+        .replace(/[^a-zA-Z0-9]/g, '')
+        .replace(/\s/g, '').length < 10
     ) {
       await this.user.updateCacheData({
         lastgrantedpoint: new Date()
