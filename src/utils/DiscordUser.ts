@@ -308,7 +308,7 @@ class UserEconomy {
   public rngRewardPoints(min: number, max: number) {
     min = Math.ceil(min);
     max = Math.floor(max);
-    return randomInt(min, max);
+    return randomInt(min, max+1);
   }
 
   /**
