@@ -1,13 +1,11 @@
 import { DiscordUser } from "../../src/utils/DiscordUser";
 import type { User } from "discord.js";
 
-// Mock Sentry to avoid side effects
 jest.mock("@sentry/node-core", () => ({
   captureException: jest.fn(),
   metrics: { count: jest.fn() },
 }));
 
-// Minimal ServiceClient mock with redis & prisma stubs
 const mockService = {
   redis: {
     exists: jest.fn().mockResolvedValue(0),
@@ -26,7 +24,6 @@ const mockService = {
   },
 };
 
-// Minimal discord.js User mock (bot must be false)
 const mockUser = {
   bot: false,
   id: "123456789012345678",
@@ -37,28 +34,24 @@ const mockUser = {
   send: jest.fn(),
 } as unknown as User;
 
-let handler: DiscordUser;
-
-beforeEach(() => {
-  handler = new DiscordUser(mockService as any, mockUser);
-});
-
 describe("chatRewardPoints Eligibility Condition", () => {
-  // Helper: make getCacheData return data with no cooldown
-  function stubCacheReady(points = 100) {
-    jest.spyOn(handler, "getCacheData").mockResolvedValue({
+  let localHandler: DiscordUser;
+  beforeEach(() => {
+    const points = 100;
+    localHandler = new DiscordUser(mockService as any, mockUser);
+
+    jest.spyOn(localHandler, "getCacheData").mockResolvedValue({
       points,
-      lastgrantedpoint: new Date(0), // long past → cooldown satisfied
+      lastgrantedpoint: new Date(0),
     });
-    jest.spyOn(handler, "updateCacheData").mockResolvedValue();
-    // Prevent actual DB call inside grantPoints
+    jest.spyOn(localHandler, "updateCacheData").mockResolvedValue();
     mockService.prisma.members.update.mockResolvedValue({
       points: points + 5,
       lastgrantedpoint: new Date(),
     });
-  }
+  });
 
-  // --- Eligible messages ---
+  /* RegEx Test Case */
   const eligibleCases: [string, string][] = [
     ["normal text message", "Hello everyone, how are you doing today?"],
     ["message with link and enough text", "Check out this cool article https://example.com it explains everything"],
@@ -68,40 +61,6 @@ describe("chatRewardPoints Eligibility Condition", () => {
     ["ping + link + emoji with enough text", "<@!123456789012345678> look at this 😀 https://example.com I think it is really interesting"],
     ["message with role ping and enough text", "<@&123456789012345678> reminder that the event starts tomorrow morning"],
   ];
-
-  it.each(eligibleCases)(
-    "should grant points for %s",
-    async (_label, text) => {
-      stubCacheReady();
-      const result = await handler.economy.chatRewardPoints(text);
-      expect(result).toBe(true);
-    },
-  );
-
-  it("should reject when cooldown has not elapsed", async () => {
-    jest.spyOn(handler, "getCacheData").mockResolvedValue({
-      points: 100,
-      lastgrantedpoint: new Date(), // just now → still on cooldown
-    });
-    jest.spyOn(handler, "updateCacheData").mockResolvedValue();
-    const result = await handler.economy.chatRewardPoints("Hello everyone, how are you doing today?");
-    expect(result).toBe(false);
-  });
-
-  it("should bypass cooldown when ignoreCooldown is true", async () => {
-    stubCacheReady();
-    jest.spyOn(handler, "getCacheData").mockResolvedValue({
-      points: 100,
-      lastgrantedpoint: new Date(), // still on cooldown
-    });
-    const result = await handler.economy.chatRewardPoints(
-      "Hello everyone, how are you doing today?",
-      true, // ignoreCooldown
-    );
-    expect(result).toBe(true);
-  });
-
-  // --- Ineligible messages ---
   const ineligibleCases: [string, string][] = [
     ["too short", "hey"],
     ["numbers only", "1234567890"],
@@ -117,19 +76,47 @@ describe("chatRewardPoints Eligibility Condition", () => {
     ["short real text buried in noise", "<:ok:123456789012345678> 🎉 hi <@!123456789012345678> https://x.com"],
   ];
 
+  it.each(eligibleCases)(
+    "should grant points for %s",
+    async (_label, text) => {
+      const result = await localHandler.economy.chatRewardPoints(text);
+      expect(result).toBe(true);
+    });
+
   it.each(ineligibleCases)(
     "should reject message that is %s",
     async (_label, text) => {
-      stubCacheReady();
-      const result = await handler.economy.chatRewardPoints(text);
+      const result = await localHandler.economy.chatRewardPoints(text);
       expect(result).toBe(false);
-      expect(handler.updateCacheData).toHaveBeenCalled();
-    },
-  );
+      expect(localHandler.updateCacheData).toHaveBeenCalled();
+    });
+
+  /* General behavior test case */
+  it("should reject when cooldown has not elapsed", async () => {
+    jest.spyOn(localHandler, "getCacheData").mockResolvedValue({
+      points: 100,
+      lastgrantedpoint: new Date(), // cache return cooldown
+    });
+    jest.spyOn(localHandler, "updateCacheData").mockResolvedValue();
+    const result = await localHandler.economy.chatRewardPoints("Hello everyone, how are you doing today?");
+    expect(result).toBe(false);
+  });
+
+  it("should bypass cooldown when ignoreCooldown is true", async () => {
+    jest.spyOn(localHandler, "getCacheData").mockResolvedValue({
+      points: 100,
+      lastgrantedpoint: new Date(), // cache return cooldown
+    });
+    const result = await localHandler.economy.chatRewardPoints(
+      "Hello everyone, how are you doing today?",
+      true,
+    );
+    expect(result).toBe(true);
+  });
 
   it("should return false when getCacheData returns undefined", async () => {
-    jest.spyOn(handler, "getCacheData").mockResolvedValue(undefined);
-    const result = await handler.economy.chatRewardPoints("Hello everyone, how are you today?");
+    jest.spyOn(localHandler, "getCacheData").mockResolvedValue(undefined);
+    const result = await localHandler.economy.chatRewardPoints("Hello everyone, how are you today?");
     expect(result).toBe(false);
   });
 });
