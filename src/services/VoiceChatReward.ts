@@ -228,6 +228,8 @@ class _internalUser {
 
   public async computeReward() {
     const rewardCount = Math.floor(this.secCounted / 600); // RNG points per 10 minutes
+    if(rewardCount === 0) return;
+
     let points = 0;
     // Grant 7-11 points per rewardCount
     for(let i = 0; i < rewardCount; i++)
@@ -236,7 +238,7 @@ class _internalUser {
     // Grant points and clean the cache
     await this.user.economy.grantPoints(points);
     metrics.count("discord.points.accumulation", points, {
-      attributes: { medium: "voice" }
+      attributes: { medium: "voice", accTime: this.secCounted }
     });
   }
 };
