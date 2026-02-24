@@ -101,6 +101,11 @@ export class DiscordEvents extends baseEvent {
   private async messageCreate(message: Message) {
     await startNewTrace(async () => await withIsolationScope(async (scope) => {
       try {
+        // Channel Checks
+        if(message.author.bot) return;
+        const channel = message.channel;
+        if(channel.type !== ChannelType.GuildText) return;
+
         scope.setUser({
           id: message.author.id,
           username: message.author.username,
@@ -111,13 +116,9 @@ export class DiscordEvents extends baseEvent {
           "eventType": "messageCreate"
         }).setAttributes({
           "platform": "discord",
-          "eventType": "messageCreate"
+          "eventType": "messageCreate",
+          channelName: channel.name,
         });
-
-        // Channel Checks
-        if(message.author.bot) return;
-        const channel = message.channel;
-        if(channel.type !== ChannelType.GuildText) return;
 
         // Place where user wont be awarded with points
         if(noPoints.channel.length > 0 && noPoints.channel.find(c=>c===channel.id)) return;

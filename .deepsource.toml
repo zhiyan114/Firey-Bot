@@ -3,7 +3,8 @@ version = 1
 exclude_patterns = [
   "src/utils/youtube-notifier/**",
   "build.mjs",
-  "jest.config.js"
+  "jest.config.js",
+  "__tests__/**"
 ]
 
 [[analyzers]]

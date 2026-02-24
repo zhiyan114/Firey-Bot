@@ -2,13 +2,7 @@ import { DiscordCommandHandler } from '../../src/events/helper/DiscordCommandHan
 import { SlashCommandBuilder, SlashCommandOptionsOnlyBuilder } from 'discord.js';
 
 const mockClient = jest.fn().mockImplementation(() => {
-  return {
-    config: {
-      guildID: '123456789012345678',
-      adminRoleID: '987654321098765432',
-      newUserRoleID: '112233445566778899',
-    }
-  }
+  return {}
 });
 const handler = new DiscordCommandHandler(mockClient());
 
