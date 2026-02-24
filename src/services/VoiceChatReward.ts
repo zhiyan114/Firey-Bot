@@ -238,7 +238,7 @@ class _internalUser {
     // Grant points and clean the cache
     await this.user.economy.grantPoints(points);
     metrics.count("discord.points.accumulation", points, {
-      attributes: { medium: "voice" }
+      attributes: { medium: "voice", accTime: this.secCounted }
     });
   }
 };
