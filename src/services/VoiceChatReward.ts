@@ -35,8 +35,8 @@ export class VoiceChatReward {
           await this.joinChannel(member);
 
     // Bind the events
-    this.onTick();
     this.client.on("voiceStateUpdate", this.voiceStateUpdate.bind(this));
+    this.onTick();
     logger.debug(logger.fmt`[VoiceChatReward]: VoiceChatReward Service Initialized (total users loaded: ${this.userTable.size})`);
   }
 
