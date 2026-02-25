@@ -163,11 +163,11 @@ export class VoiceChatReward {
         let hasAudience = false;
         for(const [,memchk] of channel.members) {
           // Find Speaker
-          if(!memchk.voice.suppress)
+          if(!memchk.voice.suppress && !hasSpeaker)
             hasSpeaker = this.GS_userEligible(memchk);
 
           // Find Audience
-          if(memchk.voice.suppress && !memchk.voice.deaf)
+          if(memchk.voice.suppress && !memchk.voice.deaf && !hasAudience)
             hasAudience = this.GS_userEligible(memchk);
 
           if(hasSpeaker && hasAudience) break; // No need to continue checking
@@ -197,7 +197,7 @@ export class VoiceChatReward {
     const vState = member.voice;
     if(member.user.bot) return false; // Bots are not allowed to earn points
     if(!vState.channel) return false; // Must be in a voice channel (edge case checks ig)
-    return !vState.suppress || !(vState.suppress && vState.deaf); // User is a speaker (doesnt have to be actively speaking) OR a listening audience
+    return !vState.suppress || !vState.deaf; // User is a speaker (doesnt have to be actively speaking) OR a listening audience
   }
 }
 
