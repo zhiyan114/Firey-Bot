@@ -26,6 +26,7 @@ export async function initialize(channel: Channel) {
   if(!(channel instanceof TextChannel))
     throw new Error("[Logger]: Attempted to initialize log channel with a non-text channel");
   _channel = channel;
+
   // Send all the queued logs
   let data;
   while((data = _logQueues.pop()))
@@ -35,11 +36,8 @@ export async function initialize(channel: Channel) {
 
 export async function sendLog(log: LogData) {
   // Queue the log if the channel is not initialized
-  if(!_channel) {
-    logger.debug(logger.fmt`Log added to pre-initialization queue: ${log.message}`);
-    _logQueues.push(log);
-    return;
-  }
+  if(!_channel)
+    return _logQueues.push(log);
 
   // Send the log
   await _channel.send({

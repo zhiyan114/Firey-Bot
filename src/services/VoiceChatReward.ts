@@ -83,7 +83,7 @@ export class VoiceChatReward {
   private async leaveChannel(member: GuildMember) {
     const tableUser = this.userTable.get(member.id);
     if(!tableUser)
-      return console.warn(logger.fmt`[VoiceChatReward]: User ${member.user.tag} left voice channel, but no existing records are found?`);
+      return logger.warn(logger.fmt`[VoiceChatReward]: User ${member.user.tag} left voice channel, but no existing records are found?`);
     this.userTable.delete(member.id);
 
     // Cache-locking to prevent RC to duplicate reward (fast join-leave-join)
