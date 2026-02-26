@@ -216,7 +216,7 @@ class _internalUser {
     // Checkpoint every 3 minute
     this.secCounted += 5;
     if(this.secCounted % 60 === 0 || this.secCounted % 60 < 5)
-      await this.user.service.redis.set(this.user.getRedisKey(cacheName), this.secCounted.toString(), "EX", 3600);
+      await this.user.service.redis.set(this.user.getRedisKey(cacheName), this.secCounted.toString(), "EX", 604800); // Cache saves for a week to handles more cases
   }
 
   // Pull potential cache value in-case bot restarted while user in VC
