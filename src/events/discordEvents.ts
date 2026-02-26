@@ -51,7 +51,7 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async onReady() {
-    console.log(`Logged in as ${this.client.user?.tag}!`);
+    logger.debug(`Logged in as ${this.client.user?.tag}!`);
     await sendLog({
       type: "Info",
       message: "Discord client has been initialized!"

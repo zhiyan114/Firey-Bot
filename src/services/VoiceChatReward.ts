@@ -35,8 +35,8 @@ export class VoiceChatReward {
           await this.joinChannel(member);
 
     // Bind the events
-    this.onTick();
     this.client.on("voiceStateUpdate", this.voiceStateUpdate.bind(this));
+    this.onTick();
     logger.debug(logger.fmt`[VoiceChatReward]: VoiceChatReward Service Initialized (total users loaded: ${this.userTable.size})`);
   }
 
@@ -83,7 +83,7 @@ export class VoiceChatReward {
   private async leaveChannel(member: GuildMember) {
     const tableUser = this.userTable.get(member.id);
     if(!tableUser)
-      return console.warn(logger.fmt`[VoiceChatReward]: User ${member.user.tag} left voice channel, but no existing records are found?`);
+      return logger.warn(logger.fmt`[VoiceChatReward]: User ${member.user.tag} left voice channel, but no existing records are found?`);
     this.userTable.delete(member.id);
 
     // Cache-locking to prevent RC to duplicate reward (fast join-leave-join)
@@ -163,11 +163,11 @@ export class VoiceChatReward {
         let hasAudience = false;
         for(const [,memchk] of channel.members) {
           // Find Speaker
-          if(!memchk.voice.suppress)
+          if(!memchk.voice.suppress && !hasSpeaker)
             hasSpeaker = this.GS_userEligible(memchk);
 
           // Find Audience
-          if(memchk.voice.suppress && !memchk.voice.deaf)
+          if(memchk.voice.suppress && !memchk.voice.deaf && !hasAudience)
             hasAudience = this.GS_userEligible(memchk);
 
           if(hasSpeaker && hasAudience) break; // No need to continue checking
@@ -197,7 +197,7 @@ export class VoiceChatReward {
     const vState = member.voice;
     if(member.user.bot) return false; // Bots are not allowed to earn points
     if(!vState.channel) return false; // Must be in a voice channel (edge case checks ig)
-    return !vState.suppress || !(vState.suppress && vState.deaf); // User is a speaker (doesnt have to be actively speaking) OR a listening audience
+    return !vState.suppress || !vState.deaf; // User is a speaker (doesnt have to be actively speaking) OR a listening audience
   }
 }
 
@@ -216,7 +216,7 @@ class _internalUser {
     // Checkpoint every 3 minute
     this.secCounted += 5;
     if(this.secCounted % 60 === 0 || this.secCounted % 60 < 5)
-      await this.user.service.redis.set(this.user.getRedisKey(cacheName), this.secCounted.toString(), "EX", 3600);
+      await this.user.service.redis.set(this.user.getRedisKey(cacheName), this.secCounted.toString(), "EX", 604800); // Cache saves for a week to handles more cases
   }
 
   // Pull potential cache value in-case bot restarted while user in VC

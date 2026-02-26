@@ -71,6 +71,7 @@ export default defineConfig([globalIgnores([
       'error',
       'always',
       { 'exceptAfterSingleLine': true }
-    ]
+    ],
+    "no-console": "error"
   },
 }]);

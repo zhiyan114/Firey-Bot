@@ -113,6 +113,7 @@ function frameStackIteratee(frame: StackFrame) {
 }
 
 function beforeSendLog(log: Log) {
+  // eslint-disable-next-line no-console
   console.log(`[${log.level}]: ${log.message}`);
   return log;
 }
