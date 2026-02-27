@@ -1,6 +1,6 @@
 import type { ChatInputCommandInteraction } from "discord.js";
 import type { DiscordClient } from "../../core/DiscordClient";
-import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { ChannelType, EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 
 type boardData = {
@@ -27,7 +27,8 @@ export class leaderboardCommand extends baseCommand {
   }
 
   public async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply();
+    const isGuildChannel = interaction.channel && interaction.channel.type === ChannelType.GuildText;
+    await interaction.deferReply({ flags: isGuildChannel ? MessageFlags.Ephemeral : undefined });
     const cacheData = await this.client.service.redis.get(this.cacheKey);
     let boardData: boardData[] = cacheData ? JSON.parse(cacheData) : [];
 
@@ -66,6 +67,6 @@ export class leaderboardCommand extends baseCommand {
       .setDescription(finalData)
       .setColor("#00FFFF")
       .setTimestamp();
-    await interaction.followUp({ embeds: [embed] });
+    await interaction.followUp({ embeds: [embed], flags: isGuildChannel ? MessageFlags.Ephemeral : undefined });
   }
 }
