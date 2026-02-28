@@ -18,8 +18,8 @@ export async function VertificationHandler(client: DiscordClient, interaction: B
     return await interaction.reply({ content: "You are already verified!", flags: MessageFlags.Ephemeral });
 
   // Update the user
-  await member.roles.add(newUserRoleID, "Confirmation Role");
   await user.updateUserData({ rulesconfirmedon: new Date() });
+  await member.roles.add(newUserRoleID, "Confirmation Role");
 
   // Send the message
   await interaction.reply({ content: "Thank you for confirming the rules.", flags: MessageFlags.Ephemeral });
