@@ -5,7 +5,7 @@ RUN npm install -g npm@latest
 
 # Install system build tools
 RUN apt-get update
-RUN apt-get install python3 make g++ git -y
+RUN apt-get install python3 make g++ git pkg-config -y
 
 # Install npm packages
 COPY package.json package-lock.json ./
