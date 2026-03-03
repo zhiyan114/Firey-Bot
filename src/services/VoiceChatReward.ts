@@ -100,9 +100,9 @@ export class VoiceChatReward {
 
   private onTick = async () => {
     await startNewTrace(async () => await withIsolationScope(async scope => {
-      try {
-        const users = this.userTable.values();
-        for(const user of users) {
+      const users = this.userTable.values();
+      for(const user of users) {
+        try {
           scope.setUser({
             id: user.user.userID,
             username: user.user.username,
@@ -133,10 +133,10 @@ export class VoiceChatReward {
 
             await user.tick();
           }
-        }
-
-      } catch (err) { captureException(err, { mechanism: { handled: false } });
-      } finally { this.chEligible.clear(); setTimeout(this.onTick, 5000); }
+        } catch (err) { captureException(err, { mechanism: { handled: false } }); }
+      }
+      this.chEligible.clear();
+      setTimeout(this.onTick, 5000);
     }));
   };
 
