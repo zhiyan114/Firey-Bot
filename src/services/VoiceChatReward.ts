@@ -135,9 +135,8 @@ export class VoiceChatReward {
           }
         }
 
-        this.chEligible.clear();
       } catch (err) { captureException(err, { mechanism: { handled: false } });
-      } finally { setTimeout(this.onTick, 5000); }
+      } finally { this.chEligible.clear(); setTimeout(this.onTick, 5000); }
     }));
   };
 
