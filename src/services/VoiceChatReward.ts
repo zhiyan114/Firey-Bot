@@ -5,7 +5,7 @@
 import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
-import { captureException, logger, metrics, startNewTrace, withIsolationScope } from "@sentry/node-core";
+import { captureException, logger, metrics, startNewTrace, withScope } from "@sentry/node-core";
 import { guildID, adminRoleID, newUserRoleID } from "../config.json";
 
 const cacheName = "VCReward";
@@ -44,7 +44,7 @@ export class VoiceChatReward {
     const member = newState.member ?? oldState.member;
     if(!member || member.user.bot) return;
 
-    await withIsolationScope(async scope => {
+    await withScope(async scope => {
       try {
         scope.setUser({
           id: member.user.id,
@@ -99,7 +99,7 @@ export class VoiceChatReward {
   };
 
   private onTick = async () => {
-    await startNewTrace(async () => await withIsolationScope(async scope => {
+    await startNewTrace(async () => await withScope(async scope => {
       const users = this.userTable.values();
       for(const user of users) {
         try {
