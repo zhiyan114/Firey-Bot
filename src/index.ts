@@ -53,4 +53,5 @@ process.on("SIGINT", async ()=> {
   // Complete the shutdown
   // eslint-disable-next-line no-console
   console.log("Shutdown Complete!");
+  process.exit(0);
 });
