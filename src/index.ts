@@ -45,7 +45,7 @@ process.on("SIGINT", async ()=> {
   console.log("Shutdown initiated...");
 
   // Perform cleanup
-  await close(15000);
+  await close(15000); // Dont catch dispose errors
   await CoreClient.dispose();
   await TwitchCli.dispose();
   await YoutubeCli.dispose();
