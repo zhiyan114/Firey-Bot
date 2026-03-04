@@ -44,7 +44,7 @@ export class VoiceChatReward {
     const member = newState.member ?? oldState.member;
     if(!member || member.user.bot) return;
 
-    await startNewTrace(async () => await withIsolationScope(async scope => {
+    await withIsolationScope(async scope => {
       try {
         scope.setUser({
           id: member.user.id,
@@ -67,7 +67,7 @@ export class VoiceChatReward {
       } catch (err) {
         captureException(err);
       }
-    }));
+    });
   };
 
   private async joinChannel(member: GuildMember) {
