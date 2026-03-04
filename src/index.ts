@@ -50,13 +50,12 @@ async function quitSignalHandler() {
   // Perform cleanup
   await CoreClient.dispose();
   await TwitchCli.dispose();
-  await TwitchCli.dispose();
+  await YoutubeCli.dispose();
   await close(15000);
 
   // Complete the shutdown
   // eslint-disable-next-line no-console
   console.log("Shutdown Complete!");
-  process.exit(0);
 }
 
 process.on("SIGINT", quitSignalHandler);
