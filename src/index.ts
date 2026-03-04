@@ -45,10 +45,10 @@ process.on("SIGINT", async ()=> {
   console.log("Shutdown initiated...");
 
   // Perform cleanup
+  await close(15000);
   await CoreClient.dispose();
   await TwitchCli.dispose();
   await YoutubeCli.dispose();
-  await close(15000);
 
   // Complete the shutdown
   // eslint-disable-next-line no-console
