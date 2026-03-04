@@ -254,8 +254,8 @@ export class DiscordEvents extends baseEvent {
     });
   }
 
-  private guildDelete(guild: Guild) {
-    withScope(scope =>{
+  private async guildDelete(guild: Guild) {
+    await withScope(async scope =>{
       scope
         .setAttributes({
           guildID: guild.id,
