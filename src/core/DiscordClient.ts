@@ -8,6 +8,7 @@ import { guildID } from '../config.json';
 import type { ServiceClient } from "./ServiceClient";
 import { DiscordInvite } from "./helper/DiscordInvite";
 import type { TwitchClient } from "./TwitchClient";
+import { patchClient } from "../utils/MPReqID";
 
 
 
@@ -47,6 +48,7 @@ export class DiscordClient extends Client implements baseClient {
     this.sysVer = getClient()?.getOptions().release ?? "??????";
     this.service = service;
     this.inviteManager = new DiscordInvite(this);
+    patchClient(this, "discord");
 
     // @ts-expect-error Override readonly property
     DefaultWebSocketManagerOptions.identifyProperties.browser = "Discord iOS";

@@ -14,7 +14,7 @@ import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VertificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
-import { captureException, logger, withIsolationScope, startNewTrace } from "@sentry/node-core";
+import { captureException, logger, withScope } from "@sentry/node-core";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
@@ -66,17 +66,11 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async createCommand(interaction: Interaction) {
-    await startNewTrace(async () => await withIsolationScope(async (scope) => {
+    await withScope(async(scope) => {
       const requestID = randomUUID();
-      scope.setAttributes({
-        "platform": "discord",
-        "eventType": "interactionCreate",
-        requestID
-      }).setTags({
-        "platform": "discord",
-        "eventType": "interactionCreate",
-        requestID
-      });
+      scope
+        .setAttributes({ requestID })
+        .setTags({ requestID });
       patchAllInteraction(interaction);
 
       try {
@@ -95,11 +89,11 @@ export class DiscordEvents extends baseEvent {
           if(interaction.customId === "RuleConfirm")
             return await VertificationHandler(this.client, interaction);
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-    }));
+    });
   }
 
   private async messageCreate(message: Message) {
-    await startNewTrace(async () => await withIsolationScope(async (scope) => {
+    await withScope(async (scope) => {
       try {
         // Channel Checks
         if(message.author.bot) return;
@@ -111,14 +105,7 @@ export class DiscordEvents extends baseEvent {
           username: message.author.username,
           isStaff: message.member?.roles.cache.some(r=>r.id === adminRoleID) ?? "unknown",
           isVerified: message.member?.roles.cache.some(r=>r.id === newUserRoleID) ?? "unknown"
-        }).setTags({
-          "platform": "discord",
-          "eventType": "messageCreate"
-        }).setAttributes({
-          "platform": "discord",
-          "eventType": "messageCreate",
-          channelName: channel.name,
-        });
+        }).setAttribute("channelName", channel.name);
 
         // Place where user wont be awarded with points
         if(noPoints.channel.length > 0 && noPoints.channel.find(c=>c===channel.id)) return;
@@ -127,23 +114,17 @@ export class DiscordEvents extends baseEvent {
         // Grant points
         await (new DiscordUser(this.client.service, message.author)).economy.chatRewardPoints(message.content);
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-    }));
+    });
   }
 
   private async guildMemberAdd(member: GuildMember) {
-    await startNewTrace(async () => await withIsolationScope(async (scope) => {
+    await withScope(async (scope) => {
       try {
         scope.setUser({
           id: member.user.id,
           username: member.user.username,
           isStaff: member.roles.cache.some(r=>r.id === adminRoleID),
           isVerified: member.roles.cache.some(r=>r.id === newUserRoleID)
-        }).setTags({
-          "platform": "discord",
-          "eventType": "guildMemberAdd"
-        }).setAttributes({
-          "platform": "discord",
-          "eventType": "guildMemberAdd"
         });
 
         if(member.user.bot) return;
@@ -179,20 +160,14 @@ export class DiscordEvents extends baseEvent {
         const BannerBuff = await (new BannerPic()).generate(user.username, member.user.displayAvatarURL({ size: 512, extension: "png" }));
         await channel.send({ files: [BannerBuff] });
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-    }));
+    });
   }
 
   private async userUpdate(oldUser: User | PartialUser, newUser: User) {
-    await startNewTrace(async () => await withIsolationScope(async (scope) => {
+    await withScope(async (scope) => {
       scope.setUser({
         id: newUser.id,
         username: newUser.username,
-      }).setTags({
-        "platform": "discord",
-        "eventType": "userUpdate"
-      }).setAttributes({
-        "platform": "discord",
-        "eventType": "userUpdate"
       });
 
       if(oldUser.bot) return;
@@ -220,7 +195,7 @@ export class DiscordEvents extends baseEvent {
           displayName,
         });
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-    }));
+    });
   }
 
   private guildMemberRemove() {
@@ -228,19 +203,13 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async voiceStateUpdate(old: VoiceState, now: VoiceState) {
-    await startNewTrace(async () => await withIsolationScope(async (scope) => {
+    await withScope(async (scope) => {
       try {
         scope.setUser({
           id: now.member?.user.id,
           username: now.member?.user.username,
           isStaff: now.member?.roles.cache.some(r=>r.id === adminRoleID),
           isVerified: now.member?.roles.cache.some(r=>r.id === newUserRoleID)
-        }).setTags({
-          "platform": "discord",
-          "eventType": "voiceStateUpdate"
-        }).setAttributes({
-          "platform": "discord",
-          "eventType": "voiceStateUpdate"
         });
 
         // Checking to see if the user needs to be reported on the log
@@ -282,27 +251,25 @@ export class DiscordEvents extends baseEvent {
         });
         await channel.send({ embeds: [embed] });
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-    }));
+    });
   }
 
-  private guildDelete(guild: Guild) {
-    startNewTrace(() => withIsolationScope(scope =>{
+  private async guildDelete(guild: Guild) {
+    await withScope(async scope =>{
       scope
         .setAttributes({
-          platform: "discord",
-          eventType: "guildDelete",
           guildID: guild.id,
           guildName: guild.name
         })
         .setTags({
-          platform: "discord",
-          eventType: "guildDelete"
+          guildID: guild.id,
+          guildName: guild.name
         });
 
       if(guildID !== guild.id)
         return logger.warn(logger.fmt`Bot was removed from unauthorized guild!`);
 
       return logger.error("Bot was removed from primary guild!");
-    }));
+    });
   }
 }

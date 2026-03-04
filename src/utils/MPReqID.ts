@@ -1,9 +1,10 @@
 // MonkeyPatch DiscordJS Request ID
-import { getCurrentScope, getIsolationScope } from "@sentry/node-core";
+import { getCurrentScope, getIsolationScope, startNewTrace, withIsolationScope } from "@sentry/node-core";
 import type {
   APIEmbed,
   APIModalInteractionResponseCallbackData,
   Channel,
+  ClientEvents,
   Interaction,
   InteractionReplyOptions,
   JSONEncodable,
@@ -18,6 +19,8 @@ import {
   ModalBuilder,
   TextDisplayBuilder
 } from "discord.js";
+import type { EventEmitter } from "stream";
+import type { Client } from "tmi.js";
 
 // Content Patcher
 function patchContent(options: MessagePayload | MessageCreateOptions | InteractionReplyOptions, reqID: string) {
@@ -178,4 +181,21 @@ export function channelPatch(channel: Channel & {isPatched?: boolean}, reqID: st
 export function unpatch(object: (Channel | User) & {isPatched?: boolean}) {
   // send functions will do a self-clean up and revert the class back to its original state when it gets called again
   object.isPatched = false;
+}
+
+// Some Internals that's helpful to be patched
+export function patchClient(client: EventEmitter | Client, platformName: string) {
+  const oldEmit = client.emit;
+  client.emit = function(event: string, ...args: ClientEvents[]) {
+    return startNewTrace(() => withIsolationScope((scope)=>{
+      scope.setTags({
+        "platform": platformName,
+        "eventType": event
+      }).setAttributes({
+        "platform": platformName,
+        "eventType": event
+      });
+      return oldEmit.call(client, event, ...args);
+    }));
+  };
 }

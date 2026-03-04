@@ -7,6 +7,7 @@ import { sendLog } from "../utils/eventLogger";
 import type { ServiceClient } from "./ServiceClient";
 import type { DiscordClient } from "./DiscordClient";
 import type { DiscordInvite } from "./helper/DiscordInvite";
+import { patchClient } from "../utils/MPReqID";
 
 
 
@@ -31,6 +32,7 @@ export class TwitchClient extends Client implements baseClient {
     this.streamClient = new streamClient(this, twitch.channel);
     this.service = service;
     this.dInvite = dClient.inviteManager;
+    patchClient(this, "twitch");
 
     // Register events
     new TwitchEvents(this, dClient)

@@ -1,6 +1,5 @@
 import { DiscordClient } from "./core/DiscordClient";
 import { logger, close, startNewTrace } from "@sentry/node-core";
-import { sendLog } from "./utils/eventLogger";
 import { TwitchClient } from "./core/TwitchClient";
 import { YoutubeClient } from "./core/YoutubeClient";
 import { ServiceClient } from "./core/ServiceClient";
@@ -40,25 +39,19 @@ startNewTrace(async () => {
 /**
  * Handle cleanups
  */
-async function quitSignalHandler() {
+process.on("SIGINT", async ()=> {
   // Log initial shutdown message
-  await sendLog({
-    type: "Info",
-    message: "Shutdown Initiated... View logs for shutdown completion."
-  });
+  // eslint-disable-next-line no-console
+  console.log("Shutdown initiated...");
 
   // Perform cleanup
+  await close(15000); // Dont catch dispose errors
   await CoreClient.dispose();
   await TwitchCli.dispose();
-  await TwitchCli.dispose();
-  await close(15000);
+  await YoutubeCli.dispose();
 
   // Complete the shutdown
   // eslint-disable-next-line no-console
   console.log("Shutdown Complete!");
   process.exit(0);
-}
-
-process.on("SIGINT", quitSignalHandler);
-process.on("SIGTERM", quitSignalHandler);
-process.on("SIGQUIT", quitSignalHandler);
+});

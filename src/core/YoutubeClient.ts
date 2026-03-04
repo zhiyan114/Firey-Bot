@@ -6,6 +6,7 @@ import type { DiscordClient } from "./DiscordClient";
 import type { ServiceClient } from "./ServiceClient";
 import type { TextChannel } from "discord.js";
 import { logger } from "@sentry/node-core";
+import { patchClient } from "../utils/MPReqID";
 
 /*
 Example Reference
@@ -80,6 +81,7 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
     this.service = service;
     this.dClient = dClient;
     service.express.use(Path, this.listener());
+    patchClient(this, "youtube");
     logger.info(`Configured PubSub URL: ${pubsuburl}`);
 
     // Register events
