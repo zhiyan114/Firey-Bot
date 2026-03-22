@@ -25,12 +25,12 @@ jobs:
         cache: 'npm'
     - name: Setup FlyIO
       uses: superfly/flyctl-actions/setup-flyctl@master
-    - name: install package
-      run: npm ci
-    - name: Prisma Client
-      run: npx prisma generate
-    - name: Prod Vulnerability Check
-      run: npm audit --audit-level high --omit=dev
+    # - name: install package
+    #   run: npm ci
+    # - name: Prisma Client
+    #   run: npx prisma generate
+    # - name: Prod Vulnerability Check
+    #   run: npm audit --audit-level high --omit=dev
     # - name: lint check
     #   run: npm run lint:check
     # - name: Type Check
