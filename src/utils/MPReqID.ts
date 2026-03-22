@@ -24,6 +24,15 @@ import type { EventEmitter } from "stream";
 import type { Client } from "tmi.js";
 import { adminRoleID, newUserRoleID } from "../config.json";
 
+
+interface ExtractedUser {
+  id: string;
+  username: string;
+  isStaff?: boolean | "unknown";
+  isVerified?: boolean | "unknown";
+}
+
+
 // Content Patcher
 function patchContent(options: MessagePayload | MessageCreateOptions | InteractionReplyOptions, reqID: string) {
   // Might be right, but no guarantee... Should write a test for this :pensive:
@@ -183,13 +192,6 @@ export function channelPatch(channel: Channel & {isPatched?: boolean}, reqID: st
 export function unpatch(object: (Channel | User) & {isPatched?: boolean}) {
   // send functions will do a self-clean up and revert the class back to its original state when it gets called again
   object.isPatched = false;
-}
-
-interface ExtractedUser {
-  id: string;
-  username: string;
-  isStaff?: boolean | "unknown";
-  isVerified?: boolean | "unknown";
 }
 
 function discordDataHelper(data: User | GuildMember): ExtractedUser {
