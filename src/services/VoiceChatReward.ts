@@ -5,8 +5,8 @@
 import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
-import { captureException, logger, metrics, startNewTrace, withScope } from "@sentry/node-core";
-import { guildID, adminRoleID, newUserRoleID } from "../config.json";
+import { captureException, logger, metrics, startNewTrace } from "@sentry/node-core";
+import { guildID } from "../config.json";
 
 const cacheName = "VCReward";
 
@@ -44,30 +44,19 @@ export class VoiceChatReward {
     const member = newState.member ?? oldState.member;
     if(!member || member.user.bot) return;
 
-    await withScope(async scope => {
-      try {
-        scope.setUser({
-          id: member.user.id,
-          username: member.user.username,
-          isStaff: member.roles.cache.some(r=>r.id === adminRoleID),
-          isVerified: member.roles.cache.some(r=>r.id === newUserRoleID)
-        });
+    try {
+      if(!oldState.channel && newState.channel)
+        return await this.joinChannel(member);
 
-        if(!oldState.channel && newState.channel)
-          return await this.joinChannel(member);
+      if(oldState.channel && !newState.channel)
+        return await this.leaveChannel(member);
 
-        if(oldState.channel && !newState.channel)
-          return await this.leaveChannel(member);
-
-        // Update member object
-        const newMember = newState.member;
-        const _user = this.userTable.get(member.id);
-        if(newMember && _user)
-          _user.member = newMember;
-      } catch (err) {
-        captureException(err);
-      }
-    });
+      // Update member object
+      const newMember = newState.member;
+      const _user = this.userTable.get(member.id);
+      if(newMember && _user)
+        _user.member = newMember;
+    } catch (err) { captureException(err, { mechanism: { handled: false } }); }
   };
 
   private async joinChannel(member: GuildMember) {
@@ -99,17 +88,10 @@ export class VoiceChatReward {
   };
 
   private onTick = async () => {
-    await startNewTrace(async () => await withScope(async scope => {
+    await startNewTrace(async () => {
       const users = this.userTable.values();
       for(const user of users) {
         try {
-          scope.setUser({
-            id: user.user.userID,
-            username: user.user.username,
-            isStaff: user.member.roles.cache.some(r=>r.id === adminRoleID),
-            isVerified: user.member.roles.cache.some(r=>r.id === newUserRoleID)
-          });
-
           const channel = user.member.voice.channel;
           if(!channel) {
             captureException(new VCError(`User is not in a voice channel, but tick() was called.`),
@@ -137,7 +119,7 @@ export class VoiceChatReward {
       }
       this.chEligible.clear();
       setTimeout(this.onTick, 5000);
-    }));
+    });
   };
 
   private ChannelEligible(channel: VoiceBasedChannel): boolean {

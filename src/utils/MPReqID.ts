@@ -1,16 +1,17 @@
 // MonkeyPatch DiscordJS Request ID
 import { getCurrentScope, getIsolationScope, startNewTrace, withIsolationScope } from "@sentry/node-core";
-import type {
-  APIEmbed,
-  APIModalInteractionResponseCallbackData,
-  Channel,
-  ClientEvents,
-  Interaction,
-  InteractionReplyOptions,
-  JSONEncodable,
-  MessageCreateOptions,
-  ModalComponentData,
-  ShowModalOptions,
+import {
+  type APIEmbed,
+  type APIModalInteractionResponseCallbackData,
+  type Channel,
+  type ClientEvents,
+  type Interaction,
+  type InteractionReplyOptions,
+  type JSONEncodable,
+  type MessageCreateOptions,
+  type ModalComponentData,
+  type ShowModalOptions,
+  GuildMember,
   User
 } from "discord.js";
 import {
@@ -21,6 +22,7 @@ import {
 } from "discord.js";
 import type { EventEmitter } from "stream";
 import type { Client } from "tmi.js";
+import { adminRoleID, newUserRoleID } from "../config.json";
 
 // Content Patcher
 function patchContent(options: MessagePayload | MessageCreateOptions | InteractionReplyOptions, reqID: string) {
@@ -183,6 +185,40 @@ export function unpatch(object: (Channel | User) & {isPatched?: boolean}) {
   object.isPatched = false;
 }
 
+// Attempt to extract a Discord user from the first event argument
+interface ExtractedUser {
+  id: string;
+  username: string;
+  isStaff?: boolean | "unknown";
+  isVerified?: boolean | "unknown";
+}
+
+function discordDataHelper(data: User | GuildMember): ExtractedUser {
+  const user = data instanceof User ? data : data.user;
+  const userRoles = data instanceof GuildMember ? data.roles.cache : undefined;
+  return {
+    id: user.id,
+    username: user.username,
+    isStaff: userRoles?.some(k=> k.id === adminRoleID) ?? "unknown",
+    isVerified: userRoles?.some(k=> k.id === newUserRoleID) ?? "unknown"
+  };
+}
+
+function getDiscordUserData(arg: unknown): ExtractedUser | undefined {
+  // Check Self
+  if(!arg || typeof arg !== "object") return;
+  if(arg instanceof User || arg instanceof GuildMember)
+    return discordDataHelper(arg);
+
+  // Object check and get data as available
+  if("member" in arg && arg.member instanceof GuildMember)
+    return discordDataHelper(arg.member);
+  if("author" in arg && arg.author instanceof User)
+    return discordDataHelper(arg.author);
+  if("user" in arg && arg.user instanceof User)
+    return discordDataHelper(arg.user);
+}
+
 // Some Internals that's helpful to be patched
 export function patchClient(client: EventEmitter | Client, platformName: string) {
   const oldEmit = client.emit;
@@ -195,6 +231,13 @@ export function patchClient(client: EventEmitter | Client, platformName: string)
         "platform": platformName,
         "eventType": event
       });
+
+      if(platformName === "discord") {
+        const user = getDiscordUserData(args[0]);
+        if(user)
+          scope.setUser(user);
+      }
+
       return oldEmit.call(client, event, ...args);
     }));
   };
