@@ -185,7 +185,6 @@ export function unpatch(object: (Channel | User) & {isPatched?: boolean}) {
   object.isPatched = false;
 }
 
-// Attempt to extract a Discord user from the first event argument
 interface ExtractedUser {
   id: string;
   username: string;
