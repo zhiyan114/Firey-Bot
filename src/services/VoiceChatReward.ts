@@ -194,7 +194,11 @@ class _internalUser {
   }
 
   public async tick() {
-    // Checkpoint every 3 minute
+    // Only allow up to 16hrs being recorded per session (ideal condition) to avoid farming
+    // Ideal Condition: 8hrs of sleep + 16hrs of voice chatting lmfao
+    if(this.secCounted >= 57600) return;
+
+    // Checkpoint every 5 seconds (and cache every minute)
     this.secCounted += 5;
     if(this.secCounted % 60 === 0 || this.secCounted % 60 < 5)
       await this.user.service.redis.set(this.user.getRedisKey(cacheName), this.secCounted.toString(), "EX", 604800); // Cache saves for a week to handles more cases
