@@ -12,6 +12,8 @@ export default defineConfig([globalIgnores([
   "eslint.config.mjs",
   "./prisma.config.ts"
 ]), {
+  files: ["**/*.ts"],
+
   plugins: {
     "@typescript-eslint": typescriptEslint,
   },
