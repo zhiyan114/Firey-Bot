@@ -234,9 +234,16 @@ export function patchClient(client: EventEmitter | Client, platformName: string)
       });
 
       if(platformName === "discord") {
-        const user = getDiscordUserData(args[0]);
-        if(user)
-          scope.setUser(user);
+        // Some event like "userUpdate" puts latest user info in the last
+        // arg index and we perform reverse iteration in-case any specific
+        // event only has user data near the origin (or index 0) of the array
+        for(let i = args.length - 1; i >= 0; i--) {
+          const user = getDiscordUserData(args[i]);
+          if(user) {
+            scope.setUser(user);
+            break;
+          }
+        }
       }
 
       return oldEmit.call(client, event, ...args);
