@@ -19,7 +19,6 @@ import { context, propagation, trace } from "@opentelemetry/api";
 
 dotenv();
 
-
 /**
  * Sentry Initialization
  */
@@ -87,6 +86,14 @@ function beforeSend(event: ErrorEvent, hint: EventHint) {
   if(ex instanceof DiscordjsError && ex.code === "GuildMembersTimeout") return null; // Known issue with discord's backend API
   if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P1017") return null; // Somehow...
   if(ex instanceof HTTPError && Math.floor(ex.status/100) === 5) return null; // Discord server-related issue
+
+  // Ignore specific chained exceptions (such as ECONNRESET) for exception issued by functions like fetch
+  if(ex instanceof Error && ex.cause instanceof Error) {
+    const title = ex.cause.name;
+    const message = ex.cause.message;
+    if(title.includes("ECONNRESET") || message.includes("ECONNRESET")) return null;
+    if(title.includes("ETIMEDOUT") || message.includes("ETIMEDOUT")) return null;
+  }
 
   return event;
 }
