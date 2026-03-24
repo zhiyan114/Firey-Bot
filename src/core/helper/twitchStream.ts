@@ -127,11 +127,7 @@ export class streamClient extends events.EventEmitter {
             message: `twitchStream: Connection Timeout - ${ex.message}`
           });
 
-        const sentryID = captureException(ex);
-        await sendLog({
-          type: "Warning",
-          message: `twitchStream: Unhandled Exception, check sentry for more details: ${sentryID}`
-        });
+        captureException(ex);
       }
     } finally {
       // Check it again every 30 seconds regardless if the api fails or not
