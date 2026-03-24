@@ -128,10 +128,6 @@ export class streamClient extends events.EventEmitter {
           });
 
         const sentryID = captureException(ex);
-        await sendLog({
-          type: "Warning",
-          message: `twitchStream: Unhandled Exception, check sentry for more details: ${sentryID}`
-        });
       }
     } finally {
       // Check it again every 30 seconds regardless if the api fails or not
