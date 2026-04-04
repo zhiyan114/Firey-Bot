@@ -92,6 +92,7 @@ export class streamClient extends events.EventEmitter {
 
       const contentType = serverRes.headers["content-type"];
       if(!contentType || !contentType.includes("application/json")) {
+        serverRes.body.destroy();
         return await sendLog({
           type: "Warning",
           message: `Twitch API has responded with invalid content type header: \`${contentType}\``
