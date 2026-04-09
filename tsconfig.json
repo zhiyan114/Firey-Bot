@@ -6,6 +6,7 @@
         "module": "node20",
         "target": "ESNext",
         "strict": true,
+        "isolatedModules": true,
         "moduleResolution": "node16",
         "resolveJsonModule": true,
         "esModuleInterop": true,
