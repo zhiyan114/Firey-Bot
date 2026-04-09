@@ -1,5 +1,5 @@
 import type { ChatInputCommandInteraction, ModalSubmitInteraction } from "discord.js";
-import type { DiscordClient } from "../../core/DiscordClient";
+import type { DiscordClient } from "../../core/DiscordClient.js";
 import {
   ComponentType,
   DiscordjsError,
@@ -13,10 +13,10 @@ import {
   TextInputBuilder,
   TextInputStyle
 } from "discord.js";
-import { baseCommand } from "../../core/baseCommand";
+import { baseCommand } from "../../core/baseCommand.js";
 import { randomUUID } from "crypto";
 import { captureException } from "@sentry/node-core";
-import { adminRoleID, twitch } from "../../config.json";
+import { adminRoleID, twitch } from "../../config.js";
 
 export class TwitchChatRelay extends baseCommand {
   public client: DiscordClient;

@@ -7,11 +7,11 @@ import type {
   TextChannel,
   VoiceChannel
 } from "discord.js";
-import type { DiscordClient } from "../DiscordClient";
+import type { DiscordClient } from "../DiscordClient.js";
 import { createHash } from "crypto";
 import { ChannelType } from "discord.js";
-import type Redis from "ioredis";
-import { guildID } from "../../config.json";
+import type { Redis } from "ioredis";
+import { guildID } from "../../config.js";
 
 interface tempInviteOption extends InviteCreateOptions {
   channel?: GuildInvitableChannelResolvable;

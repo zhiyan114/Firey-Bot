@@ -1,5 +1,5 @@
-import type { tmiTypes } from "../../core/baseCommand";
-import { baseTCommand } from "../../core/baseCommand";
+import type { tmiTypes } from "../../core/baseCommand.js";
+import { baseTCommand } from "../../core/baseCommand.js";
 
 export class LurkCommand extends baseTCommand {
   public name = "lurk";

@@ -1,6 +1,6 @@
-import type { tmiTypes } from "../../core/baseCommand";
-import { baseTCommand } from "../../core/baseCommand";
-import { TwitchUser } from "../../utils/TwitchUser";
+import type { tmiTypes } from "../../core/baseCommand.js";
+import { baseTCommand } from "../../core/baseCommand.js";
+import { TwitchUser } from "../../utils/TwitchUser.js";
 
 export class LinkCommand extends baseTCommand {
   public name = "link";

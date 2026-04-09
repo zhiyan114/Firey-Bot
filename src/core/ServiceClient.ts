@@ -1,14 +1,14 @@
-import { baseClient } from "./baseClient";
+import { baseClient } from "./baseClient.js";
 import Express, { type NextFunction } from "express";
 import { captureException, getIsolationScope, httpRequestToRequestData } from "@sentry/core";
 import http from 'http';
 import https from "https";
-import { sendLog } from "../utils/eventLogger";
+import { sendLog } from "../utils/eventLogger.js";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import Redis from "ioredis";
-import { redisPrefix } from "../config.json";
-import { RedisEvents } from "../events";
+import { Redis } from "ioredis";
+import { redisPrefix } from "../config.js";
+import { RedisEvents } from "../events/index.js";
 
 
 // Sentry JS SDK Implementation

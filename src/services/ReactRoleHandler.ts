@@ -1,9 +1,9 @@
 import type { Message, MessageReaction } from "discord.js";
-import type { DiscordClient } from "../core/DiscordClient";
+import type { DiscordClient } from "../core/DiscordClient.js";
 import { ChannelType, DiscordAPIError, EmbedBuilder, } from "discord.js";
-import { APIErrors } from "../utils/discordErrorCode";
+import { APIErrors } from "../utils/discordErrorCode.js";
 import { captureException } from "@sentry/node-core";
-import { guildID, reactRoles } from "../config.json";
+import { guildID, reactRoles } from "../config.js";
 
 export async function ReactRoleLoader(client: DiscordClient) {
   // General checks

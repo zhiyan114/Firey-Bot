@@ -1,4 +1,4 @@
-import type { baseClient } from "./baseClient";
+import type { baseClient } from "./baseClient.js";
 
 
 /**

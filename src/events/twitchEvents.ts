@@ -1,11 +1,11 @@
 import type { ChatUserstate } from "tmi.js";
-import type { TwitchClient } from "../core/TwitchClient";
-import { baseEvent } from "../core/baseEvent";
-import { TwitchUser } from "../utils/TwitchUser";
-import { processCommand } from "./helper/TwitchCommandHandler";
+import type { TwitchClient } from "../core/TwitchClient.js";
+import { baseEvent } from "../core/baseEvent.js";
+import { TwitchUser } from "../utils/TwitchUser.js";
+import { processCommand } from "./helper/TwitchCommandHandler.js";
 import { captureException, withScope } from "@sentry/node-core";
 import { randomUUID } from "crypto";
-import type { DiscordClient } from "../core/DiscordClient";
+import type { DiscordClient } from "../core/DiscordClient.js";
 
 
 export class TwitchEvents extends baseEvent {

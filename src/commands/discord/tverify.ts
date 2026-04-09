@@ -1,8 +1,8 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import type { DiscordClient } from "../../core/DiscordClient";
+import type { DiscordClient } from "../../core/DiscordClient.js";
 import { EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { baseCommand } from "../../core/baseCommand";
-import { TwitchUser } from "../../utils/TwitchUser";
+import { baseCommand } from "../../core/baseCommand.js";
+import { TwitchUser } from "../../utils/TwitchUser.js";
 
 export class TwitchVerify extends baseCommand {
   client: DiscordClient;

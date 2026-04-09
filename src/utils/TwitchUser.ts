@@ -1,10 +1,10 @@
 import { Prisma } from "@prisma/client";
 import { captureException } from "@sentry/node-core";
 import { createHash } from "crypto";
-import type Redis from "ioredis";
-import type { ServiceClient } from "../core/ServiceClient";
-import { DiscordUser } from "./DiscordUser";
-import type { DiscordClient } from "../core/DiscordClient";
+import type { Redis } from "ioredis";
+import type { ServiceClient } from "../core/ServiceClient.js";
+import { DiscordUser } from "./DiscordUser.js";
+import type { DiscordClient } from "../core/DiscordClient.js";
 
 type updateUser = {
     memberid?: string,

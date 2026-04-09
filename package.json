@@ -27,7 +27,7 @@
     "lint:check": "eslint . --ext .ts",
     "build:check": "tsc -p tsconfig.json",
     "build": "rimraf dist && node build.js",
-    "start": "node -r ./dist/loader.js ./dist/index.js"
+    "start": "node --import ./dist/loader.js ./dist/index.js"
   },
   "devDependencies": {
     "@sentry/cli": "^3.0.1",
@@ -50,6 +50,7 @@
   "description": "This bot is developed to serve a single server; thus, codes are not reusable without modification.",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zhiyan114/Firey-Bot.git"

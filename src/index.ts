@@ -1,8 +1,8 @@
-import { DiscordClient } from "./core/DiscordClient";
+import { DiscordClient } from "./core/DiscordClient.js";
 import { logger, close, startNewTrace } from "@sentry/node-core";
-import { TwitchClient } from "./core/TwitchClient";
-import { YoutubeClient } from "./core/YoutubeClient";
-import { ServiceClient } from "./core/ServiceClient";
+import { TwitchClient } from "./core/TwitchClient.js";
+import { YoutubeClient } from "./core/YoutubeClient.js";
+import { ServiceClient } from "./core/ServiceClient.js";
 
 
 /**

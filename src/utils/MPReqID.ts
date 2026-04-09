@@ -22,7 +22,7 @@ import {
 } from "discord.js";
 import type { EventEmitter } from "stream";
 import type { Client } from "tmi.js";
-import { adminRoleID, newUserRoleID } from "../config.json";
+import { adminRoleID, newUserRoleID } from "../config.js";
 
 
 interface ExtractedUser {

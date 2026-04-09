@@ -1,5 +1,5 @@
 import type { ChatInputCommandInteraction, ModalSubmitInteraction, TextInputModalData } from "discord.js";
-import type { DiscordClient } from "../../core/DiscordClient";
+import type { DiscordClient } from "../../core/DiscordClient.js";
 import {
   ComponentType,
   DiscordjsError,
@@ -13,7 +13,7 @@ import {
   TextInputStyle
 } from "discord.js";
 
-import { baseCommand } from "../../core/baseCommand";
+import { baseCommand } from "../../core/baseCommand.js";
 import { randomUUID } from "crypto";
 import { captureException, captureFeedback } from "@sentry/node-core";
 

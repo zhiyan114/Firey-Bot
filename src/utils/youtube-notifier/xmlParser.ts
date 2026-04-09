@@ -4,8 +4,8 @@
  */
 import xml2js from 'xml2js';
 import { Response } from 'express';
-import YouTubeNotifier from './index';
-import { request } from './index';
+import YouTubeNotifier from './index.js';
+import { request } from './index.js';
 
 /**
  * Constants

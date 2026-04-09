@@ -1,5 +1,5 @@
 import type { Channel, ChatInputCommandInteraction, ColorResolvable } from "discord.js";
-import type { DiscordClient } from "../../core/DiscordClient";
+import type { DiscordClient } from "../../core/DiscordClient.js";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -10,9 +10,9 @@ import {
   MessageFlags,
   SlashCommandBuilder
 } from "discord.js";
-import { baseCommand } from "../../core/baseCommand";
+import { baseCommand } from "../../core/baseCommand.js";
 import Sentry from "@sentry/node-core";
-import { guildID, newUserRoleID } from "../../config.json";
+import { guildID, newUserRoleID } from "../../config.js";
 
 export class EvalCommand extends baseCommand {
   public client: DiscordClient;

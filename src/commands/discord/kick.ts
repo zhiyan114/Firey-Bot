@@ -1,9 +1,9 @@
 import type { ChatInputCommandInteraction, GuildMember } from "discord.js";
-import type { DiscordClient } from "../../core/DiscordClient";
+import type { DiscordClient } from "../../core/DiscordClient.js";
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { baseCommand } from "../../core/baseCommand";
-import { DiscordUser } from "../../utils/DiscordUser";
-import { adminRoleID } from "../../config.json";
+import { baseCommand } from "../../core/baseCommand.js";
+import { DiscordUser } from "../../utils/DiscordUser.js";
+import { adminRoleID } from "../../config.js";
 
 export class kickCommand extends baseCommand {
   client: DiscordClient;

@@ -1,11 +1,11 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import type { DiscordClient } from "../../core/DiscordClient";
+import type { DiscordClient } from "../../core/DiscordClient.js";
 import { DiscordAPIError, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { baseCommand } from "../../core/baseCommand";
-import { DiscordUser } from "../../utils/DiscordUser";
-import { APIErrors } from "../../utils/discordErrorCode";
+import { baseCommand } from "../../core/baseCommand.js";
+import { DiscordUser } from "../../utils/DiscordUser.js";
+import { APIErrors } from "../../utils/discordErrorCode.js";
 import { captureException } from "@sentry/node-core";
-import { adminRoleID } from "../../config.json";
+import { adminRoleID } from "../../config.js";
 
 export class unbanCommand extends baseCommand {
   client: DiscordClient;

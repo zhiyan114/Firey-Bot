@@ -4,11 +4,11 @@
  * Author: zhiyan114
  */
 
-import type { TwitchClient } from "../TwitchClient";
+import type { TwitchClient } from "../TwitchClient.js";
 import { captureException } from "@sentry/node-core";
 import events from "events";
 import { errors, Pool } from "undici";
-import { sendLog } from "../../utils/eventLogger";
+import { sendLog } from "../../utils/eventLogger.js";
 
 // Type Reference: https://dev.twitch.tv/docs/api/reference#get-streams
 interface stringObjectType {

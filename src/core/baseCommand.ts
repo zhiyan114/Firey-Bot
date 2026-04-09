@@ -1,7 +1,7 @@
 import type { ChatInputCommandInteraction, ContextMenuCommandBuilder, ContextMenuCommandInteraction, SlashCommandBuilder, SlashCommandOptionsOnlyBuilder } from "discord.js";
-import type { DiscordClient } from "./DiscordClient";
+import type { DiscordClient } from "./DiscordClient.js";
 import type { ChatUserstate } from "tmi.js";
-import type { TwitchClient } from "./TwitchClient";
+import type { TwitchClient } from "./TwitchClient.js";
 
 /**
  * users supplies discord User ID while roles supplies discord Role ID

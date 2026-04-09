@@ -1,14 +1,14 @@
-import type { baseClient } from "./baseClient";
+import type { baseClient } from "./baseClient.js";
 import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketManagerOptions, TextChannel } from "discord.js";
 import { getClient } from "@sentry/node-core";
-import { DiscordEvents } from "../events";
-import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
-import { unverifyKickLoader, ReactRoleLoader, VoiceChatReward } from "../services";
-import { guildID } from '../config.json';
-import type { ServiceClient } from "./ServiceClient";
-import { DiscordInvite } from "./helper/DiscordInvite";
-import type { TwitchClient } from "./TwitchClient";
-import { patchClient } from "../utils/MPReqID";
+import { DiscordEvents } from "../events/index.js";
+import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler.js";
+import { unverifyKickLoader, ReactRoleLoader, VoiceChatReward } from "../services/index.js";
+import { guildID } from '../config.js';
+import type { ServiceClient } from "./ServiceClient.js";
+import { DiscordInvite } from "./helper/DiscordInvite.js";
+import type { TwitchClient } from "./TwitchClient.js";
+import { patchClient } from "../utils/MPReqID.js";
 
 
 

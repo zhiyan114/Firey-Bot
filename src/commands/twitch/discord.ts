@@ -1,6 +1,6 @@
-import type { tmiTypes } from "../../core/baseCommand";
-import { baseTCommand } from "../../core/baseCommand";
-import { generalChannelID } from "../../config.json";
+import type { tmiTypes } from "../../core/baseCommand.js";
+import { baseTCommand } from "../../core/baseCommand.js";
+import { generalChannelID } from "../../config.js";
 
 export class DiscordCommand extends baseTCommand {
   public name = "discord";

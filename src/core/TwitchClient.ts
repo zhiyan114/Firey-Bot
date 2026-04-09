@@ -1,13 +1,13 @@
-import type { baseClient } from "./baseClient";
+import type { baseClient } from "./baseClient.js";
 import { Client } from "tmi.js";
-import { StreamEvents, TwitchEvents } from "../events";
-import { streamClient } from "./helper/twitchStream";
-import { twitch } from "../config.json";
-import { sendLog } from "../utils/eventLogger";
-import type { ServiceClient } from "./ServiceClient";
-import type { DiscordClient } from "./DiscordClient";
-import type { DiscordInvite } from "./helper/DiscordInvite";
-import { patchClient } from "../utils/MPReqID";
+import { StreamEvents, TwitchEvents } from "../events/index.js";
+import { streamClient } from "./helper/twitchStream.js";
+import { twitch } from "../config.js";
+import { sendLog } from "../utils/eventLogger.js";
+import type { ServiceClient } from "./ServiceClient.js";
+import type { DiscordClient } from "./DiscordClient.js";
+import type { DiscordInvite } from "./helper/DiscordInvite.js";
+import { patchClient } from "../utils/MPReqID.js";
 
 
 

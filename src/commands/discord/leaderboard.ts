@@ -1,7 +1,7 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import type { DiscordClient } from "../../core/DiscordClient";
+import type { DiscordClient } from "../../core/DiscordClient.js";
 import { ChannelType, EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { baseCommand } from "../../core/baseCommand";
+import { baseCommand } from "../../core/baseCommand.js";
 
 type boardData = {
   username: string;

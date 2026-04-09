@@ -7,18 +7,18 @@ import type {
   VoiceState,
   Guild
 } from "discord.js";
-import type { DiscordClient } from "../core/DiscordClient";
+import type { DiscordClient } from "../core/DiscordClient.js";
 import { ChannelType, DiscordAPIError, EmbedBuilder, TextChannel } from "discord.js";
-import { baseEvent } from "../core/baseEvent";
-import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
-import { VertificationHandler } from "./helper/DiscordConfirmBtn";
-import { DiscordUser } from "../utils/DiscordUser";
-import { APIErrors } from "../utils/discordErrorCode";
+import { baseEvent } from "../core/baseEvent.js";
+import { DiscordCommandHandler } from "./helper/DiscordCommandHandler.js";
+import { VertificationHandler } from "./helper/DiscordConfirmBtn.js";
+import { DiscordUser } from "../utils/DiscordUser.js";
+import { APIErrors } from "../utils/discordErrorCode.js";
 import { captureException, logger, withScope } from "@sentry/node-core";
-import { BannerPic } from "../utils/bannerGen";
+import { BannerPic } from "../utils/bannerGen.js";
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
-import { patchAllInteraction } from "../utils/MPReqID";
+import { patchAllInteraction } from "../utils/MPReqID.js";
 import {
   newUserRoleID,
   noPoints,
@@ -26,8 +26,8 @@ import {
   guildID,
   VCJoinLog,
   logChannelID
-} from "../config.json";
-import { initialize as logInit, sendLog } from "../utils/eventLogger";
+} from "../config.js";
+import { initialize as logInit, sendLog } from "../utils/eventLogger.js";
 
 export class DiscordEvents extends baseEvent {
   client: DiscordClient;

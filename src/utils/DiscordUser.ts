@@ -1,12 +1,12 @@
 import type { APIEmbedField, ColorResolvable, User } from "discord.js";
 import { DiscordAPIError, EmbedBuilder } from "discord.js";
-import { APIErrors } from "./discordErrorCode";
+import { APIErrors } from "./discordErrorCode.js";
 import { captureException, metrics } from "@sentry/node-core";
 import { Prisma } from "@prisma/client";
 import { createHash } from "crypto";
-import { sendLog } from "./eventLogger";
-import type { ServiceClient } from "../core/ServiceClient";
-import { DiscordClient } from "../core/DiscordClient";
+import { sendLog } from "./eventLogger.js";
+import type { ServiceClient } from "../core/ServiceClient.js";
+import { DiscordClient } from "../core/DiscordClient.js";
 import { randomInt } from "crypto";
 
 type embedMessageType = {

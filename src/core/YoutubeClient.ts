@@ -1,12 +1,12 @@
-import type { baseClient } from "./baseClient";
-import YouTubeNotifier from "../utils/youtube-notifier";
-import { YoutubeEvents } from "../events";
-import { youtube } from "../config.json";
-import type { DiscordClient } from "./DiscordClient";
-import type { ServiceClient } from "./ServiceClient";
+import type { baseClient } from "./baseClient.js";
+import YouTubeNotifier from "../utils/youtube-notifier/index.js";
+import { YoutubeEvents } from "../events/index.js";
+import { youtube } from "../config.js";
+import type { DiscordClient } from "./DiscordClient.js";
+import type { ServiceClient } from "./ServiceClient.js";
 import type { TextChannel } from "discord.js";
 import { logger } from "@sentry/node-core";
-import { patchClient } from "../utils/MPReqID";
+import { patchClient } from "../utils/MPReqID.js";
 
 /*
 Example Reference

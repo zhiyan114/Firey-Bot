@@ -3,11 +3,11 @@
  * Module dependencies.
  */
 import EventEmitter from 'events';
-import server from './server';
+import server from './server.js';
 import urllib from 'url';
 import qs from 'querystring';
 import crypto from 'crypto';
-import xmlbodyparser from './xmlParser';
+import xmlbodyparser from './xmlParser.js';
 import {Express, Request, Response} from 'express';
 
 

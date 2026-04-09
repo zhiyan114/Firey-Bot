@@ -1,7 +1,7 @@
-const esbuild = require('esbuild');
-const fs = require('fs');
-const path = require('path');
-const cProcess = require('child_process');
+import esbuild from "esbuild";
+import fs from "fs";
+import path from "path";
+import cProcess from "child_process";
 
 const basePath = "src";
 

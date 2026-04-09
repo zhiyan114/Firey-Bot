@@ -1,11 +1,11 @@
 import type { GuildMember } from "discord.js";
-import type { DiscordClient } from "../core/DiscordClient";
+import type { DiscordClient } from "../core/DiscordClient.js";
 import { EmbedBuilder } from "discord.js";
 import { CronJob } from "cron";
 import { captureException, cron } from "@sentry/node-core";
 import { createHash } from "crypto";
-import { guildID } from "../config.json";
-import { sendLog } from "../utils/eventLogger";
+import { guildID } from "../config.js";
+import { sendLog } from "../utils/eventLogger.js";
 
 
 /**

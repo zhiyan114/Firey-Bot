@@ -1,9 +1,9 @@
 import type { ButtonInteraction, GuildMember } from "discord.js";
-import type { DiscordClient } from "../../core/DiscordClient";
+import type { DiscordClient } from "../../core/DiscordClient.js";
 import { MessageFlags } from "discord.js";
-import { DiscordUser } from "../../utils/DiscordUser";
-import { newUserRoleID } from "../../config.json";
-import { sendLog } from "../../utils/eventLogger";
+import { DiscordUser } from "../../utils/DiscordUser.js";
+import { newUserRoleID } from "../../config.js";
+import { sendLog } from "../../utils/eventLogger.js";
 import { captureException } from "@sentry/node-core";
 
 export async function VertificationHandler(client: DiscordClient, interaction: ButtonInteraction) {

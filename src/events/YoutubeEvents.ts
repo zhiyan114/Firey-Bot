@@ -1,7 +1,7 @@
-import type { NotifiedEvent, SubEvent, YoutubeClient } from "../core/YoutubeClient";
-import { baseEvent } from "../core/baseEvent";
-import { youtube } from "../config.json";
-import { sendLog } from "../utils/eventLogger";
+import type { NotifiedEvent, SubEvent, YoutubeClient } from "../core/YoutubeClient.js";
+import { baseEvent } from "../core/baseEvent.js";
+import { youtube } from "../config.js";
+import { sendLog } from "../utils/eventLogger.js";
 import { logger } from "@sentry/node-core";
 
 

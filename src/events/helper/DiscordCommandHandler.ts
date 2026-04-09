@@ -1,17 +1,17 @@
 // This should handle all command callbacks and registerations
 
 import type { ChatInputCommandInteraction, ContextMenuCommandInteraction } from "discord.js";
-import type { baseCommand } from "../../core/baseCommand";
-import type { DiscordClient } from "../../core/DiscordClient";
+import type { baseCommand } from "../../core/baseCommand.js";
+import type { DiscordClient } from "../../core/DiscordClient.js";
 import { ChannelType, MessageFlags, REST, Routes } from "discord.js";
 import {
   EvalCommand, TwitchChatRelay, TwitchVerify, banCommand,
   getPointsCommand, kickCommand, leaderboardCommand, purgeCommand,
   softBanCommand, unbanCommand, FeedbackCommand, heapDump
-} from "../../commands/discord";
+} from "../../commands/discord/index.js";
 import { captureException, metrics } from "@sentry/node-core";
 import { createHash, timingSafeEqual } from "crypto";
-import { sendLog } from "../../utils/eventLogger";
+import { sendLog } from "../../utils/eventLogger.js";
 
 
 export class DiscordCommandHandler {

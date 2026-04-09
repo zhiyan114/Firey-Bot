@@ -3,10 +3,10 @@
 * System does not track voice activity (API limitation), but assumes when there multiple users in the channel.
 */
 import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
-import type { DiscordClient } from "../core/DiscordClient";
-import { DiscordUser } from "../utils/DiscordUser";
+import type { DiscordClient } from "../core/DiscordClient.js";
+import { DiscordUser } from "../utils/DiscordUser.js";
 import { captureException, logger, metrics, startNewTrace } from "@sentry/node-core";
-import { guildID } from "../config.json";
+import { guildID } from "../config.js";
 
 const cacheName = "VCReward";
 

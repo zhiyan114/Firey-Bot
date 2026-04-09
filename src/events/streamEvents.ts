@@ -1,11 +1,11 @@
-import type { TwitchClient } from "../core/TwitchClient";
-import type { getStreamData } from "../core/helper/twitchStream";
+import type { TwitchClient } from "../core/TwitchClient.js";
+import type { getStreamData } from "../core/helper/twitchStream.js";
 import { ChannelType, EmbedBuilder } from "discord.js";
-import { baseEvent } from "../core/baseEvent";
-import { clearTwitchCache } from "../utils/TwitchUser";
-import { twitch } from "../config.json";
-import { sendLog } from "../utils/eventLogger";
-import type { DiscordClient } from "../core/DiscordClient";
+import { baseEvent } from "../core/baseEvent.js";
+import { clearTwitchCache } from "../utils/TwitchUser.js";
+import { twitch } from "../config.js";
+import { sendLog } from "../utils/eventLogger.js";
+import type { DiscordClient } from "../core/DiscordClient.js";
 
 
 

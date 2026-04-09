@@ -1,3 +1,3 @@
-export { ReactRoleLoader } from "./ReactRoleHandler";
-export { unverifyKickLoader } from "./unverifyKick";
-export { VoiceChatReward } from "./VoiceChatReward";
+export { ReactRoleLoader } from "./ReactRoleHandler.js";
+export { unverifyKickLoader } from "./unverifyKick.js";
+export { VoiceChatReward } from "./VoiceChatReward.js";

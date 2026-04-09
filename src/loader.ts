@@ -2,7 +2,7 @@ import type { Breadcrumb, ErrorEvent, EventHint, StackFrame } from "@sentry/node
 import type { Log } from "@sentry/core";
 import { relative } from "path";
 import { DiscordAPIError, DiscordjsError, HTTPError } from "discord.js";
-import { APIErrors } from "./utils/discordErrorCode";
+import { APIErrors } from "./utils/discordErrorCode.js";
 import { Prisma } from "@prisma/client";
 import {
   extraErrorDataIntegration,

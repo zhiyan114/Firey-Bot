@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 import express from 'express';
-import YouTubeNotifier from './index';
+import YouTubeNotifier from './index.js';
 
 /**
  * Setup the server

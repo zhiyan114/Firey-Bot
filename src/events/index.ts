@@ -1,5 +1,5 @@
-export { DiscordEvents } from "./discordEvents";
-export { RedisEvents } from "./redisEvents";
-export { TwitchEvents } from "./twitchEvents";
-export { StreamEvents } from "./streamEvents";
-export { YoutubeEvents } from "./YoutubeEvents";
+export { DiscordEvents } from "./discordEvents.js";
+export { RedisEvents } from "./redisEvents.js";
+export { TwitchEvents } from "./twitchEvents.js";
+export { StreamEvents } from "./streamEvents.js";
+export { YoutubeEvents } from "./YoutubeEvents.js";
