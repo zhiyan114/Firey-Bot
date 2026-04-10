@@ -54,9 +54,9 @@ const cli = sentryInit({
     extraErrorDataIntegration({
       depth: 5
     }),
-    rewriteFramesIntegration({
-      iteratee: frameStackIteratee
-    })
+    // rewriteFramesIntegration({
+    //   iteratee: frameStackIteratee
+    // })
   ],
 });
 
@@ -110,14 +110,14 @@ function beforeBreadcrumb(breadcrumb: Breadcrumb) {
   return breadcrumb;
 }
 
-function frameStackIteratee(frame: StackFrame) {
-  const absPath = frame.filename;
-  if(!absPath) return frame;
+// function frameStackIteratee(frame: StackFrame) {
+//   const absPath = frame.filename;
+//   if(!absPath) return frame;
 
-  // Set the base path as the dist output to match the naming artifact on sentry
-  frame.filename = `/${relative(__dirname, absPath).replace(/\\/g, "/")}`;
-  return frame;
-}
+//   // Set the base path as the dist output to match the naming artifact on sentry
+//   frame.filename = `/${relative(__dirname, absPath).replace(/\\/g, "/")}`;
+//   return frame;
+// }
 
 function beforeSendLog(log: Log) {
   // eslint-disable-next-line no-console
