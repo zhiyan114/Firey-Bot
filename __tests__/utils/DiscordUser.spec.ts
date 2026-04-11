@@ -1,4 +1,5 @@
 import { DiscordUser } from "../../src/utils/DiscordUser";
+import { svcClient } from "../../src/SharedClient";
 import type { User } from "discord.js";
 
 jest.mock("@sentry/node-core", () => ({
@@ -6,23 +7,25 @@ jest.mock("@sentry/node-core", () => ({
   metrics: { count: jest.fn() },
 }));
 
-const mockService = {
-  redis: {
-    exists: jest.fn().mockResolvedValue(0),
-    hgetall: jest.fn().mockResolvedValue({}),
-    hset: jest.fn().mockResolvedValue("OK"),
-    hget: jest.fn().mockResolvedValue(null),
-    expire: jest.fn().mockResolvedValue(1),
-  },
-  prisma: {
-    members: {
-      findUnique: jest.fn(),
-      update: jest.fn(),
-      create: jest.fn(),
+jest.mock("../../src/SharedClient", () => ({
+  svcClient: {
+    redis: {
+      exists: jest.fn().mockResolvedValue(0),
+      hgetall: jest.fn().mockResolvedValue({}),
+      hset: jest.fn().mockResolvedValue("OK"),
+      hget: jest.fn().mockResolvedValue(null),
+      expire: jest.fn().mockResolvedValue(1),
     },
-    modlog: { create: jest.fn() },
+    prisma: {
+      members: {
+        findUnique: jest.fn(),
+        update: jest.fn(),
+        create: jest.fn(),
+      },
+      modlog: { create: jest.fn() },
+    },
   },
-};
+}));
 
 const mockUser = {
   bot: false,
@@ -38,14 +41,14 @@ describe("chatRewardPoints Eligibility Condition", () => {
   let localHandler: DiscordUser;
   beforeEach(() => {
     const points = 100;
-    localHandler = new DiscordUser(mockService as any, mockUser);
+    localHandler = new DiscordUser(mockUser);
 
     jest.spyOn(localHandler, "getCacheData").mockResolvedValue({
       points,
       lastgrantedpoint: new Date(0),
     });
     jest.spyOn(localHandler, "updateCacheData").mockResolvedValue();
-    mockService.prisma.members.update.mockResolvedValue({
+    (svcClient.prisma.members.update as jest.Mock).mockResolvedValue({
       points: points + 5,
       lastgrantedpoint: new Date(),
     });

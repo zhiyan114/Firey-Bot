@@ -4,6 +4,10 @@ import { SlashCommandBuilder, SlashCommandOptionsOnlyBuilder } from 'discord.js'
 const mockClient = jest.fn().mockImplementation(() => {
   return {}
 });
+
+jest.mock("../../src/SharedClient", () => ({
+  svcClient: {},
+}));
 const handler = new DiscordCommandHandler(mockClient());
 
 describe("Duplication Checks", ()=> {
