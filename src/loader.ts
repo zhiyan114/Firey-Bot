@@ -1,12 +1,10 @@
-import type { Breadcrumb, ErrorEvent, EventHint, StackFrame } from "@sentry/node-core";
+import type { Breadcrumb, ErrorEvent, EventHint } from "@sentry/node-core";
 import type { Log } from "@sentry/core";
-import { relative } from "path";
 import { DiscordAPIError, DiscordjsError, HTTPError } from "discord.js";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
 import {
   extraErrorDataIntegration,
-  rewriteFramesIntegration,
   SentryContextManager,
   init as sentryInit,
   setupOpenTelemetryLogger,
@@ -54,9 +52,9 @@ const cli = sentryInit({
     extraErrorDataIntegration({
       depth: 5
     }),
-    rewriteFramesIntegration({
-      iteratee: frameStackIteratee
-    })
+    // rewriteFramesIntegration({
+    //   iteratee: frameStackIteratee
+    // })
   ],
 });
 
@@ -110,14 +108,14 @@ function beforeBreadcrumb(breadcrumb: Breadcrumb) {
   return breadcrumb;
 }
 
-function frameStackIteratee(frame: StackFrame) {
-  const absPath = frame.filename;
-  if(!absPath) return frame;
+// function frameStackIteratee(frame: StackFrame) {
+//   const absPath = frame.filename;
+//   if(!absPath) return frame;
 
-  // Set the base path as the dist output to match the naming artifact on sentry
-  frame.filename = `/${relative(__dirname, absPath).replace(/\\/g, "/")}`;
-  return frame;
-}
+//   // Set the base path as the dist output to match the naming artifact on sentry
+//   frame.filename = `/${relative(__dirname, absPath).replace(/\\/g, "/")}`;
+//   return frame;
+// }
 
 function beforeSendLog(log: Log) {
   // eslint-disable-next-line no-console
