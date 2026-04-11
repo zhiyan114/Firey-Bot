@@ -1,18 +1,17 @@
 import type { ButtonInteraction, GuildMember } from "discord.js";
-import type { DiscordClient } from "../../core/DiscordClient";
 import { MessageFlags } from "discord.js";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { newUserRoleID } from "../../config.json";
 import { sendLog } from "../../utils/eventLogger";
 import { captureException } from "@sentry/node-core";
 
-export async function VertificationHandler(client: DiscordClient, interaction: ButtonInteraction) {
+export async function VertificationHandler(interaction: ButtonInteraction) {
   try {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     if(interaction.user.bot)
       return interaction.followUp({ content: "PRIVILEGE INSUFFICIENT!", flags: MessageFlags.Ephemeral });
 
-    const user = new DiscordUser(client, interaction.user);
+    const user = new DiscordUser(interaction.user);
     const member = interaction.member as GuildMember | null;
     if(!member) return;
 

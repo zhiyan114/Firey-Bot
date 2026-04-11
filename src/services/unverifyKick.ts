@@ -6,6 +6,7 @@ import { captureException, cron } from "@sentry/node-core";
 import { createHash } from "crypto";
 import { guildID } from "../config.json";
 import { sendLog } from "../utils/eventLogger";
+import { svcClient } from "../SharedClient";
 
 
 /**
@@ -38,7 +39,7 @@ export class unverifyKickLoader {
 
   // Callback function to set the user a grace period
   async setGracePeriod(member: GuildMember) {
-    await this.client.service.redis.set(this.getRedisHash(member.id), "true", "EX", 86400);
+    await svcClient.redis.set(this.getRedisHash(member.id), "true", "EX", 86400);
   }
 
   // Check if users is no longer in grace period and kick
@@ -52,7 +53,7 @@ export class unverifyKickLoader {
       if(noRoleUsers.size === 0) return;
 
       for(const [,member] of noRoleUsers) {
-        if(await this.client.service.redis.get(this.getRedisHash(member.id)))
+        if(await svcClient.redis.get(this.getRedisHash(member.id)))
           continue;
 
         const embed = new EmbedBuilder()

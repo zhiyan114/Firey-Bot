@@ -1,9 +1,5 @@
-import { DiscordClient } from "./core/DiscordClient";
 import { logger, close, startNewTrace } from "@sentry/node-core";
-import { TwitchClient } from "./core/TwitchClient";
-import { YoutubeClient } from "./core/YoutubeClient";
-import { ServiceClient } from "./core/ServiceClient";
-
+import { discordCli, svcClient, TwitchCli, YoutubeCli } from "./SharedClient";
 
 /**
  * Start up checks
@@ -16,21 +12,17 @@ if(!process.env["TWITCH_TOKEN"] || !process.env["TWITCH_USERNAME"])
 /**
  * Setup our beloved client stuff and start it
  */
-const svcClient = new ServiceClient();
-const CoreClient = new DiscordClient(svcClient);
-const TwitchCli = new TwitchClient(svcClient, CoreClient);
-const YoutubeCli = new YoutubeClient(svcClient, CoreClient);
 
 startNewTrace(async () => {
   // PRE PROCESSING EVENTS
   svcClient.preProcess();
 
   await svcClient.start();
-  await CoreClient.start(process.env["BOTTOKEN"]!);
+  await discordCli.start(process.env["BOTTOKEN"]!);
   logger.info("Bot started");
   await TwitchCli.start();
-  CoreClient.setTwitchClient(TwitchCli);
-  await YoutubeCli.start();
+  discordCli.setTwitchClient(TwitchCli);
+  await YoutubeCli.start(discordCli);
 
   // POST PROCESSING EVENTS HERE
   svcClient.postProcess();
@@ -46,7 +38,7 @@ process.on("SIGINT", async ()=> {
 
   // Perform cleanup
   await close(15000); // Dont catch dispose errors
-  await CoreClient.dispose();
+  await discordCli.dispose();
   await TwitchCli.dispose();
   await YoutubeCli.dispose();
 

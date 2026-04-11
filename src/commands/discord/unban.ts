@@ -45,8 +45,8 @@ export class unbanCommand extends baseCommand {
       return interaction.reply({ content: "This command can only be used in a server.", flags: MessageFlags.Ephemeral });
     if(!targetUser || targetUser.bot)
       return interaction.reply({ content: "Invalid User/User's ID", flags: MessageFlags.Ephemeral });
-    const target = new DiscordUser(this.client, targetUser);
-    const issuer = new DiscordUser(this.client, interaction.user);
+    const target = new DiscordUser(targetUser);
+    const issuer = new DiscordUser(interaction.user);
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     try {

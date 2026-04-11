@@ -2,6 +2,7 @@ import type { ChatInputCommandInteraction } from "discord.js";
 import type { DiscordClient } from "../../core/DiscordClient";
 import { ChannelType, EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
+import { svcClient } from "../../SharedClient";
 
 type boardData = {
   username: string;
@@ -29,12 +30,12 @@ export class leaderboardCommand extends baseCommand {
   public async execute(interaction: ChatInputCommandInteraction) {
     const isGuildChannel = interaction.channel && interaction.channel.type === ChannelType.GuildText;
     await interaction.deferReply({ flags: isGuildChannel ? MessageFlags.Ephemeral : undefined });
-    const cacheData = await this.client.service.redis.get(this.cacheKey);
+    const cacheData = await svcClient.redis.get(this.cacheKey);
     let boardData: boardData[] = cacheData ? JSON.parse(cacheData) : [];
 
     if (boardData.length === 0) {
       // Pull from DB if cache is empty
-      boardData = await this.client.service.prisma.members.findMany({
+      boardData = await svcClient.prisma.members.findMany({
         select: {
           username: true,
           points: true
@@ -53,7 +54,7 @@ export class leaderboardCommand extends baseCommand {
       });
 
       // Cache it for 30 minutes
-      await this.client.service.redis.set(this.cacheKey, JSON.stringify(boardData), "EX", 1800);
+      await svcClient.redis.set(this.cacheKey, JSON.stringify(boardData), "EX", 1800);
     }
 
     // Format it to string

@@ -26,7 +26,7 @@ export class getPointsCommand extends baseCommand {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     // Setup Embed
-    const target = new DiscordUser(this.client, interaction.targetUser);
+    const target = new DiscordUser(interaction.targetUser);
     const embed = new EmbedBuilder()
       .setTitle("Total Points")
       .setColor("#00FFFF")

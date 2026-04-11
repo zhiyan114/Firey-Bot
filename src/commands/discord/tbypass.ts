@@ -17,6 +17,7 @@ import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
 import { captureException } from "@sentry/node-core";
 import { adminRoleID, twitch } from "../../config.json";
+import { svcClient } from "../../SharedClient";
 
 export class TwitchChatRelay extends baseCommand {
   public client: DiscordClient;
@@ -41,7 +42,7 @@ export class TwitchChatRelay extends baseCommand {
     if(!(interaction.member instanceof GuildMember)) return; // Not possible since the command usage is set disabled in DM
     const uniqueID = randomUUID();
 
-    const tUser = await this.client.service.prisma.twitch.findUnique({
+    const tUser = await svcClient.prisma.twitch.findUnique({
       select: {
         verified: true,
         username: true,

@@ -2,11 +2,11 @@ import type { baseClient } from "./baseClient";
 import YouTubeNotifier from "../utils/youtube-notifier";
 import { YoutubeEvents } from "../events";
 import { youtube } from "../config.json";
-import type { DiscordClient } from "./DiscordClient";
-import type { ServiceClient } from "./ServiceClient";
 import type { TextChannel } from "discord.js";
 import { logger } from "@sentry/node-core";
 import { patchClient } from "../utils/MPReqID";
+import type { DiscordClient } from "./DiscordClient";
+import type { ServiceClient } from "./ServiceClient";
 
 /*
 Example Reference
@@ -63,10 +63,8 @@ export declare interface YoutubeClient extends YouTubeNotifier {
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class YoutubeClient extends YouTubeNotifier implements baseClient {
-  readonly service;
   private _alertChannel?: TextChannel;
-  private dClient: DiscordClient;
-  constructor(service: ServiceClient, dClient: DiscordClient) {
+  constructor(service: ServiceClient) {
     const PubSubPort = youtube.overridePort !== 0 ? youtube.overridePort : process.env["WEBSERVER_PORT"];
     const Protocol = (process.env["WEBSERVER_HTTPS"] === "true") ? "https" : "http";
     const FQDN = process.env["WEBSERVER_FQDN"] ?? "";
@@ -78,8 +76,6 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
       middleware: true,
       secret: process.env["YTSECRET"] ?? "NotifierSecret_ShouldNotBeExposed",
     });
-    this.service = service;
-    this.dClient = dClient;
     service.express.use(Path, this.listener());
     patchClient(this, "youtube");
     logger.info(`Configured PubSub URL: ${pubsuburl}`);
@@ -89,8 +85,8 @@ export class YoutubeClient extends YouTubeNotifier implements baseClient {
       .registerEvents();
   }
 
-  public async start() {
-    this._alertChannel = await this.dClient.getTChannel(youtube.guildChannelID);
+  public async start(dClient: DiscordClient) {
+    this._alertChannel = await dClient.getTChannel(youtube.guildChannelID);
     this.subscribe(youtube.youtubeChannelID);
   }
 
