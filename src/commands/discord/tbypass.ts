@@ -16,7 +16,7 @@ import {
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
 import { captureException } from "@sentry/node-core";
-import { adminRoleID, twitch } from "../../config.json";
+import { adminRoleID, VIPUserRoleID, twitch } from "../../config.json";
 import { svcClient } from "../../SharedClient";
 
 export class TwitchChatRelay extends baseCommand {
@@ -25,7 +25,7 @@ export class TwitchChatRelay extends baseCommand {
   private MaxMessageLength = 470;
   public access = {
     users: [],
-    roles: ["907769458670575658"],
+    roles: [adminRoleID, VIPUserRoleID],
   };
 
   constructor(client: DiscordClient) {

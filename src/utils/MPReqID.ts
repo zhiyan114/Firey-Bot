@@ -22,13 +22,14 @@ import {
 } from "discord.js";
 import type { EventEmitter } from "stream";
 import type { Client } from "tmi.js";
-import { adminRoleID, newUserRoleID } from "../config.json";
+import { adminRoleID, VIPUserRoleID, newUserRoleID } from "../config.json";
 
 
 interface ExtractedUser {
   id: string;
   username: string;
   isStaff?: boolean | "unknown";
+  isVIP?: boolean | "unknown";
   isVerified?: boolean | "unknown";
 }
 
@@ -201,6 +202,7 @@ function discordDataHelper(data: User | GuildMember): ExtractedUser {
     id: user.id,
     username: user.username,
     isStaff: userRoles?.some(k=> k.id === adminRoleID) ?? "unknown",
+    isVIP: userRoles?.some(k => k.id === VIPUserRoleID) ?? "unknown",
     isVerified: userRoles?.some(k=> k.id === newUserRoleID) ?? "unknown"
   };
 }
