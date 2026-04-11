@@ -121,13 +121,21 @@ export class DiscordEvents extends baseEvent {
       const embed = new EmbedBuilder()
         .setColor("#00FFFF")
         .setTitle("Welcome to the server!")
-        .setDescription(`Welcome to the Derg server, ${member.user.username}! Please read the rules and press the confirmation button to get full access. Remember to do so within 24 hours or autokick will happen!`);
+        .setDescription(`Welcome to the Derg server, ${member.user.username}!
+        Please read the rules and press the confirmation button to get full access.
+        Remember to do so within 24 hours or autokick will happen!`);
 
       try {
         await member.send({ embeds: [embed] });
       } catch(ex) {
-        if(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)
-          await channel.send({ content:`||<@${member.user.id}> You've received this message here because your DM has been disabled||`, embeds: [embed] });
+        if(ex instanceof DiscordAPIError &&
+          (ex.code === APIErrors.CANNOT_MESSAGE_USER ||
+            ex.code === APIErrors.NO_MUTUAL_GUILD_DM) // Some reason, discord throws 50278 error even though this event only fires if the user joins the guild...
+        )
+          await channel.send({
+            content: `||<@${member.user.id}>You've received this message here because your DM has been disabled or some issues with it||`,
+            embeds: [embed]
+          });
         else captureException(ex);
       }
 
