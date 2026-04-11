@@ -7,6 +7,7 @@ import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
 import { captureException, logger, metrics, startNewTrace } from "@sentry/node-core";
 import { guildID } from "../config.json";
+import { svcClient } from "../SharedClient";
 
 const cacheName = "VCReward";
 
@@ -63,7 +64,7 @@ export class VoiceChatReward {
     if(this.userTable.delete(member.id))
       logger.warn(logger.fmt`[VoiceChatReward]: User ${member.user.tag} already exist in user mapping, but user just join the voice channel?`);
 
-    const user = new _internalUser(member, new DiscordUser(this.client, member.user));
+    const user = new _internalUser(member, new DiscordUser(member.user));
     this.userTable.set(member.id, user);
     if(!this.cacheLock.get(member.id))
       await user.loadCache();
@@ -79,7 +80,7 @@ export class VoiceChatReward {
     // Redis cache is only used to load in existing progress when software updates, not used by computeReward
     try {
       this.cacheLock.set(member.id, true);
-      await tableUser.user.service.redis.del(tableUser.user.getRedisKey(cacheName));
+      await svcClient.redis.del(tableUser.user.getRedisKey(cacheName));
       this.cacheLock.delete(member.id);
       await tableUser.computeReward();
     }
@@ -201,12 +202,12 @@ class _internalUser {
     // Checkpoint every 5 seconds (and cache every minute)
     this.secCounted += 5;
     if(this.secCounted % 60 === 0 || this.secCounted % 60 < 5)
-      await this.user.service.redis.set(this.user.getRedisKey(cacheName), this.secCounted.toString(), "EX", 604800); // Cache saves for a week to handles more cases
+      await svcClient.redis.set(this.user.getRedisKey(cacheName), this.secCounted.toString(), "EX", 604800); // Cache saves for a week to handles more cases
   }
 
   // Pull potential cache value in-case bot restarted while user in VC
   public async loadCache() {
-    const cacheData = await this.user.service.redis.get(this.user.getRedisKey(cacheName));
+    const cacheData = await svcClient.redis.get(this.user.getRedisKey(cacheName));
     if(cacheData)
       this.secCounted = parseInt(cacheData);
   }

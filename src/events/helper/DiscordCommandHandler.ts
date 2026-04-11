@@ -12,6 +12,7 @@ import {
 import { captureException, metrics } from "@sentry/node-core";
 import { createHash, timingSafeEqual } from "crypto";
 import { sendLog } from "../../utils/eventLogger";
+import { svcClient } from "../../SharedClient";
 
 
 export class DiscordCommandHandler {
@@ -49,7 +50,7 @@ export class DiscordCommandHandler {
       throw Error("Missing BOTTOKEN as env variable");
 
     // Check if the command is out-of-date
-    const oldHash = await this.client.service.prisma.config.findUnique({
+    const oldHash = await svcClient.prisma.config.findUnique({
       where: {
         key: "command_hash"
       }
@@ -67,7 +68,7 @@ export class DiscordCommandHandler {
         }
       );
 
-    await this.client.service.prisma.config.upsert({
+    await svcClient.prisma.config.upsert({
       where: {
         key: "command_hash"
       },
@@ -122,7 +123,7 @@ export class DiscordCommandHandler {
     }
     catch(ex) {
       const id = captureException(ex, { mechanism: { handled: false } });
-      await this.client.service.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
+      await svcClient.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
 
       // Let the user know that something went wrong
       if(interaction.replied)

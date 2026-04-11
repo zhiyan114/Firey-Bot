@@ -50,8 +50,8 @@ export class banCommand extends baseCommand {
     // Get the supplied data
     const reason = interaction.options.get("reason",true).value as string;
     const deleteMessages = interaction.options.get("delete",true).value as boolean;
-    const targetUser = new DiscordUser(this.client, targetMember.user);
-    const issuerUser = new DiscordUser(this.client, interaction.user);
+    const targetUser = new DiscordUser(targetMember.user);
+    const issuerUser = new DiscordUser(interaction.user);
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     // Notify and ban the user

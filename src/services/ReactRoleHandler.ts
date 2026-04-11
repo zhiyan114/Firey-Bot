@@ -4,6 +4,7 @@ import { ChannelType, DiscordAPIError, EmbedBuilder, } from "discord.js";
 import { APIErrors } from "../utils/discordErrorCode";
 import { captureException } from "@sentry/node-core";
 import { guildID, reactRoles } from "../config.json";
+import { svcClient } from "../SharedClient";
 
 export async function ReactRoleLoader(client: DiscordClient) {
   // General checks
@@ -15,7 +16,7 @@ export async function ReactRoleLoader(client: DiscordClient) {
 
 
   // Check if the react message exists
-  const msgID = (await client.service.prisma.config.findUnique({
+  const msgID = (await svcClient.prisma.config.findUnique({
     where: {
       key: "reactMessageID"
     }
@@ -43,7 +44,7 @@ export async function ReactRoleLoader(client: DiscordClient) {
       .setColor("#00FFFF")
       .setDescription(finalDesc);
     msg = await channel.send({ embeds:[embed] });
-    await client.service.prisma.config.upsert({
+    await svcClient.prisma.config.upsert({
       where: {
         key: "reactMessageID"
       },

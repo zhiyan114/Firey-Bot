@@ -5,9 +5,8 @@ import { captureException, metrics } from "@sentry/node-core";
 import { Prisma } from "@prisma/client";
 import { createHash } from "crypto";
 import { sendLog } from "./eventLogger";
-import type { ServiceClient } from "../core/ServiceClient";
-import { DiscordClient } from "../core/DiscordClient";
 import { randomInt } from "crypto";
+import { svcClient } from "../SharedClient";
 
 type embedMessageType = {
     title: string;
@@ -38,7 +37,6 @@ type ActionLogOpt = {
 
 export class DiscordUser {
   private user: User;
-  public service: ServiceClient;
   private cachekey: string;
   private userHash: string;
   public economy: UserEconomy;
@@ -47,10 +45,9 @@ export class DiscordUser {
     * This class is used to manage discord users
     * @param user The discord user object or userid
     */
-  constructor(service: ServiceClient | DiscordClient, user: User) {
+  constructor(user: User) {
     if(user.bot) throw Error("The discord user cannot be a bot");
     this.user = user;
-    this.service = (service instanceof DiscordClient) ? service.service : service;
 
     // Use the first 6 digit of sha512 as user key
     this.userHash = createHash("sha512").update(user.id).digest("hex");
@@ -72,7 +69,7 @@ export class DiscordUser {
      * @returns {boolean} if the user exists
      */
   public async cacheExists(): Promise<boolean> {
-    return await this.service.redis.exists(this.cachekey) > 0;
+    return await svcClient.redis.exists(this.cachekey) > 0;
   }
 
   /**
@@ -83,7 +80,7 @@ export class DiscordUser {
     // Check if the record already exist in redis
     if(await this.cacheExists()) {
       // Pull it up and use it
-      const data = await this.service.redis.hgetall(this.cachekey);
+      const data = await svcClient.redis.hgetall(this.cachekey);
       return {
         rulesconfirmedon: data.rulesconfirmedon ? new Date(data.rulesconfirmedon) : undefined,
         points: data.points ? Number(data.points) : undefined,
@@ -114,9 +111,9 @@ export class DiscordUser {
     if(newData.points !== undefined) filteredData["points"] = newData.points.toString();
     if(newData.lastgrantedpoint !== undefined) filteredData["lastgrantedpoint"] = newData.lastgrantedpoint.toString();
     // Update the cache
-    await this.service.redis.hset(this.cachekey, filteredData);
+    await svcClient.redis.hset(this.cachekey, filteredData);
     // set redis expire key in 5 hours
-    await this.service.redis.expire(this.cachekey, 18000);
+    await svcClient.redis.expire(this.cachekey, 18000);
   }
 
   /**
@@ -124,7 +121,7 @@ export class DiscordUser {
      */
   private async getUserFromDB() {
     try {
-      const dbUser = await this.service.prisma.members.findUnique({
+      const dbUser = await svcClient.prisma.members.findUnique({
         where: {
           id: this.user.id
         }
@@ -168,7 +165,7 @@ export class DiscordUser {
      */
   public async updateUserData(data?: updateUserData) {
     try {
-      const newData = await this.service.prisma.members.update({
+      const newData = await svcClient.prisma.members.update({
         data: {
           username: data ? data.username : this.username,
           displayname: data ? data.displayName : this.user.displayName,
@@ -202,7 +199,7 @@ export class DiscordUser {
      */
   public async createNewUser(rulesconfirmed?: Date) {
     try {
-      return await this.service.prisma.members.create({
+      return await svcClient.prisma.members.create({
         data: {
           id: this.user.id,
           username: this.username,
@@ -255,7 +252,7 @@ export class DiscordUser {
     */
   public async actionLog(opt: ActionLogOpt) {
     try {
-      await this.service.prisma.modlog.create({
+      await svcClient.prisma.modlog.create({
         data: {
           targetid: opt.target?.user.id,
           moderatorid: this.user.id,
@@ -316,7 +313,7 @@ class UserEconomy {
      */
   public async grantPoints(points: number) {
     // User exist and condition passes, grant the user the points
-    const newData = await this.user.service.prisma.members.update({
+    const newData = await svcClient.prisma.members.update({
       data: {
         lastgrantedpoint: new Date(),
         points: { increment: points }
@@ -345,7 +342,7 @@ class UserEconomy {
       if (!(cacheData?.points) || cacheData.points < points) return false;
     }
     // User has enough, deduct it
-    const newData = await this.user.service.prisma.members.update({
+    const newData = await svcClient.prisma.members.update({
       data: {
         points: { decrement: points }
       },
@@ -413,6 +410,6 @@ class UserEconomy {
   }
 
   public async getBalance() {
-    return Number(await this.user.service.redis.hget(this.cacheKey,"points") ?? (await this.user.getCacheData())?.points ?? "0");
+    return Number(await svcClient.redis.hget(this.cacheKey,"points") ?? (await this.user.getCacheData())?.points ?? "0");
   }
 }

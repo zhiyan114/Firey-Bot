@@ -16,6 +16,7 @@ import {
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
 import { captureException, captureFeedback } from "@sentry/node-core";
+import { svcClient } from "../../SharedClient";
 
 export class FeedbackCommand extends baseCommand {
   client: DiscordClient;
@@ -49,7 +50,7 @@ export class FeedbackCommand extends baseCommand {
       .setTitle("Feedback");
 
     // Let the user know if sentry caught the last error via description text
-    const userSentryErrorID = await this.client.service.redis.get(`userSentryErrorID:${interaction.user.id}`) ?? undefined;
+    const userSentryErrorID = await svcClient.redis.get(`userSentryErrorID:${interaction.user.id}`) ?? undefined;
 
     // Create a text notice
     const sentryNotice = userSentryErrorID ?
@@ -93,6 +94,6 @@ export class FeedbackCommand extends baseCommand {
       message: components.find((k): k is TextInputModalData => k !== false && k.customId === "feedback")?.value ?? "This shouldn't happened?!?!?",
     });
     if(sentryEventID)
-      await this.client.service.redis.del(`userSentryErrorID:${result.user.id}`);
+      await svcClient.redis.del(`userSentryErrorID:${result.user.id}`);
   }
 }

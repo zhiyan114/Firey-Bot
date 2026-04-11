@@ -5,7 +5,6 @@ import { DiscordEvents } from "../events";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
 import { unverifyKickLoader, ReactRoleLoader, VoiceChatReward } from "../services";
 import { guildID } from '../config.json';
-import type { ServiceClient } from "./ServiceClient";
 import { DiscordInvite } from "./helper/DiscordInvite";
 import type { TwitchClient } from "./TwitchClient";
 import { patchClient } from "../utils/MPReqID";
@@ -21,11 +20,10 @@ import { patchClient } from "../utils/MPReqID";
  */
 export class DiscordClient extends Client implements baseClient {
   readonly sysVer: string; // Software Release Version
-  readonly service;
   readonly inviteManager;
   private _tClient?: TwitchClient;
 
-  constructor(service: ServiceClient) {
+  constructor() {
     super({
       intents: [
         GatewayIntentBits.Guilds,
@@ -46,7 +44,6 @@ export class DiscordClient extends Client implements baseClient {
 
     // Setup
     this.sysVer = getClient()?.getOptions().release ?? "??????";
-    this.service = service;
     this.inviteManager = new DiscordInvite(this);
     patchClient(this, "discord");
 

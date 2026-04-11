@@ -49,8 +49,8 @@ export class softBanCommand extends baseCommand {
       return interaction.reply({ content: "Target you specified doesn't exist in the server.", flags: MessageFlags.Ephemeral });
     if(targetMember.user.bot)
       return interaction.reply({ content: "Target cannot be a bot", flags: MessageFlags.Ephemeral });
-    const target = new DiscordUser(this.client, targetMember.user);
-    const issuer = new DiscordUser(this.client, interaction.user);
+    const target = new DiscordUser(targetMember.user);
+    const issuer = new DiscordUser(interaction.user);
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     // Prepare message for target

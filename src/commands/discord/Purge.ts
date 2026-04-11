@@ -45,7 +45,7 @@ export class purgeCommand extends baseCommand {
     // Initial Setup
     const amount = interaction.options.get("amount", true).value as number;
     const reason = interaction.options.get("reason", false)?.value as string | undefined;
-    const issuer = new DiscordUser(this.client, interaction.user);
+    const issuer = new DiscordUser(interaction.user);
 
     // Some checks
     if(amount < 1 || amount > 100)

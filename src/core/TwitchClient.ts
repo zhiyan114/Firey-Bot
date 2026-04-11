@@ -4,19 +4,14 @@ import { StreamEvents, TwitchEvents } from "../events";
 import { streamClient } from "./helper/twitchStream";
 import { twitch } from "../config.json";
 import { sendLog } from "../utils/eventLogger";
-import type { ServiceClient } from "./ServiceClient";
-import type { DiscordClient } from "./DiscordClient";
-import type { DiscordInvite } from "./helper/DiscordInvite";
 import { patchClient } from "../utils/MPReqID";
 
 
 
 export class TwitchClient extends Client implements baseClient {
   readonly streamClient: streamClient;
-  readonly service: ServiceClient;
-  readonly dInvite: DiscordInvite;
 
-  constructor(service: ServiceClient, dClient: DiscordClient) {
+  constructor() {
     super({
       connection: {
         reconnect: true,
@@ -30,14 +25,12 @@ export class TwitchClient extends Client implements baseClient {
       channels: [twitch.channel]
     });
     this.streamClient = new streamClient(this, twitch.channel);
-    this.service = service;
-    this.dInvite = dClient.inviteManager;
     patchClient(this, "twitch");
 
     // Register events
-    new TwitchEvents(this, dClient)
+    new TwitchEvents(this)
       .registerEvents();
-    new StreamEvents(this, dClient)
+    new StreamEvents(this)
       .registerEvents();
 
   }

@@ -3,6 +3,7 @@ import { baseEvent } from "../core/baseEvent";
 import { youtube } from "../config.json";
 import { sendLog } from "../utils/eventLogger";
 import { logger } from "@sentry/node-core";
+import { svcClient } from "../SharedClient";
 
 
 export class YoutubeEvents extends baseEvent {
@@ -28,10 +29,10 @@ export class YoutubeEvents extends baseEvent {
     if(data.video.title.toLowerCase().includes("[live]"))
       return;
     // Prevent duplicated video links from being posted, which somehow is an issue???
-    if(await this.client.service.redis.get(`youtube:${data.video.id}`) !== null)
+    if(await svcClient.redis.get(`youtube:${data.video.id}`) !== null)
       return;
 
-    await this.client.service.redis.set(`youtube:${data.video.id}`, "true", "EX", 43200);
+    await svcClient.redis.set(`youtube:${data.video.id}`, "true", "EX", 43200);
     logger.info(logger.fmt`Published Youtube Video ID: ${data.video.id}`, {
       publishTime: data.published,
       updateTime: data.updated

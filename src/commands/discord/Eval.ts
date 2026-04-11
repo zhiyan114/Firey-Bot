@@ -13,6 +13,7 @@ import {
 import { baseCommand } from "../../core/baseCommand";
 import Sentry from "@sentry/node-core";
 import { guildID, newUserRoleID } from "../../config.json";
+import { svcClient } from "../../SharedClient";
 
 export class EvalCommand extends baseCommand {
   public client: DiscordClient;
@@ -113,7 +114,7 @@ export class EvalCommand extends baseCommand {
         rulesconfirmedon: hasVerifyRole ? (new Date()) : undefined
       });
     }
-    await this.client.service.prisma.members.createMany({
+    await svcClient.prisma.members.createMany({
       data: dataToPush,
       skipDuplicates: true,
     });
@@ -126,7 +127,7 @@ export class EvalCommand extends baseCommand {
 
     for(const [,member] of await guild.members.fetch()) {
       if(member.user.bot) continue;
-      await this.client.service.prisma.members.update({
+      await svcClient.prisma.members.update({
         data: {
           username: member.user.username,
           displayname: member.user.displayName,

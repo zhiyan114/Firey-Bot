@@ -46,8 +46,8 @@ export class kickCommand extends baseCommand {
     // supplied info
     const reason = interaction.options.get("reason",true).value as string;
     const invite = interaction.options.get("invite",true).value as boolean;
-    const target = new DiscordUser(this.client, targetMember.user);
-    const issuer = new DiscordUser(this.client, interaction.user);
+    const target = new DiscordUser(targetMember.user);
+    const issuer = new DiscordUser(interaction.user);
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     // Prepare message field for target

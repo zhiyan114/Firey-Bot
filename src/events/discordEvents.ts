@@ -78,7 +78,7 @@ export class DiscordEvents extends baseEvent {
 
         if(interaction.isButton())
           if(interaction.customId === "RuleConfirm")
-            return await VertificationHandler(this.client, interaction);
+            return await VertificationHandler(interaction);
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     });
   }
@@ -97,7 +97,7 @@ export class DiscordEvents extends baseEvent {
         if(noPoints.category.length > 0 && noPoints.category.find(c=>channel.parentId === c)) return;
 
         // Grant points
-        await (new DiscordUser(this.client.service, message.author)).economy.chatRewardPoints(message.content);
+        await (new DiscordUser(message.author)).economy.chatRewardPoints(message.content);
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     });
   }
@@ -105,7 +105,7 @@ export class DiscordEvents extends baseEvent {
   private async guildMemberAdd(member: GuildMember) {
     try {
       if(member.user.bot) return;
-      const user = new DiscordUser(this.client.service, member.user);
+      const user = new DiscordUser(member.user);
 
       // Create new user entry
       try {
@@ -149,7 +149,7 @@ export class DiscordEvents extends baseEvent {
 
   private async userUpdate(oldUser: User | PartialUser, newUser: User) {
     if(oldUser.bot) return;
-    const user = new DiscordUser(this.client.service, newUser);
+    const user = new DiscordUser(newUser);
 
     try {
       // See if we need to update user's rule confirmation date

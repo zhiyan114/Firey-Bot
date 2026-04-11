@@ -3,6 +3,7 @@ import type { DiscordClient } from "../../core/DiscordClient";
 import { EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { TwitchUser } from "../../utils/TwitchUser";
+import { svcClient } from "../../SharedClient";
 
 export class TwitchVerify extends baseCommand {
   client: DiscordClient;
@@ -35,7 +36,7 @@ export class TwitchVerify extends baseCommand {
       .setTimestamp();
 
     // Check for the request and status
-    const userReq = await this.client.service.prisma.twitch.findUnique({
+    const userReq = await svcClient.prisma.twitch.findUnique({
       select: {
         id: true,
         username: true,
@@ -64,7 +65,7 @@ export class TwitchVerify extends baseCommand {
       });
 
     // Process the request
-    await this.client.service.prisma.twitch.update({
+    await svcClient.prisma.twitch.update({
       where: {
         id: userReq.id
       },
@@ -72,7 +73,7 @@ export class TwitchVerify extends baseCommand {
         verified: true
       }
     });
-    await (new TwitchUser(this.client.service, userReq.id)).updateDataCache({
+    await (new TwitchUser(userReq.id)).updateDataCache({
       memberid: interaction.user.id,
       username: userReq.username,
       verified: true

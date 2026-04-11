@@ -10,8 +10,8 @@ import type {
 import type { DiscordClient } from "../DiscordClient";
 import { createHash } from "crypto";
 import { ChannelType } from "discord.js";
-import type Redis from "ioredis";
 import { guildID } from "../../config.json";
+import { svcClient } from "../../SharedClient";
 
 interface tempInviteOption extends InviteCreateOptions {
   channel?: GuildInvitableChannelResolvable;
@@ -29,12 +29,10 @@ interface tempInviteOption extends InviteCreateOptions {
 export class DiscordInvite {
   private guild?: Guild;
   private client: DiscordClient;
-  private redis: Redis;
   private baseUrl = "https://discord.gg/";
 
   constructor(client: DiscordClient) {
     // Set the provided guild or the first one on the cache if this is a single server bot
-    this.redis = client.service.redis;
     this.client = client;
   }
 
@@ -92,7 +90,7 @@ export class DiscordInvite {
 
     // Use the cached invite key if it exists
     if(!inviteOpt.nocache) {
-      const cache = await this.redis.get(redisKey);
+      const cache = await svcClient.redis.get(redisKey);
       if(cache) return inviteOpt.rawCode ? cache : this.baseUrl + cache;
     }
 
@@ -114,7 +112,7 @@ export class DiscordInvite {
       return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
 
     // Save to cache if allowed
-    await this.redis.set(redisKey, inviteLink.code, "EX", inviteOpt.maxAge);
+    await svcClient.redis.set(redisKey, inviteLink.code, "EX", inviteOpt.maxAge);
     return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
   }
 }
