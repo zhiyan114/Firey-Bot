@@ -90,27 +90,27 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async messageCreate(message: Message) {
-    await startSpan({
-      op: "DiscordEvents.messageCreate",
-      name: "Discord messageCreate Event",
-      forceTransaction: true
-    }, async ()=>{
-      await withScope(async (scope) => {
-        try {
+    await withScope(async (scope) => {
+      try {
         // Channel Checks
-          if(message.author.bot) return;
-          const channel = message.channel;
-          if(channel.type !== ChannelType.GuildText) return;
-          scope.setAttribute("channelName", channel.name);
+        if(message.author.bot) return;
+        const channel = message.channel;
+        if(channel.type !== ChannelType.GuildText) return;
+        scope.setAttribute("channelName", channel.name);
 
-          // Place where user wont be awarded with points
-          if(noPoints.channel.length > 0 && noPoints.channel.find(c=>c===channel.id)) return;
-          if(noPoints.category.length > 0 && noPoints.category.find(c=>channel.parentId === c)) return;
+        // Place where user wont be awarded with points
+        if(noPoints.channel.length > 0 && noPoints.channel.find(c=>c===channel.id)) return;
+        if(noPoints.category.length > 0 && noPoints.category.find(c=>channel.parentId === c)) return;
 
-          // Grant points
-          await (new DiscordUser(message.author)).economy.chatRewardPoints(message.content);
-        } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-      });
+        // Grant points
+        await startSpan({
+          op: "DiscordEvents.messageCreate",
+          name: "Discord messageCreate Event",
+          forceTransaction: true
+        }, async () =>
+          await (new DiscordUser(message.author)).economy.chatRewardPoints(message.content)
+        );
+      } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     });
   }
 
