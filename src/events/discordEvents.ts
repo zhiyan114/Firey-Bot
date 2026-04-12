@@ -168,6 +168,8 @@ export class DiscordEvents extends baseEvent {
 
   private async userUpdate(oldUser: User | PartialUser, newUser: User) {
     if(oldUser.bot) return;
+    if(oldUser.username === newUser.username &&
+      oldUser.displayName !== newUser.displayName) return;
 
     await startSpan({
       op: "DiscordEvents.userUpdate",
@@ -187,7 +189,7 @@ export class DiscordEvents extends baseEvent {
 
         const rulesconfirmedon = updateVerifyStatus ? new Date() : undefined;
         const username = oldUser.username !== newUser.username ? newUser.username : undefined;
-        const displayName = oldUser.username !== newUser.username ? newUser.username : undefined;
+        const displayName = oldUser.displayName !== newUser.displayName ? newUser.displayName : undefined;
 
         // Update user if any of the listed field changes
         if(!rulesconfirmedon && !username && !displayName)
