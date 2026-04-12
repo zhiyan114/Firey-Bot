@@ -3,7 +3,7 @@ import type { TwitchClient } from "../core/TwitchClient";
 import { baseEvent } from "../core/baseEvent";
 import { TwitchUser } from "../utils/TwitchUser";
 import { processCommand } from "./helper/TwitchCommandHandler";
-import { captureException, withScope } from "@sentry/node";
+import { captureException, startSpan, withScope } from "@sentry/node";
 import { randomUUID } from "crypto";
 
 export class TwitchEvents extends baseEvent {
@@ -20,52 +20,59 @@ export class TwitchEvents extends baseEvent {
   private async onMessage(channel: string, userstate: ChatUserstate, message: string, self: boolean) {
     if(self) return;
 
-    await withScope(async (scope) => {
-      const sessionID = randomUUID();
-      scope.setAttribute("SessionID", sessionID)
-        .setTag("SessionID", sessionID);
+    await startSpan({
+      op: "TwitchEvents.OnMessage",
+      name: "Twitch Event: message",
+      forceTransaction: true,
+    }, async() => {
 
-      try {
-        if(!userstate["user-id"] || !userstate['username']) return;
+      await withScope(async (scope) => {
+        const sessionID = randomUUID();
+        scope.setAttribute("SessionID", sessionID)
+          .setTag("SessionID", sessionID);
 
-        scope.setUser({
-          id: userstate["user-id"],
-          username: userstate.username,
-          userType: userstate["user-type"] ?? "viewer"
-        });
+        try {
+          if(!userstate["user-id"] || !userstate['username']) return;
 
-        // Keep username up to date
-        const tUser = new TwitchUser(userstate['user-id']);
-        const uData = await tUser.getCacheData();
-        if(uData?.verified)
-          if(userstate['username'] !== uData.username) {
-            await tUser.updateDataCache({
-              username: userstate['username']
-            });
-            await tUser.updateUser({
-              username: userstate['username']
-            });
-          }
+          scope.setUser({
+            id: userstate["user-id"],
+            username: userstate.username,
+            userType: userstate["user-type"] ?? "viewer"
+          });
 
-        // Pass for command handling
-        const res = await processCommand({
-          channel,
-          user: userstate,
-          message,
-          self,
-          client: this.client
-        });
-        if(res) return;
+          // Keep username up to date
+          const tUser = new TwitchUser(userstate['user-id']);
+          const uData = await tUser.getCacheData();
+          if(uData?.verified)
+            if(userstate['username'] !== uData.username) {
+              await tUser.updateDataCache({
+                username: userstate['username']
+              });
+              await tUser.updateUser({
+                username: userstate['username']
+              });
+            }
 
-        // Point awarding system
-        if(!this.client.streamClient.isStreaming) return;
-        const discordUser = await tUser.getDiscordUser();
-        if(!(uData?.memberid) || uData.memberid === "-1" || !discordUser) return;
-        await discordUser.economy.chatRewardPoints(message);
-      } catch(ex) {
-        captureException(ex, { mechanism: { handled: false } });
-        this.client.say(channel, `@${userstate.username ?? "unknown"} command execution failed :{ (SessionID: ${sessionID})`);
-      }
+          // Pass for command handling
+          const res = await processCommand({
+            channel,
+            user: userstate,
+            message,
+            self,
+            client: this.client
+          });
+          if(res) return;
+
+          // Point awarding system
+          if(!this.client.streamClient.isStreaming) return;
+          const discordUser = await tUser.getDiscordUser();
+          if(!(uData?.memberid) || uData.memberid === "-1" || !discordUser) return;
+          await discordUser.economy.chatRewardPoints(message);
+        } catch(ex) {
+          captureException(ex, { mechanism: { handled: false } });
+          this.client.say(channel, `@${userstate.username ?? "unknown"} command execution failed :{ (SessionID: ${sessionID})`);
+        }
+      });
     });
   }
 }

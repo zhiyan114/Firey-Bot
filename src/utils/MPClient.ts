@@ -1,6 +1,6 @@
 import { startNewTrace, startSpan, withIsolationScope } from "@sentry/node";
 import { type ClientEvents, GuildMember, User } from "discord.js";
-import type { EventEmitter } from "stream";
+import { EventEmitter } from "stream";
 import type { Client } from "tmi.js";
 import { adminRoleID, VIPUserRoleID, newUserRoleID } from "../config.json";
 
@@ -41,7 +41,7 @@ function getDiscordUserData(arg: unknown): ExtractedUser | undefined {
 
 // Some Internals that's helpful to be patched
 export function patchClient(client: EventEmitter | Client, platformName: string) {
-  // const oldEmit = client.emit;
+  const oldEmit = client.emit;
   client.emit = function(event: string, ...args: ClientEvents[]) {
     return startNewTrace(() => withIsolationScope((scope)=>{
       scope.setTags({
@@ -65,9 +65,11 @@ export function patchClient(client: EventEmitter | Client, platformName: string)
         }
       }
 
+      if(!(client instanceof EventEmitter))
+        return oldEmit.call(client, event, ...args);
 
       // Start Spans on all the listener calls
-      const AllListeners = (client as EventEmitter).rawListeners(event);
+      const AllListeners = client.rawListeners(event);
       for(const listener of AllListeners) {
         let funcName = listener.name.trim();
         if(funcName === "bound" || funcName === "")
@@ -82,8 +84,6 @@ export function patchClient(client: EventEmitter | Client, platformName: string)
         }, () => listener.call(client, ...args));
       }
       return true;
-
-      // return oldEmit.call(client, event, ...args);
     }));
   };
 }
