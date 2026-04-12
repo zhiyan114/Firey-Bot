@@ -1,7 +1,7 @@
 import type { APIEmbedField, ColorResolvable, User } from "discord.js";
 import { DiscordAPIError, EmbedBuilder } from "discord.js";
 import { APIErrors } from "./discordErrorCode";
-import { captureException, metrics } from "@sentry/node";
+import { captureException, metrics, startSpan } from "@sentry/node";
 import { Prisma } from "@prisma/client";
 import { createHash } from "crypto";
 import { sendLog } from "./eventLogger";
@@ -77,26 +77,32 @@ export class DiscordUser {
      * @returns {cacheData | undefined} returns undefined if the user does not exist in the database, otherwise returns cacheData
      */
   public async getCacheData(): Promise<cacheData | undefined> {
-    // Check if the record already exist in redis
-    if(await this.cacheExists()) {
+    return await startSpan({
+      op: "DiscordUser.getCacheData",
+      name: "Get Discord User Cache",
+      onlyIfParent: true
+    }, async() => {
+      // Check if the record already exist in redis
+      if(await this.cacheExists()) {
       // Pull it up and use it
-      const data = await svcClient.redis.hgetall(this.cachekey);
-      return {
-        rulesconfirmedon: data.rulesconfirmedon ? new Date(data.rulesconfirmedon) : undefined,
-        points: data.points ? Number(data.points) : undefined,
-        lastgrantedpoint: data.lastgrantedpoint ? new Date(data.lastgrantedpoint) : undefined,
+        const data = await svcClient.redis.hgetall(this.cachekey);
+        return {
+          rulesconfirmedon: data.rulesconfirmedon ? new Date(data.rulesconfirmedon) : undefined,
+          points: data.points ? Number(data.points) : undefined,
+          lastgrantedpoint: data.lastgrantedpoint ? new Date(data.lastgrantedpoint) : undefined,
+        };
+      }
+      // Data doesn't exist in redis, Update the cache
+      const dbData = await this.getUserFromDB();
+      if(!dbData) return;
+      const finalData: cacheData = {
+        rulesconfirmedon: dbData.rulesconfirmedon ?? undefined,
+        points: dbData.points,
+        lastgrantedpoint: dbData.lastgrantedpoint,
       };
-    }
-    // Data doesn't exist in redis, Update the cache
-    const dbData = await this.getUserFromDB();
-    if(!dbData) return;
-    const finalData: cacheData = {
-      rulesconfirmedon: dbData.rulesconfirmedon ?? undefined,
-      points: dbData.points,
-      lastgrantedpoint: dbData.lastgrantedpoint,
-    };
-    await this.updateCacheData(finalData);
-    return finalData;
+      await this.updateCacheData(finalData);
+      return finalData;
+    });
   }
 
   /**
@@ -105,32 +111,44 @@ export class DiscordUser {
      *
      */
   public async updateCacheData(newData: cacheData) {
-    // Clear out all the undefined and null objects
-    const filteredData: {[key: string]: string} = {};
-    if(newData.rulesconfirmedon !== undefined) filteredData["rulesconfirmedon"] = newData.rulesconfirmedon.toString();
-    if(newData.points !== undefined) filteredData["points"] = newData.points.toString();
-    if(newData.lastgrantedpoint !== undefined) filteredData["lastgrantedpoint"] = newData.lastgrantedpoint.toString();
-    // Update the cache
-    await svcClient.redis.hset(this.cachekey, filteredData);
-    // set redis expire key in 5 hours
-    await svcClient.redis.expire(this.cachekey, 18000);
+    return await startSpan({
+      op: "DiscordUser.updateCacheData",
+      name: "Update Discord User Cache",
+      onlyIfParent: true
+    }, async() => {
+      // Clear out all the undefined and null objects
+      const filteredData: {[key: string]: string} = {};
+      if(newData.rulesconfirmedon !== undefined) filteredData["rulesconfirmedon"] = newData.rulesconfirmedon.toString();
+      if(newData.points !== undefined) filteredData["points"] = newData.points.toString();
+      if(newData.lastgrantedpoint !== undefined) filteredData["lastgrantedpoint"] = newData.lastgrantedpoint.toString();
+      // Update the cache
+      await svcClient.redis.hset(this.cachekey, filteredData);
+      // set redis expire key in 5 hours
+      await svcClient.redis.expire(this.cachekey, 18000);
+    });
   }
 
   /**
      * Get the user data from the database directly, should only be used when the cache didn't have the data.
      */
   private async getUserFromDB() {
-    try {
-      const dbUser = await svcClient.prisma.members.findUnique({
-        where: {
-          id: this.user.id
-        }
-      });
-      if(!dbUser) return await this.createNewUser();
-      return dbUser;
-    } catch(ex) {
-      captureException(ex);
-    }
+    return await startSpan({
+      op: "DiscordUser.getUserFromDB",
+      name: "Get User data from database",
+      onlyIfParent: true
+    }, async() => {
+      try {
+        const dbUser = await svcClient.prisma.members.findUnique({
+          where: {
+            id: this.user.id
+          }
+        });
+        if(!dbUser) return await this.createNewUser();
+        return dbUser;
+      } catch(ex) {
+        captureException(ex);
+      }
+    });
   }
 
   /**
@@ -164,32 +182,38 @@ export class DiscordUser {
      * @returns whether the operation was successful or not
      */
   public async updateUserData(data?: updateUserData) {
-    try {
-      const newData = await svcClient.prisma.members.update({
-        data: {
-          username: data ? data.username : this.username,
-          displayname: data ? data.displayName : this.user.displayName,
-          rulesconfirmedon: data?.rulesconfirmedon,
-        },
-        where: {
-          id: this.user.id
-        }
-      });
-      await this.updateCacheData({
-        rulesconfirmedon: newData.rulesconfirmedon ?? undefined,
-        points: newData.points,
-        lastgrantedpoint: newData.lastgrantedpoint
-      });
-      return true;
-    } catch(ex) {
-      if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2025") {
-        // User not found, create one
-        await this.createNewUser(data?.rulesconfirmedon);
+    return await startSpan({
+      op: "DiscordUser.updateUserData",
+      name: "Update User data to database",
+      onlyIfParent: true
+    }, async() => {
+      try {
+        const newData = await svcClient.prisma.members.update({
+          data: {
+            username: data ? data.username : this.username,
+            displayname: data ? data.displayName : this.user.displayName,
+            rulesconfirmedon: data?.rulesconfirmedon,
+          },
+          where: {
+            id: this.user.id
+          }
+        });
+        await this.updateCacheData({
+          rulesconfirmedon: newData.rulesconfirmedon ?? undefined,
+          points: newData.points,
+          lastgrantedpoint: newData.lastgrantedpoint
+        });
         return true;
+      } catch(ex) {
+        if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2025") {
+        // User not found, create one
+          await this.createNewUser(data?.rulesconfirmedon);
+          return true;
+        }
+        captureException(ex);
+        return false;
       }
-      captureException(ex);
-      return false;
-    }
+    });
   }
 
   /**
@@ -198,20 +222,26 @@ export class DiscordUser {
      * @returns User data if successfully create a new user, otherwise none
      */
   public async createNewUser(rulesconfirmed?: Date) {
-    try {
-      return await svcClient.prisma.members.create({
-        data: {
-          id: this.user.id,
-          username: this.username,
-          displayname: this.user.displayName,
-          rulesconfirmedon: rulesconfirmed,
-        }
-      });
-    } catch(ex) {
+    return await startSpan({
+      op: "DiscordUser.createNewUser",
+      name: "Create a new user in datbase",
+      onlyIfParent: true
+    }, async() => {
+      try {
+        return await svcClient.prisma.members.create({
+          data: {
+            id: this.user.id,
+            username: this.username,
+            displayname: this.user.displayName,
+            rulesconfirmedon: rulesconfirmed,
+          }
+        });
+      } catch(ex) {
       // Idek, we'll just ignore it for now
-      if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002") return;
-      captureException(ex);
-    }
+        if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002") return;
+        captureException(ex);
+      }
+    });
   }
 
   /**
@@ -220,26 +250,32 @@ export class DiscordUser {
     * @returns {boolean} Whether the operation has succeeded or not
     */
   public async sendMessage(messageOption: embedMessageType | string): Promise<boolean> {
-    try {
-      if(typeof(messageOption) === "string") {
-        await this.user.send(messageOption);
+    return await startSpan({
+      op: "DiscordUser.sendMessage",
+      name: "Send discord user a DM",
+      onlyIfParent: true
+    }, async() => {
+      try {
+        if(typeof(messageOption) === "string") {
+          await this.user.send(messageOption);
+          return true;
+        }
+        const embed = new EmbedBuilder()
+          .setTitle(messageOption.title)
+          .setDescription(messageOption.message)
+          .setColor(messageOption.color ?? "#00FFFF")
+          .setTimestamp()
+          .setFooter({
+            text: "Notification Service"
+          });
+        if(messageOption.fields) embed.setFields(messageOption.fields);
+        await this.user.send({ embeds:[embed] });
         return true;
+      } catch(ex) {
+        if(!(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)) captureException(ex);
+        return false;
       }
-      const embed = new EmbedBuilder()
-        .setTitle(messageOption.title)
-        .setDescription(messageOption.message)
-        .setColor(messageOption.color ?? "#00FFFF")
-        .setTimestamp()
-        .setFooter({
-          text: "Notification Service"
-        });
-      if(messageOption.fields) embed.setFields(messageOption.fields);
-      await this.user.send({ embeds:[embed] });
-      return true;
-    } catch(ex) {
-      if(!(ex instanceof DiscordAPIError && ex.code === APIErrors.CANNOT_MESSAGE_USER)) captureException(ex);
-      return false;
-    }
+    });
   }
 
   /**
@@ -251,30 +287,36 @@ export class DiscordUser {
     * @param metadata Additional data to be added for sendLog
     */
   public async actionLog(opt: ActionLogOpt) {
-    try {
-      await svcClient.prisma.modlog.create({
-        data: {
-          targetid: opt.target?.user.id,
-          moderatorid: this.user.id,
-          action: opt.actionName,
-          reason: opt.reason,
-          metadata: opt.metadata
-        }
-      });
-    } catch(ex) {
-      if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2003")
-        await sendLog({
-          type: "Warning",
-          message: "actionLog failed due to missing target in the database",
-          metadata: opt.metadata,
+    return await startSpan({
+      op: "DiscordUser.actionLog",
+      name: "Capture/Store user moderation log",
+      onlyIfParent: true
+    }, async() => {
+      try {
+        await svcClient.prisma.modlog.create({
+          data: {
+            targetid: opt.target?.user.id,
+            moderatorid: this.user.id,
+            action: opt.actionName,
+            reason: opt.reason,
+            metadata: opt.metadata
+          }
         });
-      else captureException(ex);
-    }
+      } catch(ex) {
+        if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2003")
+          await sendLog({
+            type: "Warning",
+            message: "actionLog failed due to missing target in the database",
+            metadata: opt.metadata,
+          });
+        else captureException(ex);
+      }
 
-    await sendLog({
-      type: "Interaction",
-      message: opt.message,
-      metadata: { reason: opt.reason, ...opt.metadata },
+      await sendLog({
+        type: "Interaction",
+        message: opt.message,
+        metadata: { reason: opt.reason, ...opt.metadata },
+      });
     });
   }
 }

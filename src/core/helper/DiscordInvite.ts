@@ -12,6 +12,7 @@ import { createHash } from "crypto";
 import { ChannelType } from "discord.js";
 import { guildID } from "../../config.json";
 import { svcClient } from "../../SharedClient";
+import { startSpan } from "@sentry/node";
 
 interface tempInviteOption extends InviteCreateOptions {
   channel?: GuildInvitableChannelResolvable;
@@ -76,44 +77,50 @@ export class DiscordInvite {
      * @returns The invite link or the code
      */
   public async getTempInvite(inviteOpt?: tempInviteOption) {
-    if(!inviteOpt) inviteOpt = {};
-    if(!this.guild)
-      this.guild = await this.client.guilds.fetch(guildID);
+    return await startSpan({
+      op: "DiscordInvite.getTempInvite",
+      name: "Generate Temp Discord Invite",
+      onlyIfParent: true
+    }, async () => {
+      if(!inviteOpt) inviteOpt = {};
+      if(!this.guild)
+        this.guild = await this.client.guilds.fetch(guildID);
 
-    // Key is made up of DiscInv:{First 6 digit of a sha512-hashed guild ID}:{First 6 digit of a sha512-hashed requestid or none if parm is null}
-    const guildHash = this.getHash(this.guild.id, 6);
-    const requestidHash = inviteOpt.requestID ? `:${this.getHash(inviteOpt.requestID, 6)}` : "";
-    const redisKey = `DiscInv:${guildHash}${requestidHash}`;
+      // Key is made up of DiscInv:{First 6 digit of a sha512-hashed guild ID}:{First 6 digit of a sha512-hashed requestid or none if parm is null}
+      const guildHash = this.getHash(this.guild.id, 6);
+      const requestidHash = inviteOpt.requestID ? `:${this.getHash(inviteOpt.requestID, 6)}` : "";
+      const redisKey = `DiscInv:${guildHash}${requestidHash}`;
 
-    // Use the vanity code if possible
-    if(this.guild.vanityURLCode) return inviteOpt.rawCode ? this.guild.vanityURLCode : this.baseUrl + this.guild.vanityURLCode;
+      // Use the vanity code if possible
+      if(this.guild.vanityURLCode) return inviteOpt.rawCode ? this.guild.vanityURLCode : this.baseUrl + this.guild.vanityURLCode;
 
-    // Use the cached invite key if it exists
-    if(!inviteOpt.nocache) {
-      const cache = await svcClient.redis.get(redisKey);
-      if(cache) return inviteOpt.rawCode ? cache : this.baseUrl + cache;
-    }
+      // Use the cached invite key if it exists
+      if(!inviteOpt.nocache) {
+        const cache = await svcClient.redis.get(redisKey);
+        if(cache) return inviteOpt.rawCode ? cache : this.baseUrl + cache;
+      }
 
-    // Default value for the invite
-    inviteOpt.maxAge = inviteOpt.maxAge ?? 86400;
-    inviteOpt.reason = inviteOpt.reason ?? "Temporary Invite";
+      // Default value for the invite
+      inviteOpt.maxAge = inviteOpt.maxAge ?? 86400;
+      inviteOpt.reason = inviteOpt.reason ?? "Temporary Invite";
 
-    // Find a valid guild channel to create invite in
-    inviteOpt.channel = inviteOpt.channel ??
+      // Find a valid guild channel to create invite in
+      inviteOpt.channel = inviteOpt.channel ??
         this.guild.rulesChannel ??
         this.guild.publicUpdatesChannel ??
         this.guild.channels.cache.find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined ??
         (await this.guild.channels.fetch()).find(ch=>this.isInviteChannel(ch)) as TextChannel | VoiceChannel | NewsChannel | undefined;
-    if(!inviteOpt.channel) throw new DiscordInviteError("No channel is associated with this server");
+      if(!inviteOpt.channel) throw new DiscordInviteError("No channel is associated with this server");
 
-    // Create invite
-    const inviteLink = await this.guild.invites.create(inviteOpt.channel, inviteOpt);
-    if(!inviteOpt.nocache)
+      // Create invite
+      const inviteLink = await this.guild.invites.create(inviteOpt.channel, inviteOpt);
+      if(!inviteOpt.nocache)
+        return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
+
+      // Save to cache if allowed
+      await svcClient.redis.set(redisKey, inviteLink.code, "EX", inviteOpt.maxAge);
       return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
-
-    // Save to cache if allowed
-    await svcClient.redis.set(redisKey, inviteLink.code, "EX", inviteOpt.maxAge);
-    return inviteOpt.rawCode ? inviteLink.code : inviteLink.url;
+    });
   }
 }
 

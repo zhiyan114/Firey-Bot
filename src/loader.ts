@@ -5,9 +5,12 @@ import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
 import {
   extraErrorDataIntegration,
+  prismaIntegration,
+  redisIntegration,
   init as sentryInit,
 } from "@sentry/node";
 import { config as dotenv } from "dotenv";
+import { redisPrefix } from "./config.json";
 
 dotenv();
 
@@ -45,7 +48,9 @@ sentryInit({
   integrations: [
     extraErrorDataIntegration({
       depth: 5
-    })
+    }),
+    redisIntegration({ cachePrefixes: [`${redisPrefix}:`] }),
+    prismaIntegration()
     // rewriteFramesIntegration({
     //   iteratee: frameStackIteratee
     // })

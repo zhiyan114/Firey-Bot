@@ -1,7 +1,7 @@
 import type { ChatUserstate } from "tmi.js";
 import type { TwitchClient } from "../../core/TwitchClient";
 import type { baseTCommand } from "../../core/baseCommand";
-import { captureException, metrics } from "@sentry/node";
+import { captureException, metrics, startSpan } from "@sentry/node";
 import { DiscordCommand, LinkCommand, LurkCommand } from "../../commands/twitch";
 import { TwitchUser } from "../../utils/TwitchUser";
 import { twitch } from "../../config.json";
@@ -32,33 +32,40 @@ export async function processCommand(eventData: eventType): Promise<boolean | un
   const command = commands.find(c=> c.name.toLowerCase() === cmdName);
   if(!command) return;
 
-  // Check access privileges
-  if(command.perm.length > 0 && (!eventData.user.username || !command.perm.includes(eventData.user.username))) {
-    await eventData.client.say(eventData.channel, `@${eventData.user.username}, you do not have permission to use this command.`);
-    return false;
-  }
+  return await startSpan({
+    op: "processCommand",
+    name: `Discord Command: ${command.name}`,
+    onlyIfParent: true
+  }, async () => {
 
-  try {
-    metrics.count(`twitch.cmd.execute`, 1, {
-      attributes: {
-        name: command.name
-      }
-    });
-    await command.execute({
-      ...eventData,
-      args
-    });
-  } catch(ex) {
+    // Check access privileges
+    if(command.perm.length > 0 && (!eventData.user.username || !command.perm.includes(eventData.user.username))) {
+      await eventData.client.say(eventData.channel, `@${eventData.user.username}, you do not have permission to use this command.`);
+      return false;
+    }
+
+    try {
+      metrics.count(`twitch.cmd.execute`, 1, {
+        attributes: {
+          name: command.name
+        }
+      });
+      await command.execute({
+        ...eventData,
+        args
+      });
+    } catch(ex) {
     // Feedback events are based on discord ID so there's that...
-    const eventID = captureException(ex, { mechanism: { handled: false } });
-    if(!eventData.user["user-id"]) return true;
-    const tUser = await new TwitchUser(eventData.user["user-id"]).getCacheData();
+      const eventID = captureException(ex, { mechanism: { handled: false } });
+      if(!eventData.user["user-id"]) return true;
+      const tUser = await new TwitchUser(eventData.user["user-id"]).getCacheData();
 
-    if(!tUser || !tUser.verified)
-      return await eventData.client.say(eventData.channel, `@${eventData.user.username}, an error occured with the command! The developer has been notified.`) && true;
-    await svcClient.redis.set(`userSentryErrorID:${tUser.memberid}`, eventID, "EX", 1800);
-    await eventData.client.say(eventData.channel, `@${eventData.user.username}, an error occured with the command! The developer has been notified. Since you have linked your discord ID, feel free to use the feedback command in the server to file a detailed report.`);
-  }
+      if(!tUser || !tUser.verified)
+        return await eventData.client.say(eventData.channel, `@${eventData.user.username}, an error occured with the command! The developer has been notified.`) && true;
+      await svcClient.redis.set(`userSentryErrorID:${tUser.memberid}`, eventID, "EX", 1800);
+      await eventData.client.say(eventData.channel, `@${eventData.user.username}, an error occured with the command! The developer has been notified. Since you have linked your discord ID, feel free to use the feedback command in the server to file a detailed report.`);
+    }
 
-  return true;
+    return true;
+  });
 }

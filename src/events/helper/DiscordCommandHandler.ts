@@ -9,7 +9,7 @@ import {
   getPointsCommand, kickCommand, leaderboardCommand, purgeCommand,
   softBanCommand, unbanCommand, FeedbackCommand, heapDump
 } from "../../commands/discord";
-import { captureException, metrics } from "@sentry/node";
+import { captureException, metrics, startSpan } from "@sentry/node";
 import { createHash, timingSafeEqual } from "crypto";
 import { sendLog } from "../../utils/eventLogger";
 import { svcClient } from "../../SharedClient";
@@ -94,45 +94,51 @@ export class DiscordCommandHandler {
     const command = this.commands.find(c=>c.metadata.name===interaction.commandName) as baseCommand | undefined;
     if(!command) return;
 
-    // Check for access permission
-    if(command.access) {
+    await startSpan({
+      op: "DiscordCommandHandler.commandEvent",
+      name: `Discord Command: ${command.metadata.name}`,
+      onlyIfParent: true
+    }, async ()=>{
+      // Check for access permission
+      if(command.access) {
       // User ID Check
-      if(command.access.users && command.access.users.length > 0 && !command.access.users.includes(interaction.user.id)) {
-        await interaction.reply({ content: "You do not have permission to use this command.", flags: MessageFlags.Ephemeral });
-        return;
-      }
-
-      // Role Check
-      if(command.access.roles && command.access.roles.length > 0 && interaction.channel?.type !== ChannelType.DM) {
-        const member = interaction.guild?.members.cache.get(interaction.user.id);
-        if(!member) return;
-        if(!member.roles.cache.some(r=>command.access?.roles?.includes(r.id))) {
+        if(command.access.users && command.access.users.length > 0 && !command.access.users.includes(interaction.user.id)) {
           await interaction.reply({ content: "You do not have permission to use this command.", flags: MessageFlags.Ephemeral });
           return;
         }
-      }
-    }
 
-    try {
-      metrics.count(`discord.cmd.execute`, 1, {
-        attributes: {
-          name: interaction.commandName
+        // Role Check
+        if(command.access.roles && command.access.roles.length > 0 && interaction.channel?.type !== ChannelType.DM) {
+          const member = interaction.guild?.members.cache.get(interaction.user.id);
+          if(!member) return;
+          if(!member.roles.cache.some(r=>command.access?.roles?.includes(r.id))) {
+            await interaction.reply({ content: "You do not have permission to use this command.", flags: MessageFlags.Ephemeral });
+            return;
+          }
         }
-      });
-      await command.execute(interaction);
-    }
-    catch(ex) {
-      const id = captureException(ex, { mechanism: { handled: false } });
-      await svcClient.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
+      }
 
-      // Let the user know that something went wrong
-      if(interaction.replied)
-        await interaction.followUp({ content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral });
-      else if (interaction.deferred)
-        await interaction.editReply({ content: "An error occur during command execution, please use the feedback command to submit a report." });
-      else
-        await interaction.reply({ content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral });
-    }
+      try {
+        metrics.count(`discord.cmd.execute`, 1, {
+          attributes: {
+            name: interaction.commandName
+          }
+        });
+        await command.execute(interaction);
+      }
+      catch(ex) {
+        const id = captureException(ex, { mechanism: { handled: false } });
+        await svcClient.redis.set(`userSentryErrorID:${interaction.user.id}`, id, "EX", 1800);
+
+        // Let the user know that something went wrong
+        if(interaction.replied)
+          await interaction.followUp({ content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral });
+        else if (interaction.deferred)
+          await interaction.editReply({ content: "An error occur during command execution, please use the feedback command to submit a report." });
+        else
+          await interaction.reply({ content: "An error occur during command execution, please use the feedback command to submit a report.", flags: MessageFlags.Ephemeral });
+      }
+    });
   }
 
   public getCommandHash(): Buffer {
