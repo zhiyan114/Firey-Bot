@@ -23,8 +23,8 @@ export class BannerPic {
     * @param imgURL The user's avatar URL
     * @returns The Buffer of the image in PNG format
     */
-  public async generate(name: string, imgURL: string) {
-    startSpan({
+  public async generate(name: string, imgURL: string): Promise<Buffer> {
+    return await startSpan({
       op: "BannerPic.generate",
       name: "Generate User Join Banner",
       onlyIfParent: true
