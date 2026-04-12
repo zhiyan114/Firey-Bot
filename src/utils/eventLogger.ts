@@ -36,7 +36,7 @@ export async function initialize(channel: Channel) {
 
 export async function sendLog(log: LogData) {
   return await startSpan({
-    op: "DiscordUser.sendLog",
+    op: "sendLog",
     name: "Send Kernel Log",
     onlyIfParent: true
   }, async() => {
