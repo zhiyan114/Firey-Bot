@@ -10,7 +10,7 @@ import {
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { APIErrors } from "../../utils/discordErrorCode";
-import { captureException } from "@sentry/node-core";
+import { captureException } from "@sentry/node";
 import { adminRoleID, logChannelID } from "../../config.json";
 
 export class purgeCommand extends baseCommand {

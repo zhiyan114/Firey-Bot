@@ -4,7 +4,7 @@ import { StreamEvents, TwitchEvents } from "../events";
 import { streamClient } from "./helper/twitchStream";
 import { twitch } from "../config.json";
 import { sendLog } from "../utils/eventLogger";
-import { patchClient } from "../utils/MPReqID";
+import { patchClient } from "../utils/MPClient";
 
 
 

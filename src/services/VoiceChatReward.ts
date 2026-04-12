@@ -5,7 +5,7 @@
 import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
-import { captureException, logger, metrics, startNewTrace } from "@sentry/node-core";
+import { captureException, logger, metrics, startNewTrace } from "@sentry/node";
 import { guildID } from "../config.json";
 import { svcClient } from "../SharedClient";
 
@@ -36,12 +36,12 @@ export class VoiceChatReward {
           await this.joinChannel(member);
 
     // Bind the events
-    this.client.on("voiceStateUpdate", this.voiceStateUpdate.bind(this));
+    this.client.on("voiceStateUpdate", this.VCR_voiceStateUpdate.bind(this));
     this.onTick();
     logger.debug(logger.fmt`[VoiceChatReward]: VoiceChatReward Service Initialized (total users loaded: ${this.userTable.size})`);
   }
 
-  private async voiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
+  private async VCR_voiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
     const member = newState.member ?? oldState.member;
     if(!member || member.user.bot) return;
 

@@ -4,6 +4,7 @@
  * Author: zhiyan114
  */
 
+import { startSpan } from "@sentry/node";
 import type { Canvas, CanvasRenderingContext2D } from "canvas";
 import { createCanvas, loadImage } from "canvas";
 
@@ -22,13 +23,19 @@ export class BannerPic {
     * @param imgURL The user's avatar URL
     * @returns The Buffer of the image in PNG format
     */
-  public async generate(name: string, imgURL: string) {
-    const context = this.canvas.getContext("2d");
-    this.setBackground(context);
-    this.setText(context, name);
-    this.setBorder(context);
-    await this.setProfilePicture(context, imgURL);
-    return this.canvas.toBuffer("image/png");
+  public async generate(name: string, imgURL: string): Promise<Buffer> {
+    return await startSpan({
+      op: "BannerPic.generate",
+      name: "Generate User Join Banner",
+      onlyIfParent: true
+    }, async()=> {
+      const context = this.canvas.getContext("2d");
+      this.setBackground(context);
+      this.setText(context, name);
+      this.setBorder(context);
+      await this.setProfilePicture(context, imgURL);
+      return this.canvas.toBuffer("image/png");
+    });
   }
 
   /**

@@ -3,7 +3,7 @@ import type { TwitchClient } from "../core/TwitchClient";
 import { baseEvent } from "../core/baseEvent";
 import { TwitchUser } from "../utils/TwitchUser";
 import { processCommand } from "./helper/TwitchCommandHandler";
-import { captureException, withScope } from "@sentry/node-core";
+import { captureException, withScope } from "@sentry/node";
 import { randomUUID } from "crypto";
 
 export class TwitchEvents extends baseEvent {

@@ -2,6 +2,7 @@
 import {
     guildID,
     adminRoleID,
+    VIPUserRoleID,
     newUserRoleID,
     welcomeChannelID,
     logChannelID,
@@ -21,6 +22,7 @@ function isNumberOnlyString(value: string): boolean {
 describe("Top Level Config Values", () => {
     test("guildID should be number string", () => expect(isNumberOnlyString(guildID)).toBe(true));
     test("adminRoleID should be number string", () => expect(isNumberOnlyString(adminRoleID)).toBe(true));
+    test("VIPUserRoleID should be a number string", () => expect(isNumberOnlyString(VIPUserRoleID)).toBe(true));
     test("newUserRoleID should be number string", () => expect(isNumberOnlyString(newUserRoleID)).toBe(true));
     test("welcomeChannelID should be number string", () => expect(isNumberOnlyString(welcomeChannelID)).toBe(true));
     test("logChannelID should be number string", () => expect(isNumberOnlyString(logChannelID)).toBe(true));

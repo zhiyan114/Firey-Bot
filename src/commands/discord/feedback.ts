@@ -15,7 +15,7 @@ import {
 
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
-import { captureException, captureFeedback } from "@sentry/node-core";
+import { captureException, captureFeedback } from "@sentry/node";
 import { svcClient } from "../../SharedClient";
 
 export class FeedbackCommand extends baseCommand {

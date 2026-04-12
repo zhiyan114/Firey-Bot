@@ -1,6 +1,6 @@
 import type { Channel, ColorResolvable } from "discord.js";
 import { EmbedBuilder, TextChannel } from "discord.js";
-import { getClient, logger } from "@sentry/node-core";
+import { getClient, logger, startSpan } from "@sentry/node";
 
 
 export interface LogData {
@@ -35,29 +35,35 @@ export async function initialize(channel: Channel) {
 
 
 export async function sendLog(log: LogData) {
-  // Queue the log if the channel is not initialized
-  if(!_channel)
-    return _logQueues.push(log);
+  return await startSpan({
+    op: "DiscordUser.actionLog",
+    name: "Capture/Store user moderation log",
+    onlyIfParent: true
+  }, async() => {
+    // Queue the log if the channel is not initialized
+    if(!_channel)
+      return _logQueues.push(log);
 
-  // Send the log
-  await _channel.send({
-    content: log.type === "Error" ? "<@233955058604179457>" : undefined,
-    embeds: [prepareEmbed(log)]
+    // Send the log
+    await _channel.send({
+      content: log.type === "Error" ? "<@233955058604179457>" : undefined,
+      embeds: [prepareEmbed(log)]
+    });
+    switch(log.type) {
+      case "Interaction":
+        logger.debug(logger.fmt`[User Interaction] ${log.message}`, log.metadata);
+        break;
+      case "Info":
+        logger.info(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
+        break;
+      case "Warning":
+        logger.warn(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
+        break;
+      case "Error":
+        logger.error(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
+        break;
+    }
   });
-  switch(log.type) {
-    case "Interaction":
-      logger.debug(logger.fmt`[User Interaction] ${log.message}`, log.metadata);
-      break;
-    case "Info":
-      logger.info(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
-      break;
-    case "Warning":
-      logger.warn(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
-      break;
-    case "Error":
-      logger.error(logger.fmt`[Event Logger] ${log.message}`, log.metadata);
-      break;
-  }
 }
 
 function prepareEmbed(log: LogData): EmbedBuilder {

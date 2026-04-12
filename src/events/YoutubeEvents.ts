@@ -2,7 +2,7 @@ import type { NotifiedEvent, SubEvent, YoutubeClient } from "../core/YoutubeClie
 import { baseEvent } from "../core/baseEvent";
 import { youtube } from "../config.json";
 import { sendLog } from "../utils/eventLogger";
-import { logger } from "@sentry/node-core";
+import { logger } from "@sentry/node";
 import { svcClient } from "../SharedClient";
 
 

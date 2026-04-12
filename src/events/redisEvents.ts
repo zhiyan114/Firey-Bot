@@ -1,6 +1,6 @@
 // Worked on after logger is added...
 
-import { captureException, logger } from "@sentry/node-core";
+import { captureException, logger } from "@sentry/node";
 import { sendLog } from "../utils/eventLogger";
 import type Redis from "ioredis";
 

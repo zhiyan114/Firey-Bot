@@ -2,9 +2,10 @@ import { DiscordUser } from "../../src/utils/DiscordUser";
 import { svcClient } from "../../src/SharedClient";
 import type { User } from "discord.js";
 
-jest.mock("@sentry/node-core", () => ({
+jest.mock("@sentry/node", () => ({
   captureException: jest.fn(),
   metrics: { count: jest.fn() },
+  startSpan: jest.fn((_opts: unknown, cb: () => unknown) => cb()),
 }));
 
 jest.mock("../../src/SharedClient", () => ({
