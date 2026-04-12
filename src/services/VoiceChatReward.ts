@@ -5,7 +5,7 @@
 import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
-import { captureException, logger, metrics, startNewTrace } from "@sentry/node";
+import { captureException, logger, metrics, startNewTrace, startSpan } from "@sentry/node";
 import { guildID } from "../config.json";
 import { svcClient } from "../SharedClient";
 
@@ -36,28 +36,34 @@ export class VoiceChatReward {
           await this.joinChannel(member);
 
     // Bind the events
-    this.client.on("voiceStateUpdate", this.VCR_voiceStateUpdate.bind(this));
+    this.client.on("voiceStateUpdate", this.voiceStateUpdate.bind(this));
     this.onTick();
     logger.debug(logger.fmt`[VoiceChatReward]: VoiceChatReward Service Initialized (total users loaded: ${this.userTable.size})`);
   }
 
-  private async VCR_voiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
-    const member = newState.member ?? oldState.member;
-    if(!member || member.user.bot) return;
+  private async voiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
+    await startSpan({
+      op: "VoiceChatReward.voiceStateUpdate",
+      name: "VoiceChatReward voiceStateUpdate Event",
+      forceTransaction: true
+    }, async ()=>{
+      const member = newState.member ?? oldState.member;
+      if(!member || member.user.bot) return;
 
-    try {
-      if(!oldState.channel && newState.channel)
-        return await this.joinChannel(member);
+      try {
+        if(!oldState.channel && newState.channel)
+          return await this.joinChannel(member);
 
-      if(oldState.channel && !newState.channel)
-        return await this.leaveChannel(member);
+        if(oldState.channel && !newState.channel)
+          return await this.leaveChannel(member);
 
-      // Update member object
-      const newMember = newState.member;
-      const _user = this.userTable.get(member.id);
-      if(newMember && _user)
-        _user.member = newMember;
-    } catch (err) { captureException(err, { mechanism: { handled: false } }); }
+        // Update member object
+        const newMember = newState.member;
+        const _user = this.userTable.get(member.id);
+        if(newMember && _user)
+          _user.member = newMember;
+      } catch (err) { captureException(err, { mechanism: { handled: false } }); }
+    });
   };
 
   private async joinChannel(member: GuildMember) {

@@ -355,18 +355,24 @@ class UserEconomy {
      */
   public async grantPoints(points: number) {
     // User exist and condition passes, grant the user the points
-    const newData = await svcClient.prisma.members.update({
-      data: {
-        lastgrantedpoint: new Date(),
-        points: { increment: points }
-      },
-      where: {
-        id: this.userid
-      }
-    });
-    await this.user.updateCacheData({
-      points: newData.points,
-      lastgrantedpoint: newData.lastgrantedpoint
+    await startSpan({
+      op: "UserEconomy.grantPoints",
+      name: "Grant User Points",
+      onlyIfParent: true
+    }, async()=> {
+      const newData = await svcClient.prisma.members.update({
+        data: {
+          lastgrantedpoint: new Date(),
+          points: { increment: points }
+        },
+        where: {
+          id: this.userid
+        }
+      });
+      await this.user.updateCacheData({
+        points: newData.points,
+        lastgrantedpoint: newData.lastgrantedpoint
+      });
     });
   }
 
@@ -378,24 +384,30 @@ class UserEconomy {
      * @returns if the operation was successful or not
      */
   public async deductPoints(points: number, allowNegative?: boolean) {
+    return await startSpan({
+      op: "UserEconomy.deductPoints",
+      name: "Deduct User Points",
+      onlyIfParent: true
+    }, async()=> {
     // Check if user are allowed to have negative balance
-    if(!allowNegative) {
-      const cacheData = await this.user.getCacheData();
-      if (!(cacheData?.points) || cacheData.points < points) return false;
-    }
-    // User has enough, deduct it
-    const newData = await svcClient.prisma.members.update({
-      data: {
-        points: { decrement: points }
-      },
-      where: {
-        id: this.userid,
+      if(!allowNegative) {
+        const cacheData = await this.user.getCacheData();
+        if (!(cacheData?.points) || cacheData.points < points) return false;
       }
+      // User has enough, deduct it
+      const newData = await svcClient.prisma.members.update({
+        data: {
+          points: { decrement: points }
+        },
+        where: {
+          id: this.userid,
+        }
+      });
+      await this.user.updateCacheData({
+        points: newData.points
+      });
+      return true;
     });
-    await this.user.updateCacheData({
-      points: newData.points
-    });
-    return true;
   }
 
   /**
@@ -405,12 +417,17 @@ class UserEconomy {
      * @returns whether the user has been successfully rewarded or not
      */
   public async chatRewardPoints(text: string, ignoreCooldown?: boolean) {
+    return await startSpan({
+      op: "UserEconomy.chatRewardPoints",
+      name: "Chat Reward Points",
+      onlyIfParent: true
+    }, async()=> {
     // Get user data and check to see if they met the cooldown eligibility
-    const userData = await this.user.getCacheData();
-    if(!userData) return false;
-    if(!ignoreCooldown && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false;
+      const userData = await this.user.getCacheData();
+      if(!userData) return false;
+      if(!ignoreCooldown && (userData.lastgrantedpoint && userData.lastgrantedpoint.getTime() > (new Date()).getTime() - 60000)) return false;
 
-    /*
+      /*
       This algorithm checks to see if the user has a message that is
         - longer than 10 characters
         - does not only contain numbers, special character, emoji, or links
@@ -419,8 +436,8 @@ class UserEconomy {
       If the user is not eligible, their reward cooldown timer resets while not getting any points
       */
 
-    if(
-      text.length < 10 || // Length check
+      if(
+        text.length < 10 || // Length check
       (/^[0-9]+$/g).test(text) || // Number Check
       (/^[^a-zA-Z0-9]+$/g).test(text) || // Special Character check
       (/^( ?:[a-zA-Z0-9_]+: ?)+$/g).test(text) || // Emoji-only check
@@ -435,23 +452,32 @@ class UserEconomy {
         .replace(/<a?:\w+:\d+>/g, '')
         .replace(/[^a-zA-Z0-9]/g, '')
         .replace(/\s/g, '').length < 10
-    ) {
-      await this.user.updateCacheData({
-        lastgrantedpoint: new Date()
-      });
-      return false;
-    }
+      ) {
+        await this.user.updateCacheData({
+          lastgrantedpoint: new Date()
+        });
+        return false;
+      }
 
-    // Grant the point
-    const ptVal = this.rngRewardPoints(5,10);
-    await this.grantPoints(ptVal);
-    metrics.count("discord.points.accumulation", ptVal, {
-      attributes: { medium: "text" }
+      // Grant the point
+      const ptVal = this.rngRewardPoints(5,10);
+      await this.grantPoints(ptVal);
+      metrics.count("discord.points.accumulation", ptVal, {
+        attributes: { medium: "text" }
+      });
+      return true;
     });
-    return true;
   }
 
   public async getBalance() {
-    return Number(await svcClient.redis.hget(this.cacheKey,"points") ?? (await this.user.getCacheData())?.points ?? "0");
+    return await startSpan({
+      op: "UserEconomy.getBalance",
+      name: "Get Points Balance",
+      onlyIfParent: true
+    }, async()=> Number(
+      await svcClient.redis.hget(this.cacheKey,"points") ??
+      (await this.user.getCacheData())?.points ??
+      "0"
+    ));
   }
 }
