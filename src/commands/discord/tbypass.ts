@@ -15,7 +15,7 @@ import {
 } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
 import { randomUUID } from "crypto";
-import { captureException } from "@sentry/node-core";
+import { captureException } from "@sentry/node";
 import { adminRoleID, VIPUserRoleID, twitch } from "../../config.json";
 import { svcClient } from "../../SharedClient";
 

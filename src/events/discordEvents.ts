@@ -14,7 +14,7 @@ import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VertificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
-import { captureException, logger, withScope } from "@sentry/node-core";
+import { captureException, logger, withScope } from "@sentry/node";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";

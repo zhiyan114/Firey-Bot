@@ -1,6 +1,6 @@
 import type { baseClient } from "./baseClient";
 import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketManagerOptions, TextChannel } from "discord.js";
-import { getClient } from "@sentry/node-core";
+import { getClient } from "@sentry/node";
 import { DiscordEvents } from "../events";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
 import { unverifyKickLoader, ReactRoleLoader, VoiceChatReward } from "../services";

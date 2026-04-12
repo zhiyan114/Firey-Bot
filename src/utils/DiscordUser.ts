@@ -1,7 +1,7 @@
 import type { APIEmbedField, ColorResolvable, User } from "discord.js";
 import { DiscordAPIError, EmbedBuilder } from "discord.js";
 import { APIErrors } from "./discordErrorCode";
-import { captureException, metrics } from "@sentry/node-core";
+import { captureException, metrics } from "@sentry/node";
 import { Prisma } from "@prisma/client";
 import { createHash } from "crypto";
 import { sendLog } from "./eventLogger";

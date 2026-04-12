@@ -1,5 +1,5 @@
 // MonkeyPatch DiscordJS Request ID
-import { getCurrentScope, getIsolationScope } from "@sentry/node-core";
+import { getCurrentScope, getIsolationScope } from "@sentry/node";
 import {
   type Interaction,
   type InteractionReplyOptions,

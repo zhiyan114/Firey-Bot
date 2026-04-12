@@ -1,4 +1,4 @@
-import { logger, close, startNewTrace } from "@sentry/node-core";
+import { logger, close, startNewTrace } from "@sentry/node";
 import { discordCli, svcClient, TwitchCli, YoutubeCli } from "./SharedClient";
 
 /**

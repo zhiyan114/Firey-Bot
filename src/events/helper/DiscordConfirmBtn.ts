@@ -3,7 +3,7 @@ import { MessageFlags } from "discord.js";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { newUserRoleID } from "../../config.json";
 import { sendLog } from "../../utils/eventLogger";
-import { captureException } from "@sentry/node-core";
+import { captureException } from "@sentry/node";
 
 export async function VertificationHandler(interaction: ButtonInteraction) {
   try {

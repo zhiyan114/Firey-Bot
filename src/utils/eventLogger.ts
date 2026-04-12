@@ -1,6 +1,6 @@
 import type { Channel, ColorResolvable } from "discord.js";
 import { EmbedBuilder, TextChannel } from "discord.js";
-import { getClient, logger } from "@sentry/node-core";
+import { getClient, logger } from "@sentry/node";
 
 
 export interface LogData {

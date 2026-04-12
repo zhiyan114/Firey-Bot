@@ -1,6 +1,6 @@
 import { baseClient } from "./baseClient";
 import Express, { type NextFunction } from "express";
-import { captureException, getIsolationScope, httpRequestToRequestData } from "@sentry/core";
+import { getIsolationScope, setupExpressErrorHandler } from "@sentry/node";
 import http from 'http';
 import https from "https";
 import { sendLog } from "../utils/eventLogger";
@@ -9,17 +9,6 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import Redis from "ioredis";
 import { redisPrefix } from "../config.json";
 import { RedisEvents } from "../events";
-
-
-// Sentry JS SDK Implementation
-interface MiddlewareError extends Error {
-  status?: number | string;
-  statusCode?: number | string;
-  status_code?: number | string;
-  output?: {
-    statusCode?: number | string;
-  };
-}
 
 export class ServiceClient extends baseClient {
   private _prisma: PrismaClient;
@@ -68,7 +57,7 @@ export class ServiceClient extends baseClient {
   }
 
   public postProcess() {
-    this._express.use(this.errMiddleWare);
+    setupExpressErrorHandler(this._express);
   }
 
   public async dispose() {
@@ -91,14 +80,6 @@ export class ServiceClient extends baseClient {
 
   private HealthRoute(req: Express.Request, res: Express.Response) {
     res.status(200).send("You have been OwO");
-  }
-
-  private errMiddleWare(err: MiddlewareError, req: http.IncomingMessage, res: http.ServerResponse, next: NextFunction) {
-    const statusCode = parseInt((err.status ?? err.statusCode ?? err.status_code ?? err.output?.statusCode ?? "500") as string, 10);
-    getIsolationScope().setSDKProcessingMetadata({ normalizedRequest: httpRequestToRequestData(req) });
-    if(statusCode >= 500)
-      (res as { sentry?: string }).sentry = captureException(err, { mechanism: { type: 'middleware', handled: false } });
-    next(err);
   }
 
   private preScopeMidware(req: http.IncomingMessage, res: http.ServerResponse, next: NextFunction) {

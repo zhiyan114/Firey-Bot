@@ -4,7 +4,7 @@ import { DiscordAPIError, InteractionContextType, MessageFlags, SlashCommandBuil
 import { baseCommand } from "../../core/baseCommand";
 import { DiscordUser } from "../../utils/DiscordUser";
 import { APIErrors } from "../../utils/discordErrorCode";
-import { captureException } from "@sentry/node-core";
+import { captureException } from "@sentry/node";
 import { adminRoleID } from "../../config.json";
 
 export class unbanCommand extends baseCommand {

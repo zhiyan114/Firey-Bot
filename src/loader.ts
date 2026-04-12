@@ -1,26 +1,20 @@
-import type { Breadcrumb, ErrorEvent, EventHint } from "@sentry/node-core";
+import type { Breadcrumb, ErrorEvent, EventHint } from "@sentry/node";
 import type { Log } from "@sentry/core";
 import { DiscordAPIError, DiscordjsError, HTTPError } from "discord.js";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
 import {
   extraErrorDataIntegration,
-  SentryContextManager,
   init as sentryInit,
-  setupOpenTelemetryLogger,
-  validateOpenTelemetrySetup,
-} from "@sentry/node-core";
+} from "@sentry/node";
 import { config as dotenv } from "dotenv";
-import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
-import { SentryPropagator, SentrySampler, SentrySpanProcessor } from "@sentry/opentelemetry";
-import { context, propagation, trace } from "@opentelemetry/api";
 
 dotenv();
 
 /**
  * Sentry Initialization
  */
-const cli = sentryInit({
+sentryInit({
   dsn: process.env["SENTRY_DSN"],
   dist: process.env['COMMITHASH'],
   maxValueLength: 1000,
@@ -51,29 +45,12 @@ const cli = sentryInit({
   integrations: [
     extraErrorDataIntegration({
       depth: 5
-    }),
+    })
     // rewriteFramesIntegration({
     //   iteratee: frameStackIteratee
     // })
   ],
 });
-
-// OpenTelemetry Loader
-if(cli) {
-  const provider = new NodeTracerProvider({
-    sampler: new SentrySampler(cli),
-    spanProcessors: [
-      new SentrySpanProcessor(),
-    ],
-  });
-
-  trace.setGlobalTracerProvider(provider);
-  propagation.setGlobalPropagator(new SentryPropagator());
-  context.setGlobalContextManager(new SentryContextManager());
-
-  setupOpenTelemetryLogger();
-  validateOpenTelemetrySetup();
-}
 
 
 function beforeSend(event: ErrorEvent, hint: EventHint) {

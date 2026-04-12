@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { captureException } from "@sentry/node-core";
+import { captureException } from "@sentry/node";
 import { createHash } from "crypto";
 import type Redis from "ioredis";
 import { DiscordUser } from "./DiscordUser";

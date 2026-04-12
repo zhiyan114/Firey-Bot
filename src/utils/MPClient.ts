@@ -1,4 +1,4 @@
-import { startNewTrace, startSpan, withIsolationScope } from "@sentry/node-core";
+import { startNewTrace, startSpan, withIsolationScope } from "@sentry/node";
 import { type ClientEvents, GuildMember, User } from "discord.js";
 import type { EventEmitter } from "stream";
 import type { Client } from "tmi.js";

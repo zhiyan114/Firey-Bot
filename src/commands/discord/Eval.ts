@@ -11,7 +11,7 @@ import {
   SlashCommandBuilder
 } from "discord.js";
 import { baseCommand } from "../../core/baseCommand";
-import Sentry from "@sentry/node-core";
+import Sentry from "@sentry/node";
 import { guildID, newUserRoleID } from "../../config.json";
 import { svcClient } from "../../SharedClient";
 

@@ -9,7 +9,7 @@ import {
   getPointsCommand, kickCommand, leaderboardCommand, purgeCommand,
   softBanCommand, unbanCommand, FeedbackCommand, heapDump
 } from "../../commands/discord";
-import { captureException, metrics } from "@sentry/node-core";
+import { captureException, metrics } from "@sentry/node";
 import { createHash, timingSafeEqual } from "crypto";
 import { sendLog } from "../../utils/eventLogger";
 import { svcClient } from "../../SharedClient";

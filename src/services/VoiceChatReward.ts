@@ -5,7 +5,7 @@
 import { type VoiceState, type GuildMember, type VoiceBasedChannel, VoiceChannel, ChannelType } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { DiscordUser } from "../utils/DiscordUser";
-import { captureException, logger, metrics, startNewTrace } from "@sentry/node-core";
+import { captureException, logger, metrics, startNewTrace } from "@sentry/node";
 import { guildID } from "../config.json";
 import { svcClient } from "../SharedClient";
 
