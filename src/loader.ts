@@ -90,7 +90,7 @@ function beforeBreadcrumb(breadcrumb: Breadcrumb) {
 
 function beforeSendTransaction(event: TransactionEvent) {
   if(event.transaction?.startsWith("prisma")) return null; // Drop prisma root span
-  if(event.transaction?.startsWith("FireyBot:")) return null; // Drop redis root span
+  if(event.transaction?.startsWith(`${redisPrefix}:`)) return null; // Drop redis root span
   if(!event.spans || event.spans.length < 2) return null; // Spans with only transaction tend to useless
   return event;
 }
