@@ -36,12 +36,12 @@ export class VoiceChatReward {
           await this.joinChannel(member);
 
     // Bind the events
-    this.client.on("voiceStateUpdate", this.voiceStateUpdate.bind(this));
+    this.client.on("voiceStateUpdate", this.VCR_voiceStateUpdate.bind(this));
     this.onTick();
     logger.debug(logger.fmt`[VoiceChatReward]: VoiceChatReward Service Initialized (total users loaded: ${this.userTable.size})`);
   }
 
-  private async voiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
+  private async VCR_voiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
     const member = newState.member ?? oldState.member;
     if(!member || member.user.bot) return;
 

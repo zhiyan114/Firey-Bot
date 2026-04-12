@@ -7,7 +7,7 @@ import { unverifyKickLoader, ReactRoleLoader, VoiceChatReward } from "../service
 import { guildID } from '../config.json';
 import { DiscordInvite } from "./helper/DiscordInvite";
 import type { TwitchClient } from "./TwitchClient";
-import { patchClient } from "../utils/MPReqID";
+import { patchClient } from "../utils/MPClient";
 
 
 

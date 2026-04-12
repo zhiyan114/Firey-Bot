@@ -4,7 +4,7 @@ import { YoutubeEvents } from "../events";
 import { youtube } from "../config.json";
 import type { TextChannel } from "discord.js";
 import { logger } from "@sentry/node-core";
-import { patchClient } from "../utils/MPReqID";
+import { patchClient } from "../utils/MPClient";
 import type { DiscordClient } from "./DiscordClient";
 import type { ServiceClient } from "./ServiceClient";
 
