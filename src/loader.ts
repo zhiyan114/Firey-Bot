@@ -90,7 +90,6 @@ function beforeBreadcrumb(breadcrumb: Breadcrumb) {
 
 function beforeSendTransaction(event: TransactionEvent) {
   if(event.transaction?.startsWith("prisma")) return null; // Drop prisma root span
-  if(!event.spans || event.spans.length < 5) return null; // Drop most likely garbage spans
   return event;
 }
 

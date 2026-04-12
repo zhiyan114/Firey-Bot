@@ -14,7 +14,7 @@ import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VertificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
-import { captureException, logger, withScope } from "@sentry/node";
+import { captureException, logger, startSpan, withScope } from "@sentry/node";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
@@ -65,114 +65,140 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async createCommand(interaction: Interaction) {
-    await withScope(async(scope) => {
-      const requestID = randomUUID();
-      scope
-        .setAttributes({ requestID })
-        .setTags({ requestID });
-      patchAllInteraction(interaction);
+    await startSpan({
+      op: "DiscordEvents.createCommand",
+      name: "Discord createCommand Event",
+      forceTransaction: true
+    }, async ()=>{
+      await withScope(async(scope) => {
+        const requestID = randomUUID();
+        scope
+          .setAttributes({ requestID })
+          .setTags({ requestID });
+        patchAllInteraction(interaction);
 
-      try {
-        if(interaction.isChatInputCommand() || interaction.isContextMenuCommand())
-          return await this.commandHandler.commandEvent(interaction);
+        try {
+          if(interaction.isChatInputCommand() || interaction.isContextMenuCommand())
+            return await this.commandHandler.commandEvent(interaction);
 
-        if(interaction.isButton())
-          if(interaction.customId === "RuleConfirm")
-            return await VertificationHandler(interaction);
-      } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
+          if(interaction.isButton())
+            if(interaction.customId === "RuleConfirm")
+              return await VertificationHandler(interaction);
+        } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
+      });
     });
   }
 
   private async messageCreate(message: Message) {
-    await withScope(async (scope) => {
-      try {
+    await startSpan({
+      op: "DiscordEvents.messageCreate",
+      name: "Discord messageCreate Event",
+      forceTransaction: true
+    }, async ()=>{
+      await withScope(async (scope) => {
+        try {
         // Channel Checks
-        if(message.author.bot) return;
-        const channel = message.channel;
-        if(channel.type !== ChannelType.GuildText) return;
-        scope.setAttribute("channelName", channel.name);
+          if(message.author.bot) return;
+          const channel = message.channel;
+          if(channel.type !== ChannelType.GuildText) return;
+          scope.setAttribute("channelName", channel.name);
 
-        // Place where user wont be awarded with points
-        if(noPoints.channel.length > 0 && noPoints.channel.find(c=>c===channel.id)) return;
-        if(noPoints.category.length > 0 && noPoints.category.find(c=>channel.parentId === c)) return;
+          // Place where user wont be awarded with points
+          if(noPoints.channel.length > 0 && noPoints.channel.find(c=>c===channel.id)) return;
+          if(noPoints.category.length > 0 && noPoints.category.find(c=>channel.parentId === c)) return;
 
-        // Grant points
-        await (new DiscordUser(message.author)).economy.chatRewardPoints(message.content);
-      } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
+          // Grant points
+          await (new DiscordUser(message.author)).economy.chatRewardPoints(message.content);
+        } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
+      });
     });
   }
 
   private async guildMemberAdd(member: GuildMember) {
-    try {
-      if(member.user.bot) return;
-      const user = new DiscordUser(member.user);
+    if(member.user.bot) return;
 
-      // Create new user entry
+    await startSpan({
+      op: "DiscordEvents.guildMemberAdd",
+      name: "Discord guildMemberAdd Event",
+      forceTransaction: true
+    }, async ()=>{
       try {
-        await user.createNewUser();
-      } catch(ex) {
-        if(!(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002"))
-          captureException(ex);
-      }
+        const user = new DiscordUser(member.user);
 
-      // Send welcome message to user
-      const channel = await this.client.channels.fetch(welcomeChannelID);
-      if(!channel || channel.type !== ChannelType.GuildText) return;
-      const embed = new EmbedBuilder()
-        .setColor("#00FFFF")
-        .setTitle("Welcome to the server!")
-        .setDescription(`Welcome to the Derg server, ${member.user.username}!
+        // Create new user entry
+        try {
+          await user.createNewUser();
+        } catch(ex) {
+          if(!(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002"))
+            captureException(ex);
+        }
+
+        // Send welcome message to user
+        const channel = await this.client.channels.fetch(welcomeChannelID);
+        if(!channel || channel.type !== ChannelType.GuildText) return;
+        const embed = new EmbedBuilder()
+          .setColor("#00FFFF")
+          .setTitle("Welcome to the server!")
+          .setDescription(`Welcome to the Derg server, ${member.user.username}!
         Please read the rules and press the confirmation button to get full access.
         Remember to do so within 24 hours or autokick will happen!`);
 
-      try {
-        await member.send({ embeds: [embed] });
-      } catch(ex) {
-        if(ex instanceof DiscordAPIError &&
+        try {
+          await member.send({ embeds: [embed] });
+        } catch(ex) {
+          if(ex instanceof DiscordAPIError &&
           (ex.code === APIErrors.CANNOT_MESSAGE_USER ||
             ex.code === APIErrors.NO_MUTUAL_GUILD_DM) // Some reason, discord throws 50278 error even though this event only fires if the user joins the guild...
-        )
-          await channel.send({
-            content: `||<@${member.user.id}>You've received this message here because your DM has been disabled or some issues with it||`,
-            embeds: [embed]
-          });
-        else captureException(ex);
-      }
+          )
+            await channel.send({
+              content: `||<@${member.user.id}>You've received this message here because your DM has been disabled or some issues with it||`,
+              embeds: [embed]
+            });
+          else captureException(ex);
+        }
 
-      this.client.updateStatus();
+        this.client.updateStatus();
 
-      // Send a welcome banner
-      const BannerBuff = await (new BannerPic()).generate(user.username, member.user.displayAvatarURL({ size: 512, extension: "png" }));
-      await channel.send({ files: [BannerBuff] });
-    } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
+        // Send a welcome banner
+        const BannerBuff = await (new BannerPic()).generate(user.username, member.user.displayAvatarURL({ size: 512, extension: "png" }));
+        await channel.send({ files: [BannerBuff] });
+      } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
+    });
   }
 
   private async userUpdate(oldUser: User | PartialUser, newUser: User) {
     if(oldUser.bot) return;
-    const user = new DiscordUser(newUser);
 
-    try {
+    await startSpan({
+      op: "DiscordEvents.userUpdate",
+      name: "Discord userUpdate Event",
+      forceTransaction: true
+    }, async ()=>{
+      const user = new DiscordUser(newUser);
+
+      try {
       // See if we need to update user's rule confirmation date
-      let updateVerifyStatus = false;
-      if(!(await user.getCacheData())?.rulesconfirmedon &&
+        let updateVerifyStatus = false;
+        if(!(await user.getCacheData())?.rulesconfirmedon &&
       (await this.client.guilds.cache.find(g=>g.id === guildID)
         ?.members.fetch(newUser))
         ?.roles.cache.find(role=>role.id === newUserRoleID))
-        updateVerifyStatus = true;
+          updateVerifyStatus = true;
 
-      const rulesconfirmedon = updateVerifyStatus ? new Date() : undefined;
-      const username = oldUser.username !== newUser.username ? newUser.username : undefined;
-      const displayName = oldUser.username !== newUser.username ? newUser.username : undefined;
+        const rulesconfirmedon = updateVerifyStatus ? new Date() : undefined;
+        const username = oldUser.username !== newUser.username ? newUser.username : undefined;
+        const displayName = oldUser.username !== newUser.username ? newUser.username : undefined;
 
-      // Update user if any of the listed field changes
-      if(!rulesconfirmedon && !username && !displayName)
-        return;
-      await user.updateUserData({
-        rulesconfirmedon,
-        username,
-        displayName,
-      });
-    } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
+        // Update user if any of the listed field changes
+        if(!rulesconfirmedon && !username && !displayName)
+          return;
+        await user.updateUserData({
+          rulesconfirmedon,
+          username,
+          displayName,
+        });
+      } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
+    });
   }
 
   private guildMemberRemove() {
@@ -180,46 +206,52 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async voiceStateUpdate(old: VoiceState, now: VoiceState) {
-    try {
+    await startSpan({
+      op: "DiscordEvents.voiceStateUpdate",
+      name: "Discord voiceStateUpdate Event",
+      forceTransaction: true
+    }, async ()=>{
+      try {
       // Checking to see if the user needs to be reported on the log
-      const channel = await this.client.channels.fetch(VCJoinLog.channelID);
-      if(!channel || channel.type !== ChannelType.GuildText) return;
-      if(!now.channel) return;
-      if(old.channel?.id === now.channel.id) return;
-      if(!now.member || now.member.user.bot) return;
-      if(VCJoinLog.excludeChannels.includes(now.channel.id)) return;
+        const channel = await this.client.channels.fetch(VCJoinLog.channelID);
+        if(!channel || channel.type !== ChannelType.GuildText) return;
+        if(!now.channel) return;
+        if(old.channel?.id === now.channel.id) return;
+        if(!now.member || now.member.user.bot) return;
+        if(VCJoinLog.excludeChannels.includes(now.channel.id)) return;
 
-      // Prepare embed
-      const embed = new EmbedBuilder()
-        .setColor("#00FFFF")
-        .setTitle("Voice Channel Join")
-        .setThumbnail(now.member.user.displayAvatarURL({ size: 512 }))
-        .setDescription(`<@${now.member.user.id}> has joined the voice channel <#${now.channel.id}>`)
-        .setTimestamp()
-        .setFields([
-          {
-            name: "User ID",
-            value: now.member.user.id
-          },
-          {
-            name: "Channel ID",
-            value: now.channel.id
-          }
-        ]);
+        // Prepare embed
+        const embed = new EmbedBuilder()
+          .setColor("#00FFFF")
+          .setTitle("Voice Channel Join")
+          .setThumbnail(now.member.user.displayAvatarURL({ size: 512 }))
+          .setDescription(`<@${now.member.user.id}> has joined the voice channel <#${now.channel.id}>`)
+          .setTimestamp()
+          .setFields([
+            {
+              name: "User ID",
+              value: now.member.user.id
+            },
+            {
+              name: "Channel ID",
+              value: now.channel.id
+            }
+          ]);
 
-      // See if username needs to be added as well
-      const UNMatchDN = now.member.user.username === now.member.user.displayName;
-      if(!UNMatchDN)
-        embed.addFields({
-          name: "Username",
-          value: now.member.user.username
+        // See if username needs to be added as well
+        const UNMatchDN = now.member.user.username === now.member.user.displayName;
+        if(!UNMatchDN)
+          embed.addFields({
+            name: "Username",
+            value: now.member.user.username
+          });
+
+        logger.info(logger.fmt`${now.member.user[UNMatchDN ? "username" : "displayName"]} joined voice channel: ${now.channel.name}`, {
+          channelID: now.channel.id
         });
-
-      logger.info(logger.fmt`${now.member.user[UNMatchDN ? "username" : "displayName"]} joined voice channel: ${now.channel.name}`, {
-        channelID: now.channel.id
-      });
-      await channel.send({ embeds: [embed] });
-    } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
+        await channel.send({ embeds: [embed] });
+      } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
+    });
   }
 
   private async guildDelete(guild: Guild) {

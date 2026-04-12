@@ -1,6 +1,6 @@
-import { startNewTrace, startSpan, withIsolationScope } from "@sentry/node";
+import { startNewTrace, withIsolationScope } from "@sentry/node";
 import { type ClientEvents, GuildMember, User } from "discord.js";
-import { EventEmitter } from "stream";
+import type { EventEmitter } from "stream";
 import type { Client } from "tmi.js";
 import { adminRoleID, VIPUserRoleID, newUserRoleID } from "../config.json";
 
@@ -65,25 +65,7 @@ export function patchClient(client: EventEmitter | Client, platformName: string)
         }
       }
 
-      if(!(client instanceof EventEmitter))
-        return oldEmit.call(client, event, ...args);
-
-      // Start Spans on all the listener calls
-      const AllListeners = client.rawListeners(event);
-      for(const listener of AllListeners) {
-        let funcName = listener.name.trim();
-        if(funcName === "bound" || funcName === "")
-          funcName = "Anonymous";
-        if(funcName.startsWith("bound"))
-          funcName = funcName.slice(6);
-
-        startSpan({
-          op: `event.${platformName}.${event}`,
-          name: `Listener: ${funcName}`,
-          forceTransaction: true
-        }, () => listener.call(client, ...args));
-      }
-      return true;
+      return oldEmit.call(client, event, ...args);
     }));
   };
 }
