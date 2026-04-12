@@ -6,7 +6,7 @@ import { sendLog } from "../../utils/eventLogger";
 import { captureException, startSpan } from "@sentry/node";
 
 export async function VertificationHandler(interaction: ButtonInteraction) {
-  startSpan({
+  await startSpan({
     op: "VertificationHandler",
     name: "User Vertification Handler",
     onlyIfParent: true
