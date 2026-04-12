@@ -1,5 +1,5 @@
 import type { Breadcrumb, ErrorEvent, EventHint } from "@sentry/node";
-import type { Log } from "@sentry/core";
+import type { Log, TransactionEvent } from "@sentry/core";
 import { DiscordAPIError, DiscordjsError, HTTPError } from "discord.js";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
@@ -29,6 +29,7 @@ sentryInit({
   beforeBreadcrumb,
   beforeSend,
   beforeSendLog,
+  beforeSendTransaction,
 
   ignoreErrors: [
     "ETIMEDOUT",
@@ -51,9 +52,6 @@ sentryInit({
     }),
     redisIntegration({ cachePrefixes: [`${redisPrefix}:`] }),
     prismaIntegration()
-    // rewriteFramesIntegration({
-    //   iteratee: frameStackIteratee
-    // })
   ],
 });
 
@@ -90,14 +88,11 @@ function beforeBreadcrumb(breadcrumb: Breadcrumb) {
   return breadcrumb;
 }
 
-// function frameStackIteratee(frame: StackFrame) {
-//   const absPath = frame.filename;
-//   if(!absPath) return frame;
-
-//   // Set the base path as the dist output to match the naming artifact on sentry
-//   frame.filename = `/${relative(__dirname, absPath).replace(/\\/g, "/")}`;
-//   return frame;
-// }
+function beforeSendTransaction(event: TransactionEvent) {
+  if(event.transaction?.startsWith("prisma")) return null; // Drop prisma root span
+  if(!event.spans || event.spans.length < 5) return null; // Drop most likely garbage spans
+  return event;
+}
 
 function beforeSendLog(log: Log) {
   // eslint-disable-next-line no-console
