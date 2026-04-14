@@ -73,4 +73,4 @@ RUN rm .env_build
 # Exposed web server port
 EXPOSE ${WEBSERVER_PORT}
 
-CMD ["node", "--max-old-space-size=160", "-r", "./loader.js", "./index.js"]
+CMD ["node", "--max-semi-space-size=16","--max-old-space-size=150", "-r", "./loader.js", "./index.js"]
