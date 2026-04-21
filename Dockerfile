@@ -56,9 +56,9 @@ FROM node:24-bookworm-slim
 WORKDIR /app/
 
 # Install/upgrade some system packages
-RUN npm install -g npm@latest
 RUN apt-get update
-RUN apt-get install fonts-noto ffmpeg -y
+#RUN apt-get install fonts-noto ffmpeg -y
+RUN apt-get install fonts-noto-core fonts-noto-cjk ffmpeg -y
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy files from the build env
@@ -73,4 +73,4 @@ RUN rm .env_build
 # Exposed web server port
 EXPOSE ${WEBSERVER_PORT}
 
-CMD ["node", "--max-old-space-size=160", "-r", "./loader.js", "./index.js"]
+CMD ["node", "--max-semi-space-size=16","--max-old-space-size=150", "-r", "./loader.js", "./index.js"]
