@@ -183,9 +183,9 @@ export class DiscordEvents extends baseEvent {
       // See if we need to update user's rule confirmation date
         let updateVerifyStatus = false;
         if(!(await user.getCacheData())?.rulesconfirmedon &&
-      (await this.client.guilds.cache.find(g=>g.id === guildID)
+      (await (await this.client.guilds.fetch(guildID))
         ?.members.fetch(newUser))
-        ?.roles.cache.find(role=>role.id === newUserRoleID))
+        ?.roles.cache.get(newUserRoleID))
           updateVerifyStatus = true;
 
         const rulesconfirmedon = updateVerifyStatus ? new Date() : undefined;

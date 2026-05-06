@@ -78,7 +78,7 @@ export async function ReactRoleLoader(client: DiscordClient) {
   collector.on("collect", async(react, user)=>{
     const member = await react.message.guild?.members.fetch(user.id);
     if(!member) return;
-    const role = guild.roles.cache.find(opt=>opt.id === (emoteToRole[react.emoji.id ?? "0"] ?? "0"));
+    const role = react.emoji.id ? guild.roles.cache.get(emoteToRole[react.emoji.id]) : undefined;
     if(!role) return;
     await member.roles.add(role);
   });
@@ -86,7 +86,7 @@ export async function ReactRoleLoader(client: DiscordClient) {
   collector.on("remove", async(react, user)=>{
     const member = await react.message.guild?.members.fetch(user.id);
     if(!member) return;
-    const role = guild.roles.cache.find(opt=>opt.id === (emoteToRole[react.emoji.id ?? "0"] ?? "0"));
+    const role = react.emoji.id ? guild.roles.cache.get(emoteToRole[react.emoji.id]) : undefined;
     if(!role) return;
     await member.roles.remove(role);
   });
