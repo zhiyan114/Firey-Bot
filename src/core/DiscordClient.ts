@@ -41,6 +41,7 @@ export class DiscordClient extends Client implements baseClient {
         Partials.User,
       ],
       makeCache: Options.cacheWithLimits({
+        ...Options.DefaultMakeCacheSettings,
         PresenceManager: 0
       })
     });
