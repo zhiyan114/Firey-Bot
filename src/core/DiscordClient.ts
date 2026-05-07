@@ -1,5 +1,5 @@
 import type { baseClient } from "./baseClient";
-import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketManagerOptions, TextChannel } from "discord.js";
+import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketManagerOptions, TextChannel, Options } from "discord.js";
 import { getClient } from "@sentry/node";
 import { DiscordEvents } from "../events";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
@@ -39,7 +39,10 @@ export class DiscordClient extends Client implements baseClient {
         Partials.Channel,
         Partials.GuildMember,
         Partials.User,
-      ]
+      ],
+      makeCache: Options.cacheWithLimits({
+        PresenceManager: 0
+      })
     });
 
     // Setup
