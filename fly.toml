@@ -5,7 +5,7 @@
 
 app = 'firey-bot'
 primary_region = 'iad'
-swap_size_mb = 16
+swap_size_mb = 0
 
 [build]
 
