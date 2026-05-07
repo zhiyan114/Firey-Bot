@@ -103,11 +103,11 @@ export class EvalCommand extends baseCommand {
   // Automatically add missing users to the database
   private createMissingUser = async () => {
     const dataToPush: userDataType[] = [];
-    const guild = this.client.guilds.cache.find(g=>g.id === guildID);
+    const guild = this.client.guilds.cache.get(guildID);
     if(!guild) return;
     for(const [,member] of await guild.members.fetch()) {
       if(member.user.bot) continue;
-      const hasVerifyRole = member.roles.cache.find(role=>role.id === newUserRoleID);
+      const hasVerifyRole = await member.roles.cache.get(newUserRoleID);
       dataToPush.push({
         id: member.user.id,
         username: member.user.tag,
@@ -122,7 +122,7 @@ export class EvalCommand extends baseCommand {
 
   // Automatically update out-of-date user to the database
   private updateUser = async () => {
-    const guild = this.client.guilds.cache.find(g=>g.id === guildID);
+    const guild = await this.client.guilds.fetch(guildID);
     if(!guild) return;
 
     for(const [,member] of await guild.members.fetch()) {
