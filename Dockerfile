@@ -58,7 +58,7 @@ WORKDIR /app/
 # Install/upgrade some system packages
 RUN apt-get update
 #RUN apt-get install fonts-noto ffmpeg -y
-RUN apt-get install fonts-noto-core fonts-noto-cjk ffmpeg -y
+RUN apt-get install fonts-noto-core fonts-noto-cjk -y
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy files from the build env
@@ -66,9 +66,7 @@ COPY --from=buildenv /source/node_modules /app/node_modules/
 COPY --from=buildenv /source/dist /app/
 
 # Import build env
-COPY --from=buildenv /source/.env_build /app/.env_build
-RUN cat .env_build >> .env
-RUN rm .env_build
+COPY --from=buildenv /source/.env_build /app/.env
 
 # Exposed web server port
 EXPOSE ${WEBSERVER_PORT}

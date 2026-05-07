@@ -4,7 +4,7 @@ import { getClient } from "@sentry/node";
 import { DiscordEvents } from "../events";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
 import { unverifyKickLoader, ReactRoleLoader, VoiceChatReward } from "../services";
-import { guildID } from '../config.json';
+import { guildID, reactRoles } from '../config.json';
 import { DiscordInvite } from "./helper/DiscordInvite";
 import type { TwitchClient } from "./TwitchClient";
 import { patchClient } from "../utils/MPClient";
@@ -32,7 +32,6 @@ export class DiscordClient extends Client implements baseClient {
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildPresences,
         GatewayIntentBits.GuildVoiceStates,
       ],
       partials: [
@@ -42,7 +41,10 @@ export class DiscordClient extends Client implements baseClient {
       ],
       makeCache: Options.cacheWithLimits({
         ...Options.DefaultMakeCacheSettings,
-        PresenceManager: 0
+        MessageManager: {
+          maxSize: 10,
+          keepOverLimit: (msg) => msg.channelId === reactRoles.channelID && msg.author.id === msg.client.user.id
+        }, // We dont care about user message after the initial processing
       })
     });
 
