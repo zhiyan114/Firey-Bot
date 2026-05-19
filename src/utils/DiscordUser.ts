@@ -217,7 +217,7 @@ export class DiscordUser {
   }
 
   /**
-     * create the user in the database directly
+     * create the user in the database directly (or update if user already existed)
      * @param rulesconfirmed The date which the user has confirmed the rules on
      * @returns User data if successfully create a new user, otherwise none
      */
@@ -228,8 +228,16 @@ export class DiscordUser {
       onlyIfParent: true
     }, async() => {
       try {
-        return await svcClient.prisma.members.create({
-          data: {
+        return await svcClient.prisma.members.upsert({
+          where: {
+            id: this.user.id,
+          },
+          update: {
+            username: this.username,
+            displayname: this.user.displayName,
+            rulesconfirmedon: null,
+          },
+          create: {
             id: this.user.id,
             username: this.username,
             displayname: this.user.displayName,
@@ -237,7 +245,7 @@ export class DiscordUser {
           }
         });
       } catch(ex) {
-      // Idek, we'll just ignore it for now
+        // User already exist in the DB, we ignore it
         if(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002") return;
         captureException(ex);
       }
