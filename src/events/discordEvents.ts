@@ -123,10 +123,12 @@ export class DiscordEvents extends baseEvent {
       forceTransaction: true
     }, async ()=>{
       try {
+        logger.info(`Processing new joined user: ${member.user.username}`);
         const user = new DiscordUser(member.user);
 
         // Create new user entry
         try {
+          logger.debug("Creating or updating new user's data to DB");
           await user.createNewUser();
         } catch(ex) {
           if(!(ex instanceof Prisma.PrismaClientKnownRequestError && ex.code === "P2002"))
@@ -134,6 +136,7 @@ export class DiscordEvents extends baseEvent {
         }
 
         // Send welcome message to user
+        logger.debug("Sending welcome message to new user");
         const channel = await this.client.channels.fetch(welcomeChannelID);
         if(!channel || channel.type !== ChannelType.GuildText) return;
         const embed = new EmbedBuilder()
@@ -160,8 +163,10 @@ export class DiscordEvents extends baseEvent {
         this.client.updateStatus();
 
         // Send a welcome banner
+        logger.debug("Sending user banner to guild");
         const BannerBuff = await (new BannerPic()).generate(user.username, member.user.displayAvatarURL({ size: 512, extension: "jpg" }));
         await channel.send({ files: [BannerBuff] });
+        logger.info(`${member.user.username} welcome messages processed successfully!`);
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     });
   }
