@@ -7,7 +7,6 @@
 import { startSpan } from "@sentry/node";
 import type { Canvas, CanvasRenderingContext2D } from "canvas";
 import { createCanvas, loadImage } from "canvas";
-import type { Readable } from "stream";
 
 /**
  * Generate a welcome banner for new users joined to the server
@@ -24,7 +23,7 @@ export class BannerPic {
     * @param imgURL The user's avatar URL
     * @returns The Buffer of the image in PNG format
     */
-  public async generate(name: string, imgURL: string): Promise<Readable> {
+  public async generate(name: string, imgURL: string): Promise<Buffer> {
     return await startSpan({
       op: "BannerPic.generate",
       name: "Generate User Join Banner",
@@ -35,7 +34,7 @@ export class BannerPic {
       this.setText(context, name);
       this.setBorder(context);
       await this.setProfilePicture(context, imgURL);
-      return this.canvas.createJPEGStream();
+      return this.canvas.toBuffer('image/jpeg');
     });
   }
 
