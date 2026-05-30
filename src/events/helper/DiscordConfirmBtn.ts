@@ -36,7 +36,12 @@ export async function VertificationHandler(interaction: ButtonInteraction) {
       });
     } catch(ex) {
       captureException(ex);
-      await interaction.followUp({ content: "An error occured during verification process, please try again!", flags: MessageFlags.Ephemeral });
+
+      const content = "An error occured during verification process, please try again!";
+      if(interaction.replied || interaction.deferred)
+        await interaction.followUp({ content, flags: MessageFlags.Ephemeral });
+      else
+        await interaction.reply({ content, flags: MessageFlags.Ephemeral });
     }
   });
 }
