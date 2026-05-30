@@ -15,7 +15,7 @@ import { VertificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
 import { captureException, logger, startSpan, withScope } from "@sentry/node";
-import { BannerPic } from "../utils/bannerGen";
+// import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { patchAllInteraction } from "../utils/MPReqID";
