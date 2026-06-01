@@ -25,6 +25,10 @@ export class DiscordClient extends Client implements baseClient {
 
   constructor() {
     super({
+      rest: {
+        // This fixes issue where sending attachment file causes request timeout
+        makeRequest: globalThis.fetch.bind(globalThis) as never,
+      },
       intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessageReactions,
