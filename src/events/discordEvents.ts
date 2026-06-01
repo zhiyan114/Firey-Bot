@@ -32,12 +32,10 @@ import { initialize as logInit, sendLog } from "../utils/eventLogger";
 export class DiscordEvents extends baseEvent {
   client: DiscordClient;
   commandHandler: DiscordCommandHandler;
-  banner: BannerPic;
   constructor(client: DiscordClient) {
     super();
     this.client = client;
     this.commandHandler = new DiscordCommandHandler(client);
-    this.banner = new BannerPic();
   }
 
   public registerEvents() {
@@ -166,7 +164,8 @@ export class DiscordEvents extends baseEvent {
 
         // Send a welcome banner
         logger.debug("Sending user banner to guild");
-        await channel.send({ files: [await this.banner.generate(user.username, member.user.displayAvatarURL({ size: 256, extension: "jpg" }))] });
+        const bannerFile = await new BannerPic().generate(user.username, member.user.displayAvatarURL({ size: 256, extension: "jpg" }));
+        await channel.send({ files: [bannerFile] });
         logger.info(`${member.user.username} welcome messages processed successfully!`);
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     });

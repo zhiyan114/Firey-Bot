@@ -77,11 +77,11 @@ export class BannerPic {
   private setText(name: string) {
     const ctx = this.canvas.getContext("2d");
     // Use fonts-noto on linux system and sans-serif on windows for character display compatibility
-    ctx.font = "30px fonts-noto, sans-serif";
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.shadowColor = "black";
     ctx.shadowBlur = 10;
+    ctx.font = "30px fonts-noto, sans-serif";
     ctx.fillText(name, this.canvas.width/2, this.canvas.height/3 + 110);
     ctx.font = "22px fonts-noto, sans-serif, segoe-ui-emoji";
     ctx.fillText("Welcome to Firey's server! I hope you enjoy your stay here (σ`・∀・)σ", this.canvas.width/2, this.canvas.height/3 + 150);
