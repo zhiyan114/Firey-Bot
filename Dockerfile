@@ -58,7 +58,7 @@ WORKDIR /app/
 # Install/upgrade some system packages
 RUN apt-get update
 #RUN apt-get install fonts-noto ffmpeg -y
-RUN apt-get install fonts-noto-core fonts-noto-cjk -y
+RUN apt-get install fonts-noto -y
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy files from the build env
