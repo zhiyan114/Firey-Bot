@@ -83,7 +83,7 @@ export class BannerPic {
     ctx.font = "30px sans-serif, font-noto";
     ctx.fillText(name, this.canvas.width/2, this.canvas.height/3 + 110);
     ctx.font = "22px sans-serif, font-noto";
-    ctx.fillText("Welcome to Firey's server! I hope you enjoy your stay here (σ`・∀・)σ", this.canvas.width/2, this.canvas.height/3 + 150);
+    ctx.fillText("Welcome to Firey's server! I hope you enjoy your stay here (σ`・∀・)σ", this.canvas.width/2, this.canvas.height/3 + 150, this.canvas.width - 20);
   }
 
   /**
