@@ -80,9 +80,9 @@ export class BannerPic {
     ctx.textAlign = "center";
     ctx.shadowColor = "black";
     ctx.shadowBlur = 10;
-    ctx.font = "30px sans-serif";
+    ctx.font = "30px sans-serif, font-noto";
     ctx.fillText(name, this.canvas.width/2, this.canvas.height/3 + 110);
-    ctx.font = "22px sans-serif";
+    ctx.font = "22px sans-serif, font-noto";
     ctx.fillText("Welcome to Firey's server! I hope you enjoy your stay here (σ`・∀・)σ", this.canvas.width/2, this.canvas.height/3 + 150);
   }
 
@@ -121,8 +121,8 @@ export class BannerPic {
 /** Use this to preload all the font so that the first banner generation, since startup, wouldnt take too long */
 export function preload() {
   const ctx = createCanvas(1,1).getContext("2d");
-  ctx.font = "30px sans-serif";
+  ctx.font = "30px sans-serif, font-noto";
   ctx.fillText("", 0, 0);
-  ctx.font = "22px sans-serif";
+  ctx.font = "22px sans-serif, font-noto";
   ctx.fillText("", 0, 0);
 }
