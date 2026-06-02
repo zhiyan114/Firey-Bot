@@ -9,7 +9,9 @@ RUN apt-get install python3 make g++ git pkg-config -y
 
 # Install npm packages
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
+RUN npm approve-scripts @prisma/engines prisma canvas bufferutil heapdump zlib-sync
+RUN npm rebuild
 
 # Setup Env Variables
 ARG SENTRY_AUTH_TOKEN
@@ -58,7 +60,7 @@ WORKDIR /app/
 # Install/upgrade some system packages
 RUN apt-get update
 #RUN apt-get install fonts-noto ffmpeg -y
-RUN apt-get install fonts-open-sans -y
+RUN apt-get install fonts-open-sans fonts-noto fonts-noto-cjk -y
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy files from the build env
