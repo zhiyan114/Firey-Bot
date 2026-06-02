@@ -76,14 +76,13 @@ export class BannerPic {
     */
   private setText(name: string) {
     const ctx = this.canvas.getContext("2d");
-    // Use fonts-noto on linux system and sans-serif on windows for character display compatibility
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.shadowColor = "black";
     ctx.shadowBlur = 10;
-    ctx.font = "30px fonts-noto, sans-serif";
+    ctx.font = "30px sans-serif";
     ctx.fillText(name, this.canvas.width/2, this.canvas.height/3 + 110);
-    ctx.font = "22px fonts-noto, sans-serif, segoe-ui-emoji";
+    ctx.font = "22px sans-serif";
     ctx.fillText("Welcome to Firey's server! I hope you enjoy your stay here (σ`・∀・)σ", this.canvas.width/2, this.canvas.height/3 + 150);
   }
 
@@ -117,4 +116,13 @@ export class BannerPic {
     // Draw in the profile picture
     ctx.drawImage(pfp, this.canvas.width/2 - hsx,this.canvas.height/3 - hsy, hsx*2, hsy*2);
   }
+}
+
+/** Use this to preload all the font so that the first banner generation, since startup, wouldnt take too long */
+export function preload() {
+  const ctx = createCanvas(1,1).getContext("2d");
+  ctx.font = "30px sans-serif";
+  ctx.fillText("", 0, 0);
+  ctx.font = "22px sans-serif";
+  ctx.fillText("", 0, 0);
 }
