@@ -118,3 +118,12 @@ export class BannerPic {
     ctx.drawImage(pfp, this.canvas.width/2 - hsx,this.canvas.height/3 - hsy, hsx*2, hsy*2);
   }
 }
+
+/** Use this to preload all the font so that the first banner generation, since startup, wouldnt take too long */
+export function preload() {
+  const ctx = createCanvas(1,1).getContext("2d");
+  ctx.font = "30px fonts-noto, sans-serif";
+  ctx.fillText("", 0, 0);
+  ctx.font = "22px fonts-noto, sans-serif, segoe-ui-emoji";
+  ctx.fillText("", 0, 0);
+}

@@ -1,5 +1,6 @@
 import { logger, close, startNewTrace } from "@sentry/node";
 import { discordCli, svcClient, TwitchCli, YoutubeCli } from "./SharedClient";
+import { preload } from "./utils/bannerGen";
 
 /**
  * Start up checks
@@ -16,6 +17,7 @@ if(!process.env["TWITCH_TOKEN"] || !process.env["TWITCH_USERNAME"])
 startNewTrace(async () => {
   // PRE PROCESSING EVENTS
   svcClient.preProcess();
+  preload();
 
   await svcClient.start();
   await discordCli.start(process.env["BOTTOKEN"]!);
