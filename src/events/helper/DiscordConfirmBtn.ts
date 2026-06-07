@@ -5,16 +5,16 @@ import { newUserRoleID } from "../../config.json";
 import { sendLog } from "../../utils/eventLogger";
 import { captureException, startSpan } from "@sentry/node";
 
-export async function VertificationHandler(interaction: ButtonInteraction) {
+export async function VerificationHandler(interaction: ButtonInteraction) {
   await startSpan({
-    op: "VertificationHandler",
-    name: "User Vertification Handler",
+    op: "VerificationHandler",
+    name: "User Verification Handler",
     onlyIfParent: true
   }, async ()=> {
     try {
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       if(interaction.user.bot)
-        return interaction.followUp({ content: "PRIVILEGE INSUFFICIENT!", flags: MessageFlags.Ephemeral });
+        return await interaction.followUp({ content: "PRIVILEGE INSUFFICIENT!", flags: MessageFlags.Ephemeral });
 
       const user = new DiscordUser(interaction.user);
       const member = interaction.member as GuildMember | null;
