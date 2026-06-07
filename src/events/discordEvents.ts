@@ -11,7 +11,7 @@ import type { DiscordClient } from "../core/DiscordClient";
 import { ChannelType, DiscordAPIError, EmbedBuilder, TextChannel } from "discord.js";
 import { baseEvent } from "../core/baseEvent";
 import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
-import { VertificationHandler } from "./helper/DiscordConfirmBtn";
+import { VerificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
 import { captureException, logger, startSpan, withScope } from "@sentry/node";
@@ -83,7 +83,7 @@ export class DiscordEvents extends baseEvent {
 
           if(interaction.isButton())
             if(interaction.customId === "RuleConfirm")
-              return await VertificationHandler(interaction);
+              return await VerificationHandler(interaction);
         } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
       });
     });

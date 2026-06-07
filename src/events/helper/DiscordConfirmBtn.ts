@@ -5,7 +5,7 @@ import { newUserRoleID } from "../../config.json";
 import { sendLog } from "../../utils/eventLogger";
 import { captureException, startSpan } from "@sentry/node";
 
-export async function VertificationHandler(interaction: ButtonInteraction) {
+export async function VerificationHandler(interaction: ButtonInteraction) {
   await startSpan({
     op: "VerificationHandler",
     name: "User Verification Handler",
