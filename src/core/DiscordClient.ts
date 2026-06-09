@@ -1,6 +1,5 @@
 import type { baseClient } from "./baseClient";
 import { ActivityType, Client, GatewayIntentBits, Partials, DefaultWebSocketManagerOptions, TextChannel, Options } from "discord.js";
-import { fetch as undiciFetch, Agent as UndiciAgent } from "undici";
 import { getClient } from "@sentry/node";
 import { DiscordEvents } from "../events";
 import { DiscordCommandHandler } from "../events/helper/DiscordCommandHandler";
@@ -10,8 +9,7 @@ import { DiscordInvite } from "./helper/DiscordInvite";
 import type { TwitchClient } from "./TwitchClient";
 import { patchClient } from "../utils/MPClient";
 
-// Persistent connection pool for Discord REST — avoids per-request TCP/TLS handshake overhead
-const _discordRestAgent = new UndiciAgent({ connections: 5, connect: { keepAlive: true } });
+
 
 /**
  * Integrated Discord Client
@@ -27,11 +25,12 @@ export class DiscordClient extends Client implements baseClient {
 
   constructor() {
     super({
-      rest: {
-        // This fixes issue where sending attachment file causes request timeout
-        // Using dispatcher to hopefully reduce REST request round-trip waits.
-        makeRequest: (url, init) => undiciFetch(url, { ...(init as object), dispatcher: _discordRestAgent }) as never,
-      },
+      // rest: {
+      // This fixes issue where sending attachment file causes request timeout
+      // Related to https://github.com/discordjs/discord.js/issues/11525
+      // Actually, gonna just use undici 7.27.2 as workaround instead lol
+      // makeRequest: globalThis.fetch.bind(globalThis) as never,
+      // },
       intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessageReactions,
