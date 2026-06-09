@@ -10,6 +10,7 @@ import type { TwitchClient } from "./TwitchClient";
 import { patchClient } from "../utils/MPClient";
 
 
+
 /**
  * Integrated Discord Client
  * @class DiscordClient
@@ -24,10 +25,11 @@ export class DiscordClient extends Client implements baseClient {
 
   constructor() {
     super({
-      rest: {
-        // This fixes issue where sending attachment file causes request timeout
-        makeRequest: globalThis.fetch.bind(globalThis) as never,
-      },
+      // rest: {
+      // This fixes issue where sending attachment file causes request timeout
+      // Related to https://github.com/discordjs/discord.js/issues/11525
+      // makeRequest: globalThis.fetch.bind(globalThis) as never,
+      // },
       intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessageReactions,
