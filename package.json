@@ -61,5 +61,16 @@
   "bugs": {
     "url": "https://github.com/zhiyan114/Firey-Bot/issues"
   },
-  "homepage": "https://github.com/zhiyan114/Firey-Bot#readme"
+  "homepage": "https://github.com/zhiyan114/Firey-Bot#readme",
+  "allowScripts": {
+    "zlib-sync": false,
+    "unrs-resolver": false,
+    "prisma": false,
+    "heapdump": false,
+    "esbuild": false,
+    "canvas": false,
+    "bufferutil": false,
+    "@sentry/cli": false,
+    "@prisma/engines": false
+  }
 }

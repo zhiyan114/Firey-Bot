@@ -9,9 +9,7 @@ RUN apt-get install python3 make g++ git pkg-config -y
 
 # Install npm packages
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts
-RUN npm approve-scripts @prisma/engines prisma canvas bufferutil heapdump zlib-sync
-RUN npm rebuild
+RUN npm ci
 
 # Setup Env Variables
 ARG SENTRY_AUTH_TOKEN
