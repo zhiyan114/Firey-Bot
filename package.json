@@ -63,14 +63,14 @@
   },
   "homepage": "https://github.com/zhiyan114/Firey-Bot#readme",
   "allowScripts": {
-    "zlib-sync": false,
-    "unrs-resolver": false,
-    "prisma": false,
-    "heapdump": false,
-    "esbuild": false,
-    "canvas": false,
-    "bufferutil": false,
-    "@sentry/cli": false,
-    "@prisma/engines": false
+    "zlib-sync": true,
+    "unrs-resolver": true,
+    "prisma": true,
+    "heapdump": true,
+    "esbuild": true,
+    "canvas": true,
+    "bufferutil": true,
+    "@sentry/cli": true,
+    "@prisma/engines": true
   }
 }
