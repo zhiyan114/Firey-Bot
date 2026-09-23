@@ -22,7 +22,7 @@ sentryInit({
   dsn: process.env["SENTRY_DSN"],
   dist: process.env['COMMITHASH'],
   maxValueLength: 1000,
-  tracesSampleRate: 1,
+  tracesSampleRate: 0,
   dataCollection: {
     userInfo: true,
     databaseQueryData: true,
