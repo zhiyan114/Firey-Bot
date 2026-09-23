@@ -1,6 +1,6 @@
 import { baseClient } from "./baseClient";
 import Express, { type NextFunction } from "express";
-import { getIsolationScope, setupExpressErrorHandler } from "@sentry/node";
+import { getIsolationScope } from "@sentry/node";
 import http from 'http';
 import https from "https";
 import { sendLog } from "../utils/eventLogger";
@@ -57,7 +57,7 @@ export class ServiceClient extends baseClient {
   }
 
   public postProcess() {
-    setupExpressErrorHandler(this._express);
+    // Do nothing for now
   }
 
   public async dispose() {
