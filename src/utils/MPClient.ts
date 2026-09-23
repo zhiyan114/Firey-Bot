@@ -59,7 +59,7 @@ export function patchClient(client: EventEmitter | Client, platformName: string)
         for(let i = args.length - 1; i >= 0; i--) {
           const user = getDiscordUserData(args[i]);
           if(user) {
-            scope.setUser(user);
+            scope.setUser({ ...user });
             break;
           }
         }
