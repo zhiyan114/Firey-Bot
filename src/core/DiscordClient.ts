@@ -29,7 +29,7 @@ export class DiscordClient extends Client implements baseClient {
         // This fixes issue where sending attachment file causes request timeout
         // Related to https://github.com/discordjs/discord.js/issues/11525
         // Actually, gonna just use undici 7.27.2 as workaround instead lol
-        // makeRequest: globalThis.fetch.bind(globalThis) as never,
+        makeRequest: globalThis.fetch.bind(globalThis) as never,
       },
       intents: [
         GatewayIntentBits.Guilds,
