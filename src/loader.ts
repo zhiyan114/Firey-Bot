@@ -4,7 +4,6 @@ import { DiscordAPIError, DiscordjsError, HTTPError } from "discord.js";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
 import {
-  expressIntegration,
   extraErrorDataIntegration,
   prismaIntegration,
   redisIntegration,
@@ -22,13 +21,10 @@ sentryInit({
   dsn: process.env["SENTRY_DSN"],
   dist: process.env['COMMITHASH'],
   maxValueLength: 1000,
-  tracesSampleRate: 0,
-  dataCollection: {
-    userInfo: true,
-    databaseQueryData: true,
-    queues: true,
-    stackFrameVariables: true
-  },
+  tracesSampleRate: 1,
+  sendDefaultPii: true,
+  enableLogs: true,
+  enableMetrics: true,
 
   beforeBreadcrumb,
   beforeSend,
@@ -53,10 +49,6 @@ sentryInit({
   integrations: [
     extraErrorDataIntegration({
       depth: 5
-    }),
-    expressIntegration({ shouldHandleError: (e) =>
-      (typeof(e.statusCode) === "string" ?
-        Number.parseInt(e.statusCode) : (e.statusCode ?? 500)) >= 500
     }),
     redisIntegration({ cachePrefixes: [`${redisPrefix}:`] }),
     prismaIntegration()
