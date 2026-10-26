@@ -4,6 +4,7 @@ import { DiscordAPIError, DiscordjsError, HTTPError } from "discord.js";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
 import {
+  expressIntegration,
   extraErrorDataIntegration,
   prismaIntegration,
   redisIntegration,
@@ -48,7 +49,11 @@ sentryInit({
       depth: 5
     }),
     redisIntegration({ cachePrefixes: [`${redisPrefix}:`] }),
-    prismaIntegration()
+    prismaIntegration(),
+    expressIntegration({
+      // 599 is just an internal identifier that there's issue with the handler
+      shouldHandleError: (err) => Number.parseInt(err.statusCode?.toString() ?? "599") >= 500
+    })
   ],
 });
 
