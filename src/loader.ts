@@ -4,6 +4,7 @@ import { DiscordAPIError, DiscordjsError, HTTPError } from "discord.js";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
 import {
+  expressIntegration,
   extraErrorDataIntegration,
   prismaIntegration,
   redisIntegration,
@@ -21,10 +22,7 @@ sentryInit({
   dsn: process.env["SENTRY_DSN"],
   dist: process.env['COMMITHASH'],
   maxValueLength: 1000,
-  tracesSampleRate: 1,
-  sendDefaultPii: true,
-  enableLogs: true,
-  enableMetrics: true,
+  tracesSampleRate: 0,
 
   beforeBreadcrumb,
   beforeSend,
@@ -51,7 +49,11 @@ sentryInit({
       depth: 5
     }),
     redisIntegration({ cachePrefixes: [`${redisPrefix}:`] }),
-    prismaIntegration()
+    prismaIntegration(),
+    expressIntegration({
+      // 599 is just an internal identifier that there's issue with the handler
+      shouldHandleError: (err) => Number.parseInt(err.statusCode?.toString() ?? "599") >= 500
+    })
   ],
 });
 

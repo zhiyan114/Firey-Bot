@@ -14,7 +14,7 @@ import { DiscordCommandHandler } from "./helper/DiscordCommandHandler";
 import { VerificationHandler } from "./helper/DiscordConfirmBtn";
 import { DiscordUser } from "../utils/DiscordUser";
 import { APIErrors } from "../utils/discordErrorCode";
-import { captureException, logger, startSpan, withScope } from "@sentry/node";
+import { captureException, logger, startSpan, withActiveSpan, withScope } from "@sentry/node";
 import { BannerPic } from "../utils/bannerGen";
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
@@ -65,10 +65,9 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async createCommand(interaction: Interaction) {
-    await startSpan({
+    await withActiveSpan(null, () => startSpan({
       op: "DiscordEvents.createCommand",
       name: "Discord createCommand Event",
-      forceTransaction: true
     }, async ()=>{
       await withScope(async(scope) => {
         const requestID = randomUUID();
@@ -86,7 +85,7 @@ export class DiscordEvents extends baseEvent {
               return await VerificationHandler(interaction);
         } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
       });
-    });
+    }));
   }
 
   private async messageCreate(message: Message) {
@@ -103,13 +102,12 @@ export class DiscordEvents extends baseEvent {
         if(noPoints.category.length > 0 && noPoints.category.find(c=>channel.parentId === c)) return;
 
         // Grant points
-        await startSpan({
+        await withActiveSpan(null, () => startSpan({
           op: "DiscordEvents.messageCreate",
           name: "Discord messageCreate Event",
-          forceTransaction: true
         }, async () =>
           await (new DiscordUser(message.author)).economy.chatRewardPoints(message.content)
-        );
+        ));
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
     });
   }
@@ -117,10 +115,9 @@ export class DiscordEvents extends baseEvent {
   private async guildMemberAdd(member: GuildMember) {
     if(member.user.bot) return;
 
-    await startSpan({
+    await withActiveSpan(null, () => startSpan({
       op: "DiscordEvents.guildMemberAdd",
       name: "Discord guildMemberAdd Event",
-      forceTransaction: true
     }, async ()=>{
       try {
         logger.info(`Processing new joined user: ${member.user.username}`);
@@ -168,7 +165,7 @@ export class DiscordEvents extends baseEvent {
         await channel.send({ files: [bannerFile] });
         logger.info(`${member.user.username} welcome messages processed successfully!`);
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-    });
+    }));
   }
 
   private async userUpdate(oldUser: User | PartialUser, newUser: User) {
@@ -177,10 +174,9 @@ export class DiscordEvents extends baseEvent {
     const displayName = oldUser.displayName !== newUser.displayName ? newUser.displayName : undefined;
     if(!username && !displayName) return;
 
-    await startSpan({
+    await withActiveSpan(null, () => startSpan({
       op: "DiscordEvents.userUpdate",
-      name: "Discord userUpdate Event",
-      forceTransaction: true
+      name: "Discord userUpdate Event"
     }, async ()=>{
       const user = new DiscordUser(newUser);
 
@@ -200,7 +196,7 @@ export class DiscordEvents extends baseEvent {
           displayName,
         });
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-    });
+    }));
   }
 
   private guildMemberRemove() {
@@ -208,10 +204,9 @@ export class DiscordEvents extends baseEvent {
   }
 
   private async voiceStateUpdate(old: VoiceState, now: VoiceState) {
-    await startSpan({
+    await withActiveSpan(null, () => startSpan({
       op: "DiscordEvents.voiceStateUpdate",
       name: "Discord voiceStateUpdate Event",
-      forceTransaction: true
     }, async ()=>{
       try {
       // Checking to see if the user needs to be reported on the log
@@ -253,7 +248,7 @@ export class DiscordEvents extends baseEvent {
         });
         await channel.send({ embeds: [embed] });
       } catch(ex) { captureException(ex, { mechanism: { handled: false } }); }
-    });
+    }));
   }
 
   private async guildDelete(guild: Guild) {

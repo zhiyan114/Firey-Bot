@@ -3,7 +3,7 @@ import type { TwitchClient } from "../core/TwitchClient";
 import { baseEvent } from "../core/baseEvent";
 import { TwitchUser } from "../utils/TwitchUser";
 import { processCommand } from "./helper/TwitchCommandHandler";
-import { captureException, startSpan, withScope } from "@sentry/node";
+import { captureException, startSpan, withActiveSpan, withScope } from "@sentry/node";
 import { randomUUID } from "crypto";
 
 export class TwitchEvents extends baseEvent {
@@ -20,10 +20,9 @@ export class TwitchEvents extends baseEvent {
   private async onMessage(channel: string, userstate: ChatUserstate, message: string, self: boolean) {
     if(self) return;
 
-    await startSpan({
+    await withActiveSpan(null, () => startSpan({
       op: "TwitchEvents.OnMessage",
       name: "Twitch Event: message",
-      forceTransaction: true,
     }, async() => {
 
       await withScope(async (scope) => {
@@ -73,6 +72,6 @@ export class TwitchEvents extends baseEvent {
           this.client.say(channel, `@${userstate.username ?? "unknown"} command execution failed :{ (SessionID: ${sessionID})`);
         }
       });
-    });
+    }));
   }
 }
