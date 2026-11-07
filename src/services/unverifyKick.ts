@@ -2,7 +2,7 @@ import type { GuildMember } from "discord.js";
 import type { DiscordClient } from "../core/DiscordClient";
 import { EmbedBuilder } from "discord.js";
 import { CronJob } from "cron";
-import { captureException, cron } from "@sentry/node";
+import { captureException } from "@sentry/node";
 import { createHash } from "crypto";
 import { guildID } from "../config.json";
 import { sendLog } from "../utils/eventLogger";
@@ -32,8 +32,12 @@ export class unverifyKickLoader {
     this.client.on('guildMemberAdd', this.setGracePeriod.bind(this));
 
     // Set cronjob to check every 5 minutes
-    new (cron.instrumentCron(CronJob, "unverifykick-service"))
-    ("*/5 * * * *", this.checkAndKick.bind(this), null, true);
+    CronJob.from({
+      name : "unverifykick-service",
+      cronTime: "*/5 * * * *",
+      onTick: this.checkAndKick.bind(this),
+      start: true,
+    });
 
   }
 
