@@ -4,6 +4,7 @@ import { DiscordAPIError, DiscordjsError, HTTPError } from "discord.js";
 import { APIErrors } from "./utils/discordErrorCode";
 import { Prisma } from "@prisma/client";
 import {
+  cronJobIntegration,
   expressIntegration,
   extraErrorDataIntegration,
   prismaIntegration,
@@ -53,7 +54,8 @@ sentryInit({
     expressIntegration({
       // 599 is just an internal identifier that there's issue with the handler
       shouldHandleError: (err) => Number.parseInt(err.statusCode?.toString() ?? "599") >= 500
-    })
+    }),
+    cronJobIntegration()
   ],
 });
 
@@ -73,6 +75,21 @@ function beforeSend(event: ErrorEvent, hint: EventHint) {
     const message = ex.cause.message;
     if(title.includes("ECONNRESET") || message.includes("ECONNRESET")) return null;
     if(title.includes("ETIMEDOUT") || message.includes("ETIMEDOUT")) return null;
+  }
+
+  // Ignore multi-chained exceptions for connection timeouts
+  if(ex instanceof AggregateError) {
+    const onlyTimeout = ex.errors.every(err=> {
+      if(!(err instanceof Error)) return;
+
+      const title = err.name;
+      const message = err.message;
+      if(title.includes("ECONNRESET") || message.includes("ECONNRESET")) return true;
+      if(title.includes("ETIMEDOUT") || message.includes("ETIMEDOUT")) return true;
+    });
+
+    if(onlyTimeout)
+      return null;
   }
 
   return event;
