@@ -75,6 +75,21 @@ function beforeSend(event: ErrorEvent, hint: EventHint) {
     if(title.includes("ETIMEDOUT") || message.includes("ETIMEDOUT")) return null;
   }
 
+  // Ignore multi-chained exceptions for connection timeouts
+  if(ex instanceof AggregateError) {
+    const onlyTimeout = ex.errors.every(err=> {
+      if(!(err instanceof Error)) return;
+
+      const title = err.name;
+      const message = err.message;
+      if(title.includes("ECONNRESET") || message.includes("ECONNRESET")) return true;
+      if(title.includes("ETIMEDOUT") || message.includes("ETIMEDOUT")) return true;
+    });
+
+    if(onlyTimeout)
+      return null;
+  }
+
   return event;
 }
 
